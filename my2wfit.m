@@ -52,12 +52,12 @@ b1 = paramout(7);
 b2 = paramout(8); 
 o  = paramout(9); 
 
-y1_r = A1^2 * cos(b1) .* exp(-(x_out-x1).^2/(2*s1));  
-y2_r = A2^2 * cos(b2) .* exp(-(x_out-x2).^2/(2*s2));  
+y1_r = abs(A1) * cos(b1) .* exp(-(x_out-x1).^2/(2*s1));  
+y2_r = abs(A2) * cos(b2) .* exp(-(x_out-x2).^2/(2*s2));  
 yf_r = y1_r + y2_r + o; 
 
-y1_i = A1^2 * sin(b1) .* exp(-(x_out-x1).^2/(2*s1));  
-y2_i = A2^2 * sin(b2) .* exp(-(x_out-x2).^2/(2*s2));  
+y1_i = abs(A1) * sin(b1) .* exp(-(x_out-x1).^2/(2*s1));  
+y2_i = abs(A2) * sin(b2) .* exp(-(x_out-x2).^2/(2*s2));  
 yf_i = y1_i + y2_i + o; 
 
 y_out = yf_r + 1i*yf_i; 
@@ -104,13 +104,13 @@ b1 = para(7);
 b2 = para(8);  
 o  = para(9); 
 
-y1_r = A1^2 * cos(b1) .* exp(-(xin-x1).^2/(2*s1));  
-y2_r = A2^2 * cos(b2) .* exp(-(xin-x2).^2/(2*s2));  
+y1_r = abs(A1) * cos(b1) .* exp(-(xin-x1).^2/(2*s1));  
+y2_r = abs(A2) * cos(b2) .* exp(-(xin-x2).^2/(2*s2));  
 yf_r = y1_r + y2_r + o; 
 chi2_r = (real(yin) - yf_r).^2/real(yin).^2; 
 
-y1_i = A1^2 * sin(b1) .* exp(-(xin-x1).^2/(2*s1));  
-y2_i = A2^2 * sin(b2) .* exp(-(xin-x2).^2/(2*s2));  
+y1_i = abs(A1) * sin(b1) .* exp(-(xin-x1).^2/(2*s1));  
+y2_i = abs(A2) * sin(b2) .* exp(-(xin-x2).^2/(2*s2));  
 yf_i = y1_i + y2_i; 
 chi2_i = (imag(yin) - yf_i).^2/imag(yin).^2; 
 
