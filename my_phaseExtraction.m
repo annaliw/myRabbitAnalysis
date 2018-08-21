@@ -35,11 +35,13 @@ hold off;
 
 %% try fitting to complex FFT results
 
-engWindow = [10.62 12.15]; 
+engWindow = [12.15 13.78]; 
+% engWindow = [10.62 12.15]; 
 indWindow = fliplr([find(abs(E-engWindow(1))<0.005) find(abs(E-engWindow(2))<0.005)]); 
-xin = E(indWindow(1):indWindow(2)-4); 
-yin = twoOmega_signal(indWindow(1):indWindow(2)-4).'; 
-guess = [8e03 8e03 10.9 11.6 0.4 0.6 3 1.1 0]; 
+xin = E(indWindow(1):indWindow(2)); 
+yin = twoOmega_signal(indWindow(1):indWindow(2)).'; 
+% guess = [8e03 8e03 10.9 11.6 0.4 0.6 3 1.1 0]; 
+guess = [4e03 4e03 12.44 13.1 0.4 0.6 -0.7 -1.3 0]; 
 
 [paramout, fval, x_out, y_out] = my2wfit(xin, yin, guess); 
 A1 = paramout(1); 
@@ -52,13 +54,16 @@ b1 = paramout(7);
 b2 = paramout(8); 
 o  = paramout(9); 
 
-y1_r = abs(A1) * cos(b1) .* exp(-(x_out-x1).^2/(2*s1)) + o; 
-y1_i = abs(A1) * sin(b1) .* exp(-(x_out-x1).^2/(2*s1)); 
-y1 = y1_r + 1i*y1_i; 
+% y1_r = abs(A1) * cos(b1) .* exp(-(x_out-x1).^2/(2*s1)) + o; 
+% y1_i = abs(A1) * sin(b1) .* exp(-(x_out-x1).^2/(2*s1)); 
+% y1 = y1_r + 1i*y1_i; 
+% 
+% y2_r = abs(A2) * cos(b2) .* exp(-(x_out-x2).^2/(2*s2)) + o; 
+% y2_i = abs(A2) * sin(b2) .* exp(-(x_out-x2).^2/(2*s2)); 
+% y2 = y2_r + 1i*y2_i; 
 
-y2_r = abs(A2) * cos(b2) .* exp(-(x_out-x2).^2/(2*s2)) + o; 
-y2_i = abs(A2) * sin(b2) .* exp(-(x_out-x2).^2/(2*s2)); 
-y2 = y2_r + 1i*y2_i; 
+y1 = abs(A1) * exp(1i*b1) .* exp(-(x_out-x1).^2/(2*s1)); 
+y2 = abs(A2) * exp(1i*b2) .* exp(-(x_out-x2).^2/(2*s2)); 
 
 figure; 
 hold on; 
