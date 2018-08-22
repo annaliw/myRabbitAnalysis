@@ -45,17 +45,19 @@ A1 = paramout(1);
 A2 = paramout(2);  
 s1 = paramout(3);
 s2 = paramout(4); 
-b1 = paramout(5); 
-b2 = paramout(6); 
-o  = paramout(7); 
+a1 = paramout(5); 
+a2 = paramout(6); 
+b1 = paramout(7); 
+b2 = paramout(8); 
+o  = paramout(9); 
 
 x1 = peaks(1); 
 x2 = peaks(2); 
 
-y1 = abs(A1) * exp(1i*b1) .* exp(-(x_out-x1).^2/(2*s1)); 
-y2 = abs(A2) * exp(1i*b2) .* exp(-(x_out-x2).^2/(2*s2)); 
+y1 = abs(A1) * exp(1i*(a1*(x_out-x1)+b1)) .* exp(-(x_out-x1).^2/(2*s1)); 
+y2 = abs(A2) * exp(1i*(a2*(x_out-x2)+b2)) .* exp(-(x_out-x2).^2/(2*s2)); 
 
-y_out = y1 + y2; 
+y_out = y1 + y2 + o; 
 
 if nargin<1
     hold on
@@ -71,27 +73,21 @@ A1 = para(1);
 A2 = para(2); 
 s1 = para(3);
 s2 = para(4); 
-b1 = para(5); 
-b2 = para(6);  
-o  = para(7); 
+% a1 = para(5); 
+% a2 = para(6); 
+a1 = 0; 
+a2 = 0; 
+b1 = para(7); 
+b2 = para(8); 
+o  = para(9); 
 
 x1 = peaks(1); 
 x2 = peaks(2); 
 
-% y1_r = abs(A1) * cos(b1) .* exp(-(xin-x1).^2/(2*s1));  
-% y2_r = abs(A2) * cos(b2) .* exp(-(xin-x2).^2/(2*s2));  
-% yf_r = y1_r + y2_r + o; 
-% chi2_r = (real(yin) - yf_r).^2/real(yin).^2; 
-% 
-% y1_i = abs(A1) * sin(b1) .* exp(-(xin-x1).^2/(2*s1));  
-% y2_i = abs(A2) * sin(b2) .* exp(-(xin-x2).^2/(2*s2));  
-% yf_i = y1_i + y2_i; 
-% chi2_i = (imag(yin) - yf_i).^2/imag(yin).^2; 
+y1 = abs(A1) * exp(1i*(a1*(xin-x1)+b1)) .* exp(-(xin-x1).^2/(2*s1)); 
+y2 = abs(A2) * exp(1i*(a2*(xin-x2)+b2)) .* exp(-(xin-x2).^2/(2*s2)); 
 
-y1 = abs(A1) * exp(1i*b1) .* exp(-(xin-x1).^2/(2*s1)); 
-y2 = abs(A2) * exp(1i*b2) .* exp(-(xin-x2).^2/(2*s2)); 
-
-chi2_r = (real(yin) - (real(y1+y2))).^2/real(yin).^2; 
+chi2_r = (real(yin) - (real(y1+y2) + o)).^2/real(yin).^2; 
 chi2_i = (imag(yin) - (imag(y1+y2))).^2/imag(yin).^2; 
 
 chi2 = chi2_r + chi2_i; 
