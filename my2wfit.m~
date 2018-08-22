@@ -37,7 +37,8 @@ options = optimset('MaxFunEvals',100000, 'MaxIter', 50001, 'TolFun',1E-6, 'TolX'
 % ein=ein./A;
 % Guess(end)=Guess(end)./A;
 
-[paramout, fval] = fminsearch(@(x) myfit(xin,yin,x),Guess,options); 
+% [paramout, fval] = fminsearch(@(x) myfit(xin,yin,x),Guess,options); 
+[x,resnorm,~,exitflag,output] = lsqcurvefit(myfit,guess,xin, yin)
 
 x_out=linspace(xin(1),xin(end),length(xin)*100);
 
@@ -54,7 +55,7 @@ o  = paramout(9);
 y1 = abs(A1) * exp(1i*b1) .* exp(-(x_out-x1).^2/(2*s1)); 
 y2 = abs(A2) * exp(1i*b2) .* exp(-(x_out-x2).^2/(2*s2)); 
 
-y_out = y1 + y2 + 2*o; 
+y_out = y1 + y2 + o; 
 
 if nargin<1
     hold on
@@ -114,7 +115,7 @@ y2 = abs(A2) * exp(1i*b2) .* exp(-(xin-x2).^2/(2*s2));
 chi2_r = (real(yin) - (real(y1+y2) + o)).^2/real(yin).^2; 
 chi2_i = (imag(yin) - (imag(y1+y2))).^2/imag(yin).^2; 
 
-chi2 = chi2_r + chi2_i; 
+chi2 = y1 + y2 + real(o); 
 
 
 end
