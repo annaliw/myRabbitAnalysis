@@ -55,7 +55,7 @@ x2 = peaks(2);
 y1 = abs(A1) * exp(1i*b1) .* exp(-(x_out-x1).^2/(2*s1)); 
 y2 = abs(A2) * exp(1i*b2) .* exp(-(x_out-x2).^2/(2*s2)); 
 
-y_out = y1 + y2 + o; 
+y_out = y1 + y2; 
 
 if nargin<1
     hold on
@@ -91,7 +91,7 @@ x2 = peaks(2);
 y1 = abs(A1) * exp(1i*b1) .* exp(-(xin-x1).^2/(2*s1)); 
 y2 = abs(A2) * exp(1i*b2) .* exp(-(xin-x2).^2/(2*s2)); 
 
-chi2_r = (real(yin) - (real(y1+y2) + o)).^2/real(yin).^2; 
+chi2_r = (real(yin) - (real(y1+y2))).^2/real(yin).^2; 
 chi2_i = (imag(yin) - (imag(y1+y2))).^2/imag(yin).^2; 
 
 chi2 = chi2_r + chi2_i; 
