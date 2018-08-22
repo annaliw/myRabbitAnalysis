@@ -1,4 +1,4 @@
-function [paramout,fval,x_out,y_out]=my2wfit(xin,yin,Guess)
+function [paramout,fval,x_out,y_out]=my2wfit(xin,yin,peaks,Guess)
 %Fits data to two overlapping peaks of fft output
 %(must select region of data with only two overlapping peaks)
 %[paramout,fval,x_out,y_out]=GausExpFit(xin,yin,ein,[A,x0,sigma,tau,offset])
@@ -37,24 +37,25 @@ options = optimset('MaxFunEvals',100000, 'MaxIter', 50001, 'TolFun',1E-6, 'TolX'
 % ein=ein./A;
 % Guess(end)=Guess(end)./A;
 
-[paramout, fval] = fminsearch(@(x) myfit(xin,yin,x),Guess,options); 
+[paramout, fval] = fminsearch(@(x) myfit(xin,yin,peaks,x),Guess,options); 
 
 x_out=linspace(xin(1),xin(end),length(xin)*100);
 
 A1 = paramout(1); 
-A2 = paramout(2); 
-x1 = paramout(3); 
-x2 = paramout(4); 
-s1 = paramout(5);
-s2 = paramout(6); 
-b1 = paramout(7); 
-b2 = paramout(8); 
-o  = paramout(9); 
+A2 = paramout(2);  
+s1 = paramout(3);
+s2 = paramout(4); 
+b1 = paramout(5); 
+b2 = paramout(6); 
+o  = paramout(7); 
+
+x1 = peaks(1); 
+x2 = peaks(2); 
 
 y1 = abs(A1) * exp(1i*b1) .* exp(-(x_out-x1).^2/(2*s1)); 
 y2 = abs(A2) * exp(1i*b2) .* exp(-(x_out-x2).^2/(2*s2)); 
 
-y_out = y1 + y2 + 2*o; 
+y_out = y1 + y2 + o; 
 
 if nargin<1
     hold on
@@ -64,39 +65,18 @@ end
 end
 
 
-function chi2=myfit(xin,yin,para)
-% parameters are an array of the coefficients for each peak
-    
-%     A1 = para(1);
-%     A2 = para(2); 
-%     E1 = para(3);
-%     E2 = para(4); 
-%     s1 = para(5);
-%     s2 = para(6); 
-%     a1 = para(7);
-%     a2 = para(8); 
-%     b1 = para(9);
-%     b2 = para(10); 
-%     o = para(11); 
-%     
-%     y1 = abs(A1) .* exp((xin-E1).^2/(2.*s1)) .* exp(1i * (a1.*(xin-E1) + b1));
-%     y2 = abs(A2) .* exp((xin-E2).^2/(2.*s2)) .* exp(1i * (a2.*(xin-E2) + b2));
-%     yf = y1 + y2 + o; 
-% 
-%     diff = yf - yin; 
-%     
-%     chi2=sum(real(diff).^2 + imag(diff).^2); 
-
-% simple gaussian test 
+function chi2=myfit(xin,yin,peaks,para)
+% parameters
 A1 = para(1); 
 A2 = para(2); 
-x1 = para(3); 
-x2 = para(4); 
-s1 = para(5);
-s2 = para(6); 
-b1 = para(7); 
-b2 = para(8);  
-o  = para(9); 
+s1 = para(3);
+s2 = para(4); 
+b1 = para(5); 
+b2 = para(6);  
+o  = para(7); 
+
+x1 = peaks(1); 
+x2 = peaks(2); 
 
 % y1_r = abs(A1) * cos(b1) .* exp(-(xin-x1).^2/(2*s1));  
 % y2_r = abs(A2) * cos(b2) .* exp(-(xin-x2).^2/(2*s2));  
