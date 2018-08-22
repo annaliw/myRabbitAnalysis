@@ -54,7 +54,7 @@ o  = paramout(9);
 y1 = abs(A1) * exp(1i*b1) .* exp(-(x_out-x1).^2/(2*s1)); 
 y2 = abs(A2) * exp(1i*b2) .* exp(-(x_out-x2).^2/(2*s2)); 
 
-y_out = y1 + y2 + o; 
+y_out = y1 + y2 + 2*o; 
 
 if nargin<1
     hold on

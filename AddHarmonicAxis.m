@@ -4,7 +4,7 @@ ax1 = fh.Children; %Axis Handle
 POS = ax1.Position; %Position of Axis
 del = 0.07*POS(4);
 
-n=9:2:19; %Harmonics to plot
+n=9:1:19; %Harmonics to plot
 lambda = 810; % Fundamental Wavelength
 % lambda = 2*810/1.778; 
 

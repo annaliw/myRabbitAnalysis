@@ -30,7 +30,6 @@ function [paramout,fval,x_out,y_out]=my2wfit(xin,yin,Guess)
 %     end
 % end
     
-%%
 options = optimset('MaxFunEvals',100000, 'MaxIter', 50001, 'TolFun',1E-6, 'TolX',1E-6);
 % Guess=[Amp,x0,s,2*s,min(yin)];
 % A=mean(abs(yin));
@@ -38,7 +37,8 @@ options = optimset('MaxFunEvals',100000, 'MaxIter', 50001, 'TolFun',1E-6, 'TolX'
 % ein=ein./A;
 % Guess(end)=Guess(end)./A;
 
-[paramout, fval] = fminsearch(@(x) myfit(xin,yin,x),Guess,options); 
+% [paramout, fval] = fminsearch(@(x) myfit(xin,yin,x),Guess,options); 
+[x,resnorm,~,exitflag,output] = lsqcurvefit(myfit,guess,xin, yin)
 
 x_out=linspace(xin(1),xin(end),length(xin)*100);
 
@@ -52,15 +52,10 @@ b1 = paramout(7);
 b2 = paramout(8); 
 o  = paramout(9); 
 
-y1_r = abs(A1) * cos(b1) .* exp(-(x_out-x1).^2/(2*s1));  
-y2_r = abs(A2) * cos(b2) .* exp(-(x_out-x2).^2/(2*s2));  
-yf_r = y1_r + y2_r + o; 
+y1 = abs(A1) * exp(1i*b1) .* exp(-(x_out-x1).^2/(2*s1)); 
+y2 = abs(A2) * exp(1i*b2) .* exp(-(x_out-x2).^2/(2*s2)); 
 
-y1_i = abs(A1) * sin(b1) .* exp(-(x_out-x1).^2/(2*s1));  
-y2_i = abs(A2) * sin(b2) .* exp(-(x_out-x2).^2/(2*s2));  
-yf_i = y1_i + y2_i + o; 
-
-y_out = yf_r + 1i*yf_i; 
+y_out = y1 + y2 + o; 
 
 if nargin<1
     hold on
@@ -114,13 +109,13 @@ o  = para(9);
 % yf_i = y1_i + y2_i; 
 % chi2_i = (imag(yin) - yf_i).^2/imag(yin).^2; 
 
-y1 = abs(A1) * exp(1i*b1) .* exp(-(xin-x1).^2/(2*s1); 
-y2 = abs(A2) * exp(1i*b2) .* exp(-(xin-x2).^2/(2*s2); 
+y1 = abs(A1) * exp(1i*b1) .* exp(-(xin-x1).^2/(2*s1)); 
+y2 = abs(A2) * exp(1i*b2) .* exp(-(xin-x2).^2/(2*s2)); 
 
 chi2_r = (real(yin) - (real(y1+y2) + o)).^2/real(yin).^2; 
-chi2_i = (imag(yin) - (imag(y1+y2) + o)).^2/real(yin).^2; 
+chi2_i = (imag(yin) - (imag(y1+y2))).^2/imag(yin).^2; 
 
-chi2 = chi2_r + chi2_i; 
+chi2 = y1 + y2 + real(o); 
 
 
 end
