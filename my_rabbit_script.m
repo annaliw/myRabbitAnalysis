@@ -218,7 +218,7 @@ hold off;
 %% grab 2w data and Plot Result with Harmonics
 twoOmega_signal = E_SpectraArray(:,130); 
 % IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.722];
-IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7, 17.5, 17.8];
+IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7, 15.8];
 
 fh = figure; 
 line(E, mean(abs(E_SpectraArray),2), 'Color', 'k', 'DisplayName', 'average spectra'); 

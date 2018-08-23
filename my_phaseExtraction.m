@@ -57,6 +57,14 @@ peaks = [9.2 9.5];
 % % peaks = [7.698 7.95]; 
 % % peaks = [8.662 8.835]; 
 
+% RESAMPLING
+% add single point between all points
+dx = xin - circshift(xin,1); 
+resamp_y = movmean(yin, 2) + 0.1/3*randn(size(yin)); 
+yin = [yin resamp_y(2:end)]; 
+xin = [xin xin(2:end)-dx(2:end)./2]; 
+
+
 [paramout, fval, x_out, y_out] = my2wfit(xin, yin, peaks, guess); 
 A1 = paramout(1); 
 A2 = paramout(2); 
