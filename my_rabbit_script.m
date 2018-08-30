@@ -95,18 +95,12 @@ end
 HistTotSum = sum(HistTot_fft, 3); 
 HistTotSum_early = sum(HistTot_early_fft, 3); 
 
-%% Convert to Energy after loading 
-% E_vec_max = 25; 
-% dE = 2*(19*(1240/810)-9.3)/510; 
-% E_vec_size = floor(E_vec_max/dE); 
-% % E_vec_size = 1200; 
-% E_vec = [0, E_vec_max, E_vec_size];
-
+%% Convert to Energy after loading (no binning)
 t0=21; 
-
+wavelength = 810; 
 %get conversion parameters
 % calibEnergy = [((11:1:19)*(1239.84e-9/IRwavelength) - 14.00) ((11:1:19)*(1239.84e-9/IRwavelength) - 14.665)];
-calibEnergy = [((11:1:19)*(1240/810) - 14.00) ((11:1:19)*(1240/810) - 14.665)];
+calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00) ((11:1:19)*(1240/wavelength) - 14.665)];
 n = 9:2:19; 
 % n = 11:1:19; 
 % tof_peak = [1082, 793, 687, 610, 553, 510]-t0; 
@@ -158,6 +152,48 @@ E = E(451:4748);
 E_SpectraArray = E_SpectraArray(451:4748,:); 
 E_SpectraArray_early = E_SpectraArray_early(451:4748,:); 
 
+%% Energy conversion (binning)
+wavelength = 810; 
+E_vec_max = 25; 
+dE = 2*(19*(1240/wavelength)-9.3)/510; 
+% E_vec_size = floor(E_vec_max/dE); 
+E_vec_size = 450; 
+E_vec = [0, E_vec_max, E_vec_size];
+
+%get conversion parameters
+% calibEnergy = [((11:1:19)*(1239.84e-9/IRwavelength) - 14.00) ((11:1:19)*(1239.84e-9/IRwavelength) - 14.665)];
+calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00) ((11:1:19)*(1240/wavelength) - 14.665)];
+n = 9:2:19; 
+% n = 11:1:19; 
+% tof_peak = [1082, 793, 687, 610, 553, 510]-t0; 
+tof_peak = [1256 1030 892 804 734 684 639 604 573 1424 1118 946 838 763 707 657 619 585]-t0;
+tof_fitvar = 1./tof_peak.^2; 
+IP = 9.3; 
+% En_X = n*(1240/810)-IP; 
+% En_X = [calibEnergy n*(1240/810)-IP]; 
+En_X = calibEnergy; 
+
+A = polyfit(tof_fitvar, En_X, 1); 
+xFit = (1:1:1000)*(tof_fitvar(end)-tof_fitvar(1))/1000 + tof_fitvar(1); 
+yFit = polyval(A, xFit);
+
+A = fliplr(A); 
+
+%convert the ToF spectrum to energy (linear energy scale)
+[C,E]=Convert_Eng_V2(1:length(HistTotSum(:,1)),HistTotSum,[t0, A] , E_vec);
+[Cf,Ef]=Convert_Eng_V2(1:length(HistTotSum_full(:,1)),HistTotSum_full,[t0, A] , E_vec);
+[Ce, Ee] = Convert_Eng_V2(1:length(HistTotSum_early(:,2)), HistTotSum_early, [t0, A], E_vec); 
+%store the converted Energy spectrum
+E_SpectraArray = C.'; 
+E_SpectraArray_early = Ce.'; 
+
+% % cut out zero energy region (save old...)
+% E_SpectraArray_early_full = E_SpectraArray_early; 
+% E = E(451:4748); 
+% E_SpectraArray = E_SpectraArray(451:4748,:); 
+% E_SpectraArray_early = E_SpectraArray_early(451:4748,:); 
+
+
 %% plot Kr Spectrum with harmonics
 fh = figure; 
 % stairs(E,C);
@@ -187,7 +223,7 @@ ylabel('Average counts');
 hold off; 
 
 %% FFT plotting
-IRwavelength = 810e-09; 
+% IRwavelength = 810e-09; 
 
 %figure out time and frequency axis for upcoming FFT
 dt = (stageTimes(end) - stageTimes(1))/(length(stageTimes));
@@ -195,7 +231,7 @@ TimeWindow = stageTimes(end) - stageTimes(1);
 sampleCount = numel(stageTimes);
 FreqWindow = 1/dt;
 df = 1/TimeWindow;
-freqScaling = (2.9979e8/IRwavelength);
+freqScaling = (2.9979e8/(wavelength*1e-09));
 freqAxis = (-sampleCount/2:1:(sampleCount/2 - 1)) * df / freqScaling;
 
 % tx = (stage_positions - mean(stage_positions(1:end))) * (1E3*2/0.29979); %Time Delay Label (in fs), assuming t0 is centered in the scan range. 
@@ -216,9 +252,10 @@ colorbar;
 hold off; 
 
 %% grab 2w data and Plot Result with Harmonics
+oneOmega_signal = E_SpectraArray(:,121); 
 twoOmega_signal = E_SpectraArray(:,130); 
 % IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.722];
-IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7, 15.8];
+IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7];
 
 fh = figure; 
 line(E, mean(abs(E_SpectraArray),2), 'Color', 'k', 'DisplayName', 'average spectra'); 
@@ -226,7 +263,7 @@ line(E, mean(abs(E_SpectraArray),2), 'Color', 'k', 'DisplayName', 'average spect
 % line(E, sum(abs(E_SpectraArray),2)/num_spectra - sum(abs(E_SpectraArray_early),2)/45, 'Color', 'k', 'DisplayName', 'difference spectra'); 
 xlabel('Electron Energy (eV)')
 
-axl = AddHarmonicAxis(fh,IP);
+axl = AddHarmonicAxis(fh,IP, wavelength);
 
 axl(1).XLabel.String = 'X (HOMO, average v=0-2)';
 axl(2).XLabel.String = 'b ^3\Pi ';
@@ -240,20 +277,75 @@ end
 % yyaxis left
 twoOmega_abs = abs(twoOmega_signal); 
 twoOmega_phi = angle(twoOmega_signal); 
+oneOmega_abs = abs(oneOmega_signal); 
+oneOmega_phi = angle(oneOmega_signal); 
 hold on; 
 plot(E, movmean(twoOmega_abs, 3), 'b-', 'DisplayName', '2w amplitude');
+plot(E, movmean(oneOmega_abs, 3), 'r-', 'DisplayName', '1w amplitude'); 
 yyaxis right
-plot(E, unwrap(twoOmega_phi), '-', 'DisplayName', '2w phase'); 
+plot(E, unwrap(twoOmega_phi), 'c-', 'DisplayName', '2w phase'); 
+plot(E, unwrap(oneOmega_phi), 'm-', 'DisplayName', '1w phase'); 
 legend; 
-
-yyaxis left
-line(E, mean(abs(E_SpectraArray),2), 'Color', 'k', 'DisplayName', 'average spectra'); 
 
 xlim([0 25]); 
 
 hold off;  
 
+%% check mystery peaks
 
+peak1 = sum(E_SpectraArray(find(E-3.765<0.005):find(E-3.582<0.005),:),1); 
+peak2 = sum(E_SpectraArray(find(E-4.05<0.005):find(E-3.87<0.005),:),1); 
+peak3 = sum(E_SpectraArray(find(E-4.368<0.005):find(E-4.175<0.005),:),1); 
+peak4 = sum(E_SpectraArray(find(E-1.284<0.005):find(E-1.173<0.005),:),1);
+
+peak1_s = sum(E_SpectraArray(find(E-3.765-1.53<0.005):find(E-3.582-1.53<0.005),:),1);
+peak2_s = sum(E_SpectraArray(find(E-4.05-1.53<0.005):find(E-3.87-1.53<0.005),:),1); 
+peak3_s = sum(E_SpectraArray(find(E-4.368-1.53<0.005):find(E-4.175-1.53<0.005),:),1); 
+
+peaks = [peak1; peak2; peak3; peak4; peak1_s; peak2_s; peak3_s]; 
+
+peaks_ifft = ifft(ifftshift(peaks, 2), [], 2); 
+
+noIR_peak = sum(E_SpectraArray_early(find(E-1.284<0.005):find(E-1.173<0.005),:),1);
+noIR_ifft = ifft(ifftshift(noIR_peak,2),[],2); 
+
+figure; hold on; 
+plot(abs(peaks_ifft(1,:)), 'DisplayName', 'peak1');
+plot(abs(peaks_ifft(2,:)), 'DisplayName', 'peak2');
+plot(abs(peaks_ifft(3,:)), 'DisplayName', 'peak3');
+plot(abs(peaks_ifft(4,:)), 'DisplayName', 'peak4');
+plot(abs(noIR_ifft), 'DisplayName', 'noIR'); 
+legend; 
+% figure; hold on; 
+% title('potential sidebands'); 
+% plot(abs(peaks_ifft(4,:)), 'DisplayName', 'peak1'); 
+% plot(abs(peaks_ifft(5,:)), 'DisplayName', 'peak1'); 
+% plot(abs(peaks_ifft(6,:)), 'DisplayName', 'peak1'); 
+% legend; 
+
+%% early vs. overlap
+
+IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7];
+
+fh = figure; hold on;
+% plot(E, sum(abs(E_SpectraArray),2)/sum(abs(E_SpectraArray(:))), 'k-', 'DisplayName', 'overlap'); 
+% plot(E, sum(abs(E_SpectraArray_early),2)/sum(abs(E_SpectraArray_early(:))), 'r-', 'DisplayName', 'not overlap'); 
+plot(E, sum(abs(E_SpectraArray),2)/sum(abs(E_SpectraArray(:))) - sum(abs(E_SpectraArray_early),2)/sum(abs(E_SpectraArray_early(:))), 'k-', 'DisplayName', 'XUV+IR - IR late'); 
+% plot(E, sum(abs(E_SpectraArray),2)/sum(abs(E_SpectraArray(:))) - movmean(abs(E_SpectraArray(:,end))/sum(abs(E_SpectraArray(:,end))),3), 'r-', 'DisplayName', 'XUV+IR - IR early'); 
+xlabel('Electron Energy (eV)')
+
+axl = AddHarmonicAxis(fh,IP,wavelength);
+
+axl(1).XLabel.String = 'X (HOMO, average v=0-2)';
+axl(2).XLabel.String = 'b ^3\Pi ';
+axl(3).XLabel.String = 'A^1 \Pi (v=0)';
+axl(4).XLabel.String = 'B ^1\Pi';
+
+for i = 1:numel(IP)
+    axl(i).XLabel.Position = [ -1.2903    0.99    0.0000];
+end
+ 
+hold off; 
 
 
 

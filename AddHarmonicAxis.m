@@ -1,11 +1,11 @@
-function axl = AddHarmonicAxis(fh,Ip)
+function axl = AddHarmonicAxis(fh,Ip, wavelength)
 
 ax1 = fh.Children; %Axis Handle
 POS = ax1.Position; %Position of Axis
 del = 0.07*POS(4);
 
 n=9:1:19; %Harmonics to plot
-lambda = 810; % Fundamental Wavelength
+lambda = wavelength; % Fundamental Wavelength
 % lambda = 2*810/1.778; 
 
 %Harmonic Labels
