@@ -1,0 +1,103 @@
+open('plotforAnna.fig'); 
+h = gcf; 
+
+%%
+h = findobj(gca,'Type','line'); 
+x=get(h,'Xdata'); 
+y=get(h,'Ydata'); 
+
+x1 = cell2mat(x(1)); 
+x2 = cell2mat(x(2)); 
+x3 = cell2mat(x(34)); 
+
+y1 = cell2mat(y(1)); 
+y2 = cell2mat(y(2)); 
+y3 = cell2mat(y(34)); 
+
+figure; hold on; 
+plot(x1, y1, 'DisplayName', 'x1'); 
+plot(x2, y2, 'DisplayName', 'x2'); 
+yyaxis('right')
+plot(x3, y3, 'DisplayName', 'x3'); 
+legend; 
+
+%% 331-389 triple peak 
+stpt = 331; 
+edpt = 368; 
+test_x = x2(stpt:edpt); 
+test_yamp = y2(stpt:edpt); 
+test_ypha = y3(stpt:edpt); 
+test_ycom = test_yamp .* exp(-1j*test_ypha); 
+
+%%
+xin = test_x; 
+yin = test_ycom; 
+peaks = [x2(345), x2(360)]; 
+guess = [4e-03, 2e-03, 0.3, 0.2, 0, 0, 0.09, 2.08, 0]; 
+
+[paramout, fval, x_out, y_out] = my2wfit(xin, yin, peaks, guess); 
+A1 = paramout(1); 
+A2 = paramout(2); 
+s1 = paramout(3);
+s2 = paramout(4); 
+% a1 = paramout(5); 
+% a2 = paramout(6); 
+a1 = 0; 
+a2 = 0; 
+b1 = paramout(7); 
+b2 = paramout(8); 
+o  = paramout(9); 
+
+x1 = peaks(1); 
+x2 = peaks(2); 
+
+y1 = abs(A1) * exp(1i*(a1*(x_out-x1)+b1)) .* exp(-(x_out-x1).^2/(2*s1)); 
+y2 = abs(A2) * exp(1i*(a2*(x_out-x2)+b2)) .* exp(-(x_out-x2).^2/(2*s2));
+
+% y1 = abs(A1) * exp(1i*(b1)) .* exp(-(x_out-x1).^2/(2*s1)); 
+% y2 = abs(A2) * exp(1i*(-pi/2*(x_out-x2)+b2)) .* exp(-(x_out-x2).^2/(2*s2));
+% y_out = y1+y2; 
+
+figure; 
+hold on; 
+yyaxis right; 
+scatter(xin, abs(yin), 'o'); plot(x_out, abs(y_out), '-'); 
+plot(x_out, abs(y1), '--'); plot(x_out, abs(y2), '-.'); 
+ylabel('amplitude'); 
+yyaxis left; 
+scatter(xin, angle(yin), '+'); plot(x_out, angle(y_out), '-'); 
+plot(x_out, angle(y1), '--'); plot(x_out, angle(y2), '-.'); 
+ylabel('phase'); 
+xlabel('energy'); 
+hold off; 
+
+% figure; hold on; 
+% scatter(test_x, imag(log(test_ycom))); 
+% yyaxis('right')
+% scatter(test_x, imag((test_ycom))); 
+
+
+%% fmincon
+xin = test_x; 
+yin = test_ycom; 
+guess = [4e-03, x2(345), 0.3, 0.09 : 2e-03, x2(360), 0.2, 2.08]; 
+
+%% test gaussian log...
+gauss_x = -50:1:50; 
+gauss_1 = 5*exp(-(gauss_x-20).^2/10^2); 
+gauss_2 = 6*exp(-(gauss_x).^2/15^2); 
+gauss_3 = 5*exp(-(gauss_x+10).^2/5^2); 
+
+gauss_tot = gauss_1 + gauss_2 + gauss_3; 
+
+figure; hold on; 
+plot(gauss_x, gauss_tot); 
+yyaxis('right'); 
+plot(gauss_x, log(gauss_tot)); 
+
+
+
+
+
+
+
