@@ -1,4 +1,4 @@
-function chi2=myfit(xin,yin,paramlist)
+function ls=myfit(xin,yin,paramlist)
     
     yfit = mydist(xin, paramlist); 
     
@@ -7,5 +7,5 @@ function chi2=myfit(xin,yin,paramlist)
 % 
 %     chi2 = sum(chi2_r + chi2_i); 
 
-    chi2 = sum((yin - yfit).*conj(yin-yfit)); 
+    ls = sum((yin - yfit).*conj(yin-yfit)./abs(yfit)); 
 end
