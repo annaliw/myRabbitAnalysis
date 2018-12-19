@@ -6,13 +6,18 @@ y3 = fliplr(twoOmega_phi.');
 
 %% expected peak positions 
 n = 9:1:19; 
-% IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7]; % n, IP should already be
+IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26];% n, IP should already be
 % defined in NO workspace
+state_widths = [0.45, 0.0889, 0.03, 0.03, 0.03, 0.03, 0.03];
+
+widths = zeros(length(IP), length(n)); 
 peaks = zeros(length(IP), length(n)); 
 for i=1:1:length(IP)
+    widths(i,:) = state_widths(i); 
     peaks(i,:) = n*(1240/810)-IP(i); 
 end
 peaks = peaks(:).'; 
+widths = widths(:).'; 
 
 %% fit section
 start = find(abs(x1-7.8)<0.02, 1); 
@@ -24,25 +29,27 @@ test_ycom = test_yamp .* exp(-1j*test_ypha);
 
 % [val, peaks_guess] = findpeaks(test_yamp, test_x, 'MinPeakDistance', 0.1); 
 peaks_guess = peaks; 
+widths_guess = widths; 
 remove = [find(peaks_guess < test_x(1)) find(peaks_guess > test_x(end))]; 
 peaks_guess(remove) = []; 
+widths_guess(remove) = []; 
 
 peak_ind = 1:1:length(peaks_guess); 
 for i=1:1:length(peaks_guess)
-    peak_ind(i) = find(abs(test_x - peaks_guess(i)) < 0.01, 1);  
+    peak_ind(i) = find(abs(test_x - peaks_guess(i)) < 0.02, 1);  
 end
 
 % form amplitude guess
 amp_guess = test_yamp(peak_ind); 
 
 % form peak width guess
-sig_guess = ones(1, length(peaks_guess))*0.3; 
+% sig_guess = ones(1, length(peaks_guess))*0.3; 
 
 % form phase guess
 pha_guess = test_ypha(peak_ind); 
 
 % guess = [-amp_guess; peaks_guess; sig_guess; -pha_guess].'; 
-guess = [-amp_guess; sig_guess; -pha_guess].'; 
+guess = [-amp_guess; -pha_guess].'; 
 
 
 
@@ -61,24 +68,23 @@ yin = [real(test_ycom) ; imag(test_ycom)].';
 % [paramout, fval] = fmincon(@(x) myfit(xin, yin, peaks_guess, x), guess); 
 % fun_abs = @(x,xdata) abs(mydist(xdata, peaks_guess, x));
 % fun_phi = @(x,xdata) angle(mydist(xdata, peaks_guess, x)); 
-fun = @(guess,xdata) mydist(xdata, peaks_guess, guess);
+fun = @(guess,xdata) mydist(xdata, peaks_guess, widths_guess, guess);
 options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
     'MaxFunctionEvaluations', 200000, 'MaxIterations', 10000);
 lb = zeros(size(guess));
 ub = zeros(size(guess)); 
 for i=1:1:length(peaks_guess)
-    lb(i,:) = [0, 0, -2*pi()]; 
-    ub(i,:) = [amp_guess(i)*1.2, 0.7, 2*pi()];
+    lb(i,:) = [0, -2*pi()]; 
+    ub(i,:) = [amp_guess(i)*1.2, 2*pi()];
 end
 % lb = []; 
 % ub = []; 
-
 [paramout, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
 
 % x = x_abs.*exp(1j*x_phi); 
 
 x_out = linspace(xin(1,1),xin(1,end),length(xin(1,:))*100);
-y_out = mydist(x_out, peaks_guess, paramout); 
+y_out = mydist(x_out, peaks_guess, widths_guess, paramout); 
 
 % figure; hold on; 
 % yyaxis('left')
@@ -107,7 +113,7 @@ axl(3).XLabel.String = 'B';
 axl(4).XLabel.String = 'C';
 
 hold on; 
-plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, paramout); 
+plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, widths_guess, paramout); 
 
 delete(tmp)
 
