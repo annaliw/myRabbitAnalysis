@@ -179,9 +179,11 @@ yFit = polyval(A, xFit);
 
 A = fliplr(A); 
 
+tobeconverted = HistTotSum; 
+
 %convert the ToF spectrum to energy (linear energy scale)
-[C,E]=Convert_Eng_V2(1:length(HistTotSum(:,1)),HistTotSum,[t0, A] , E_vec);
-[Cf,Ef]=Convert_Eng_V2(1:length(HistTotSum_full(:,1)),HistTotSum_full,[t0, A] , E_vec);
+[C,E]=Convert_Eng_V2(1:length(tobeconverted(:,1)),tobeconverted,[t0, A] , E_vec);
+% [Cf,Ef]=Convert_Eng_V2(1:length(HistTotSum_full(:,1)),HistTotSum_full,[t0, A] , E_vec);
 [Ce, Ee] = Convert_Eng_V2(1:length(HistTotSum_early(:,2)), HistTotSum_early, [t0, A], E_vec); 
 %store the converted Energy spectrum
 E_SpectraArray = C.'; 
@@ -255,7 +257,8 @@ hold off;
 oneOmega_signal = E_SpectraArray(:,121); 
 twoOmega_signal = E_SpectraArray(:,130); 
 % IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.722];
-IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7];
+% IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7];
+IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26]; %, 18.318, 21.722];%10.39,10.67]; %
 
 fh = figure; 
 line(E, mean(abs(E_SpectraArray),2), 'Color', 'k', 'DisplayName', 'average spectra'); 
@@ -265,10 +268,10 @@ xlabel('Electron Energy (eV)')
 
 axl = AddHarmonicAxis(fh,IP, wavelength);
 
-axl(1).XLabel.String = 'X (HOMO, average v=0-2)';
-axl(2).XLabel.String = 'b ^3\Pi ';
-axl(3).XLabel.String = 'A^1 \Pi (v=0)';
-axl(4).XLabel.String = 'B ^1\Pi';
+axl(1).XLabel.String = 'X (avg v. 2-4)';
+axl(2).XLabel.String = 'b ^3\Pi';
+% axl(3).XLabel.String = 'A^1\Pi';
+% axl(4).XLabel.String = 'B^1\Pi or c^3\Pi'; 
 
 for i = 1:numel(IP)
     axl(i).XLabel.Position = [ -1.2903    0.99    0.0000];
@@ -277,14 +280,14 @@ end
 % yyaxis left
 twoOmega_abs = abs(twoOmega_signal); 
 twoOmega_phi = angle(twoOmega_signal); 
-oneOmega_abs = abs(oneOmega_signal); 
-oneOmega_phi = angle(oneOmega_signal); 
+% oneOmega_abs = abs(oneOmega_signal); 
+% oneOmega_phi = angle(oneOmega_signal); 
 hold on; 
-plot(E, movmean(twoOmega_abs, 3), 'b-', 'DisplayName', '2w amplitude');
-plot(E, movmean(oneOmega_abs, 3), 'r-', 'DisplayName', '1w amplitude'); 
+plot(E, movmean(twoOmega_abs./(mean(abs(E_SpectraArray), 2)), 3), 'b-', 'DisplayName', '2w amplitude');
+% plot(E, movmean(oneOmega_abs, 3), 'r-', 'DisplayName', '1w amplitude'); 
 yyaxis right
-plot(E, unwrap(twoOmega_phi), 'c-', 'DisplayName', '2w phase'); 
-plot(E, unwrap(oneOmega_phi), 'm-', 'DisplayName', '1w phase'); 
+plot(E, twoOmega_phi, 'c-', 'DisplayName', '2w phase'); 
+% plot(E, unwrap(oneOmega_phi), 'm-', 'DisplayName', '1w phase'); 
 legend; 
 
 xlim([0 25]); 
