@@ -312,7 +312,7 @@ hold off;
 %% plotting in fourier space
 
 df = 1/(stageTimes(end)-stageTimes(1)); 
-freqAxis = (-(numel(stageTimes)-1)/2:1:(numel(stageTimes)-1)/2)*df*(810*10^(-9))/(3*10^8); 
+freqAxis = (-(numel(stageTimes)-1)/2:1:(numel(stageTimes)-1)/2)*df*; 
 
 
 

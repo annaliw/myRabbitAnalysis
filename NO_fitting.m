@@ -8,20 +8,24 @@ y3 = fliplr(twoOmega_phi.');
 n = 9:1:19; 
 IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26];% n, IP should already be
 % defined in NO workspace
-state_widths = [0.45, 0.0889, 0.03, 0.03, 0.03, 0.03, 0.03];
+% w_slopes = [0.45, 0.0889, 0.03, 0.03, 0.03, 0.03, 0.03];
+% w_slopes = [(0.33-0.18)/6 
+% w_offsets = [
 
-widths = zeros(length(IP), length(n)); 
+% IP = (9.553+9.839+10.121)/3; 
+
+% widths = zeros(length(IP), length(n)); 
 peaks = zeros(length(IP), length(n)); 
 for i=1:1:length(IP)
-    widths(i,:) = state_widths(i); 
+%     widths(i,:) = state_widths(i); 
     peaks(i,:) = n*(1240/810)-IP(i); 
 end
 peaks = peaks(:).'; 
-widths = widths(:).'; 
+% widths = widths(:).'; 
 
 %% fit section
-start = find(abs(x1-7.8)<0.02, 1); 
-stop = find(abs(x1-9.6)<0.02, 1); 
+start = find(abs(x1-11.24)<0.02, 1); 
+stop = find(abs(x1-12.07)<0.02, 1); 
 test_x = x1(start:stop); 
 test_yamp = y1(start:stop); 
 test_ypha = y3(start:stop); 
@@ -29,36 +33,36 @@ test_ycom = test_yamp .* exp(-1j*test_ypha);
 
 % [val, peaks_guess] = findpeaks(test_yamp, test_x, 'MinPeakDistance', 0.1); 
 peaks_guess = peaks; 
-widths_guess = widths; 
+% widths_guess = widths; 
 remove = [find(peaks_guess < test_x(1)) find(peaks_guess > test_x(end))]; 
 peaks_guess(remove) = []; 
-widths_guess(remove) = []; 
+% widths_guess(remove) = []; 
 
 peak_ind = 1:1:length(peaks_guess); 
 for i=1:1:length(peaks_guess)
-    peak_ind(i) = find(abs(test_x - peaks_guess(i)) < 0.02, 1);  
+    peak_ind(i) = find(abs(test_x - peaks_guess(i)) < 0.03, 1);  
 end
 
 % form amplitude guess
 amp_guess = test_yamp(peak_ind); 
 
 % form peak width guess
-% sig_guess = ones(1, length(peaks_guess))*0.3; 
+sig_guess = ones(1, length(peaks_guess))*0.3; 
 
 % form phase guess
 pha_guess = test_ypha(peak_ind); 
 
 % guess = [-amp_guess; peaks_guess; sig_guess; -pha_guess].'; 
-guess = [-amp_guess; -pha_guess].'; 
+guess = [-amp_guess; sig_guess; -pha_guess].'; 
 
 
 
 %% fmincon
 xin = test_x;  
 yin_abs = test_yamp;
-yin_phi = test_ypha; 
-% yin = [yin_abs ; yin_phi].'; 
-yin = [real(test_ycom) ; imag(test_ycom)].'; 
+yin_phi = unwrap(test_ypha); 
+yin = [yin_abs ; yin_phi].'; 
+% yin = [real(test_ycom) ; imag(test_ycom)].'; 
 
 % lb = ones([1 length(guess(1,:))])*0.15e-03; 
 % ub = ones([1 length(guess(1,:))])*0.5e-03;
@@ -68,23 +72,23 @@ yin = [real(test_ycom) ; imag(test_ycom)].';
 % [paramout, fval] = fmincon(@(x) myfit(xin, yin, peaks_guess, x), guess); 
 % fun_abs = @(x,xdata) abs(mydist(xdata, peaks_guess, x));
 % fun_phi = @(x,xdata) angle(mydist(xdata, peaks_guess, x)); 
-fun = @(guess,xdata) mydist(xdata, peaks_guess, widths_guess, guess);
+fun = @(guess,xdata) mydist(xdata, peaks_guess, guess);
 options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
     'MaxFunctionEvaluations', 200000, 'MaxIterations', 10000);
 lb = zeros(size(guess));
 ub = zeros(size(guess)); 
-for i=1:1:length(peaks_guess)
-    lb(i,:) = [0, -2*pi()]; 
-    ub(i,:) = [amp_guess(i)*1.2, 2*pi()];
-end
-% lb = []; 
-% ub = []; 
+% for i=1:1:length(peaks_guess)
+%     lb(i,:) = [0, -2*pi()]; 
+%     ub(i,:) = [amp_guess(i)*1.2, 2*pi()];
+% end
+lb = []; 
+ub = []; 
 [paramout, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
 
 % x = x_abs.*exp(1j*x_phi); 
 
 x_out = linspace(xin(1,1),xin(1,end),length(xin(1,:))*100);
-y_out = mydist(x_out, peaks_guess, widths_guess, paramout); 
+y_out = mydist(x_out, peaks_guess, paramout); 
 
 % figure; hold on; 
 % yyaxis('left')
@@ -99,23 +103,25 @@ y_out = mydist(x_out, peaks_guess, widths_guess, paramout);
 
 %%
 
-yfit = y_out(:,1) + 1j*y_out(:,2); 
-yfit_abs = abs(yfit); 
-yfit_phi = -angle(yfit); 
+yfit_abs = y_out(:,1); 
+yfit_phi = y_out(:,2); 
+% yfit = y_out(:,1) + 1j*y_out(:,2); 
+% yfit_abs = abs(yfit); 
+% yfit_phi = -angle(yfit); 
 
 fh = figure;
-tmp = plot(xin, yin_abs); 
-axl = AddHarmonicAxis(fh,IP,810);
-
-axl(1).XLabel.String = 'X';
-axl(2).XLabel.String = 'A';
-axl(3).XLabel.String = 'B';
-axl(4).XLabel.String = 'C';
+% tmp = plot(xin, yin_abs); 
+% axl = AddHarmonicAxis(fh,IP,810);
+% 
+% axl(1).XLabel.String = 'X';
+% axl(2).XLabel.String = 'A';
+% axl(3).XLabel.String = 'B';
+% axl(4).XLabel.String = 'C';
 
 hold on; 
-plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, widths_guess, paramout); 
+plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, paramout); 
 
-delete(tmp)
+% delete(tmp)
 
 xlim([xin(1), xin(end)]); 
 
