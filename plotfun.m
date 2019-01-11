@@ -23,7 +23,7 @@ function trash = plotfun(xin, yin_abs, yin_phi, x_out, yout_abs, yout_phi, peaks
     
     xlim([x_out(1), x_out(end)])
     legend; 
-    xlabel('photoelectron energy (eV)'); 
+%     xlabel('photoelectron energy (eV)'); 
     
     trash=1; 
     

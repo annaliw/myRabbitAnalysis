@@ -6,8 +6,9 @@ y3 = fliplr(twoOmega_phi.');
 
 %% expected peak positions 
 n = 9:1:19; 
-IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26];% n, IP should already be
+% IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26];% n, IP should already be
 % defined in NO workspace
+IP = [(9.553+9.839+10.121)/3, 16.56, 18.318, 21.722]; 
 % w_slopes = [0.45, 0.0889, 0.03, 0.03, 0.03, 0.03, 0.03];
 % w_slopes = [(0.33-0.18)/6 
 % w_offsets = [
@@ -24,7 +25,7 @@ peaks = peaks(:).';
 % widths = widths(:).'; 
 
 %% fit section
-start = find(abs(x1-13.93)<0.02, 1); 
+start = find(abs(x1-10.56)<0.02, 1); 
 stop = find(abs(x1-20.16)<0.02, 1); 
 test_x = x1(start:stop); 
 test_yamp = y1(start:stop); 
@@ -60,7 +61,7 @@ guess = [amp_guess; sig_guess; pha_guess].';
 %% fmincon
 xin = test_x;  
 yin_abs = test_yamp;
-yin_phi = unwrap(test_ypha); 
+yin_phi = test_ypha; 
 yin = [yin_abs ; yin_phi].'; 
 % yin = [real(test_ycom) ; imag(test_ycom)].'; 
 
@@ -75,11 +76,11 @@ yin = [yin_abs ; yin_phi].';
 fun = @(guess,xdata) mydist(xdata, peaks_guess, guess);
 options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
     'MaxFunctionEvaluations', 200000, 'MaxIterations', 10000);
-lb = zeros(size(guess));
-ub = zeros(size(guess)); 
+% lb = zeros(size(guess));
+% ub = zeros(size(guess)); 
 % for i=1:1:length(peaks_guess)
-%     lb(i,:) = [0, -2*pi()]; 
-%     ub(i,:) = [amp_guess(i)*1.2, 2*pi()];
+%     lb(i,:) = [0, 0, -2*pi()]; 
+%     ub(i,:) = [amp_guess(i)*1.2, amp_guess(i)*0.1, 2*pi()];
 % end
 lb = []; 
 ub = []; 
@@ -110,9 +111,9 @@ yfit_phi = y_out(:,2);
 % yfit_phi = -angle(yfit); 
 
 fh = figure;
-% tmp = plot(xin, yin_abs); 
-% axl = AddHarmonicAxis(fh,IP,810);
-% 
+tmp = plot(xin, yin_abs); 
+axl = AddHarmonicAxis(fh,IP,810);
+
 % axl(1).XLabel.String = 'X';
 % axl(2).XLabel.String = 'A';
 % axl(3).XLabel.String = 'B';
@@ -121,9 +122,10 @@ fh = figure;
 hold on; 
 plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, paramout); 
 
-% delete(tmp)
+delete(tmp)
 
-xlim([xin(1), xin(end)]); 
+% xlim([xin(1), xin(end)]); 
+% xlabel('photoelectron energy (eV)'); 
 
 hold off; 
 
