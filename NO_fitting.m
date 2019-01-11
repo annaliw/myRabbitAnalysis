@@ -2,7 +2,8 @@
 x1 = fliplr(E); 
 y1 = fliplr(twoOmega_abs.')./fliplr((mean(abs(E_SpectraArray), 2)).'); 
 % y1 = fliplr(twoOmega_abs.'); 
-y3 = fliplr(twoOmega_phi.'); 
+y3 = mod(unwrap(fliplr(twoOmega_phi.')), 2*pi()); 
+% y3 = fliplr(twoOmega_phi.'); 
 
 %% expected peak positions 
 n = 9:1:19; 

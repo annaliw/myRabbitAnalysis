@@ -2,7 +2,7 @@
 x1 = fliplr(E); 
 y1 = fliplr(twoOmega_abs.')./fliplr((mean(abs(E_SpectraArray), 2)).'); 
 % y1 = fliplr(twoOmega_abs.'); 
-y3 = fliplr(twoOmega_phi.'); 
+y3 = mod(unwrap(fliplr(twoOmega_phi.')), 2*pi()); 
 
 %% expected peak positions 
 n = 9:1:19; 
@@ -25,8 +25,8 @@ peaks = peaks(:).';
 % widths = widths(:).'; 
 
 %% fit section
-start = find(abs(x1-9.118)<0.02, 1); 
-stop = find(abs(x1-10.52)<0.02, 1); 
+start = find(abs(x1-10.56)<0.02, 1); 
+stop = find(abs(x1-20.16)<0.02, 1); 
 test_x = x1(start:stop); 
 test_yamp = y1(start:stop); 
 test_ypha = y3(start:stop); 
@@ -80,7 +80,7 @@ options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
 % ub = zeros(size(guess)); 
 % for i=1:1:length(peaks_guess)
 %     lb(i,:) = [0, 0, -2*pi()]; 
-%     ub(i,:) = [amp_guess(i)*1.2, amp_guess(i)*0.01, 2*pi()];
+%     ub(i,:) = [amp_guess(i)*1.2, amp_guess(i)*0.1, 2*pi()];
 % end
 lb = []; 
 ub = []; 
@@ -120,13 +120,12 @@ axl = AddHarmonicAxis(fh,IP,810);
 % axl(4).XLabel.String = 'C';
 
 hold on; 
-plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, paramout); 
+plotfun(xin, yin_abs, unwrap(yin_phi), x_out, yfit_abs, m(yfit_phi), peaks_guess, paramout); 
 
 delete(tmp)
 
 % xlim([xin(1), xin(end)]); 
 % xlabel('photoelectron energy (eV)'); 
-title('No a vibrational states'); 
 
 hold off; 
 
