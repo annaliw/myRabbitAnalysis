@@ -24,12 +24,12 @@ peaks = peaks(:).';
 % widths = widths(:).'; 
 
 %% fit section
-start = find(abs(x1-11.24)<0.02, 1); 
-stop = find(abs(x1-12.07)<0.02, 1); 
+start = find(abs(x1-13.93)<0.02, 1); 
+stop = find(abs(x1-20.16)<0.02, 1); 
 test_x = x1(start:stop); 
 test_yamp = y1(start:stop); 
 test_ypha = y3(start:stop); 
-test_ycom = test_yamp .* exp(-1j*test_ypha);
+test_ycom = test_yamp .* exp(1j*test_ypha);
 
 % [val, peaks_guess] = findpeaks(test_yamp, test_x, 'MinPeakDistance', 0.1); 
 peaks_guess = peaks; 
@@ -53,7 +53,7 @@ sig_guess = ones(1, length(peaks_guess))*0.3;
 pha_guess = test_ypha(peak_ind); 
 
 % guess = [-amp_guess; peaks_guess; sig_guess; -pha_guess].'; 
-guess = [-amp_guess; sig_guess; -pha_guess].'; 
+guess = [amp_guess; sig_guess; pha_guess].'; 
 
 
 
