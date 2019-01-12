@@ -2,7 +2,7 @@
 x1 = fliplr(E); 
 y1 = fliplr(twoOmega_abs.')./fliplr((mean(abs(E_SpectraArray), 2)).'); 
 % y1 = fliplr(twoOmega_abs.'); 
-y3 = mod(unwrap(fliplr(twoOmega_phi.')), 2*pi()); 
+y3 = mod(fliplr(twoOmega_phi.'), 2*pi()); 
 % y3 = fliplr(twoOmega_phi.'); 
 
 %% expected peak positions 
@@ -26,7 +26,7 @@ peaks = peaks(:).';
 % widths = widths(:).'; 
 
 %% fit section
-start = find(abs(x1-10.56)<0.02, 1); 
+start = find(abs(x1-10.65)<0.02, 1); 
 stop = find(abs(x1-20.16)<0.02, 1); 
 test_x = x1(start:stop); 
 test_yamp = y1(start:stop); 
@@ -86,6 +86,7 @@ options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
 lb = []; 
 ub = []; 
 [paramout, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
+paramout(:,3) = mod(paramout(:,3), 2*pi()); 
 
 % x = x_abs.*exp(1j*x_phi); 
 
@@ -121,7 +122,7 @@ axl = AddHarmonicAxis(fh,IP,810);
 % axl(4).XLabel.String = 'C';
 
 hold on; 
-plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, paramout); 
+plotfun(xin, yin_abs, mod(yin_phi, 2*pi()), x_out, yfit_abs, mod(yfit_phi, 2*pi()), peaks_guess, paramout); 
 
 delete(tmp)
 
