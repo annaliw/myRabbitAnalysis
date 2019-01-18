@@ -17,7 +17,7 @@ function trash = plotfun(xin, yin_abs, yin_phi, x_out, yout_abs, yout_phi, peaks
     for i=1:1:(length(peaks))
         tmp = mydist(x_out, peaks(i), paramout(i,:));
 %         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
-        tmp_phi = tmp(:,2); 
+        tmp_phi = mod(tmp(:,2), 2*pi); 
         plot(x_out, tmp_phi, '--', 'HandleVisibility', 'off'); 
     end
     

@@ -1,4 +1,4 @@
-function axl = AddHarmonicAxis(fh,Ip, wavelength)
+function axl = AddHarmonicAxis(fh, Ip, wavelength)
 
 ax1 = fh.Children; %Axis Handle
 POS = ax1.Position; %Position of Axis

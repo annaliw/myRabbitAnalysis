@@ -1,15 +1,23 @@
 % import NO workspace
-x1 = fliplr(E); 
-y1 = fliplr(twoOmega_abs.')./fliplr((mean(abs(E_SpectraArray), 2)).'); 
+% x1 = fliplr(E); 
+% y1 = fliplr(twoOmega_abs.')./fliplr((mean(abs(E_SpectraArray), 2)).'); 
+% % y1 = fliplr(twoOmega_abs.'); 
+% % y3 = fliplr(twoOmega_phi.'); 
+% y3 = mod(fliplr(twoOmega_phi.'), 2*pi); 
+
+x1 = E; 
+y1 = (twoOmega_abs.')./((mean(abs(E_SpectraArray), 2)).'); 
 % y1 = fliplr(twoOmega_abs.'); 
-y3 = mod(fliplr(twoOmega_phi.'), 2*pi()); 
 % y3 = fliplr(twoOmega_phi.'); 
+y3 = mod(twoOmega_phi.', 2*pi); 
 
 %% expected peak positions 
 n = 9:1:19; 
 % IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26];% n, IP should already be
 % defined in NO workspace
-IP = [(9.553+9.839+10.121)/3, 16.56, 18.318, 21.722]; 
+% IP = [(9.553+9.839+10.121+10.39)/4, 16.56, 18.318, 21.722-0.07, (15.667+15.816+15.970)/3]; 
+IP = [(9.553+9.839+10.121)/3, 16.56, 18.318, 21.722-0.07]; 
+% IP = [13.778+0.1, 17.706-0.2, 18.077, 19.394];  % CO2 IP
 % w_slopes = [0.45, 0.0889, 0.03, 0.03, 0.03, 0.03, 0.03];
 % w_slopes = [(0.33-0.18)/6 
 % w_offsets = [
@@ -26,11 +34,11 @@ peaks = peaks(:).';
 % widths = widths(:).'; 
 
 %% fit section
-start = find(abs(x1-10.65)<0.02, 1); 
-stop = find(abs(x1-20.16)<0.02, 1); 
+start = find(abs(x1-14.03)<0.05, 1); 
+stop = find(abs(x1-20.09)<0.05, 1); 
 test_x = x1(start:stop); 
 test_yamp = y1(start:stop); 
-test_ypha = y3(start:stop); 
+test_ypha = unwrap(y3(start:stop)); 
 test_ycom = test_yamp .* exp(1j*test_ypha);
 
 % [val, peaks_guess] = findpeaks(test_yamp, test_x, 'MinPeakDistance', 0.1); 
@@ -49,7 +57,7 @@ end
 amp_guess = test_yamp(peak_ind); 
 
 % form peak width guess
-sig_guess = ones(1, length(peaks_guess))*0.3; 
+sig_guess = ones(1, length(peaks_guess))*0.1; 
 
 % form phase guess
 pha_guess = test_ypha(peak_ind); 
@@ -86,7 +94,7 @@ options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
 lb = []; 
 ub = []; 
 [paramout, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
-paramout(:,3) = mod(paramout(:,3), 2*pi()); 
+paramout(:,3) = mod(paramout(:,3), 2*pi); 
 
 % x = x_abs.*exp(1j*x_phi); 
 
@@ -112,22 +120,34 @@ yfit_phi = y_out(:,2);
 % yfit_abs = abs(yfit); 
 % yfit_phi = -angle(yfit); 
 
-fh = figure;
-tmp = plot(xin, yin_abs); 
-axl = AddHarmonicAxis(fh,IP,810);
+
+fh = figure; 
+tmp = axes; 
+hold on; 
+axl = AddHarmonicAxis(fh, IP, 810);
 
 % axl(1).XLabel.String = 'X';
 % axl(2).XLabel.String = 'A';
 % axl(3).XLabel.String = 'B';
 % axl(4).XLabel.String = 'C';
 
+% delete(tmp); 
+
 hold on; 
-plotfun(xin, yin_abs, mod(yin_phi, 2*pi()), x_out, yfit_abs, mod(yfit_phi, 2*pi()), peaks_guess, paramout); 
 
-delete(tmp)
-
+% plotfun(xin, yin_abs, yin_phi, x_out, yfit_abs, yfit_phi, peaks_guess, paramout); 
 % xlim([xin(1), xin(end)]); 
 % xlabel('photoelectron energy (eV)'); 
+
+yyaxis left; 
+ylabel('$2\omega$ amplitude')
+plot(x1, y1); 
+yyaxis right; 
+ylabel('$2\omega$ phase')
+plot(x1, y3); 
+
+xlabel('photoelectron energy'); 
+xlim([x1(1) x1(end)]); 
 
 hold off; 
 

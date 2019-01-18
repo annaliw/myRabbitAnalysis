@@ -1,0 +1,4 @@
+function phi_cc = continuumphase(k, kappa, Z)
+    phi_cc = (2*kappa)^(1j*Z*kappa)/(2*k)^(1j*
+
+end

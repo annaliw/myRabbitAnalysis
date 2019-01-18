@@ -8,6 +8,6 @@ function yfit_mat = mydist(xdata, peaks, paramlist)
         yfit = yfit + param(1)*exp(-(xdata-peaks(i)).^2/(2*param(2)^2))*exp(1j*param(3)); 
     end
     
-    yfit_mat = [abs(yfit); unwrap(angle(yfit))].'; 
+    yfit_mat = [abs(yfit); angle(yfit)].'; 
 %     yfit_mat = [real(yfit); imag(yfit)].'; 
 end

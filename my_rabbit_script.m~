@@ -61,41 +61,6 @@ stageTimes = squeeze(stageTimes_array(:,46:end-1,1));
 % histTotSum = sum(HistTot_array, 3);
 % stageTimes = squeeze(stageTimes); 
 
-%% identify and compensate for stage drift
-% will compare location of peak (at tof bin 531 in first subscan) 
-
-% cut out window of ~20 tof bins
-window_center = 531; 
-window = 8; 
-histogram_windows = HistTot_array(window_center-window:window_center+window,:,:); 
-% integrate over window
-peak_vol = squeeze(sum(histogram_windows, 1)); 
-% fft wrt IR delay 
-twoOmega_location = 130; % from frequency axis calculated previously
-peak_fft = fftshift(fft(peak_vol, [], 1), 1); 
-peak_phase = angle(peak_fft(twoOmega_location, :)); 
-
-% % reference everything to first scan. subtract off drift. 
-% peak_phase_offset = peak_phase - peak_phase(1); 
-% peak_phase_offset = reshape(peak_phase_offset, [1, size(peak_phase_offset)]); 
-% % convert phase to time
-% peak_time_offset = peak_phase_offset/(2*2.9979e8/810e-09); 
-% stageTimes_array = stageTimes_array - peak_time_offset; 
-
-HistTot_fft = fftshift(fft(HistTot_array, [], 2), 2); 
-% HistTot_phase = squeeze(angle(HistTot_fft(:,130,:))); 
-HistTot_early_fft = fftshift(fft(HistTot_early, [], 2), 2); 
-% HistTot_early_phase = squeeze(angle(HistTot_early_fft(:,130,:))); 
-
-for ii=1:1:length(peak_phase)
-   HistTot_fft(:,:,ii) = HistTot_fft(:,:,ii).*exp(-1i*peak_phase(ii)); 
-   HistTot_early_fft(:,:,ii) = HistTot_early_fft(:,:,ii).*exp(-1i*peak_phase(ii)); 
-end
-% sum phase matched values
-HistTotSum = sum(HistTot_fft, 3); 
-HistTotSum_early = sum(HistTot_early_fft, 3); 
-
-clear('window', 'window_center','histogram_windows','histogram_windows','peak_vol','peak_fft', 'peak_phase'); 
 
 %% Convert to Energy after loading (no binning)
 t0=21; 
@@ -156,7 +121,7 @@ wavelength = 810;
 E_vec_max = 25; 
 dE = 2*(19*(1240/wavelength)-9.3)/510; 
 % E_vec_size = floor(E_vec_max/dE); 
-E_vec_size = 450; 
+E_vec_size = 400; 
 E_vec = [0, E_vec_max, E_vec_size];
 
 %get conversion parameters
@@ -178,12 +143,12 @@ A = fliplr(A);
 tobeconverted = HistTotSum; 
 
 %convert the ToF spectrum to energy (linear energy scale)
-[C,E]=Convert_Eng_V2(1:length(tobeconverted(:,1)),tobeconverted,[t0, A] , E_vec);
+[C,E]=Convert_Eng_20190116(1:length(tobeconverted(:,1)),tobeconverted,[t0, A] , E_vec);
 % [Cf,Ef]=Convert_Eng_V2(1:length(HistTotSum_full(:,1)),HistTotSum_full,[t0, A] , E_vec);
-[Ce, Ee] = Convert_Eng_V2(1:length(HistTotSum_early(:,2)), HistTotSum_early, [t0, A], E_vec); 
+% [Ce, Ee] = Convert_Eng_V2(1:length(HistTotSum_early(:,2)), HistTotSum_early, [t0, A], E_vec); 
 %store the converted Energy spectrum
 E_SpectraArray = C.'; 
-E_SpectraArray_early = Ce.'; 
+% E_SpectraArray_early = Ce.'; 
 
 % % cut out zero energy region (save old...)
 % E_SpectraArray_early_full = E_SpectraArray_early; 
@@ -191,8 +156,47 @@ E_SpectraArray_early = Ce.';
 % E_SpectraArray = E_SpectraArray(451:4748,:); 
 % E_SpectraArray_early = E_SpectraArray_early(451:4748,:); 
 
+figure;
+plot(E,abs(C(112,:)))
+
 clear('tobeconverted', 'C', 'Ce', 'Ee'); 
 
+
+%% identify and compensate for stage drift
+% will compare location of peak (at tof bin 531 in first subscan) 
+
+% cut out window of ~20 tof bins
+window_center = 531; 
+window = 8; 
+histogram_windows = HistTot_array(window_center-window:window_center+window,:,:); 
+% integrate over window
+peak_vol = squeeze(sum(histogram_windows, 1)); 
+% fft wrt IR delay 
+twoOmega_location = 130; % from frequency axis calculated previously
+peak_fft = fftshift(fft(peak_vol, [], 1), 1); 
+peak_phase = angle(peak_fft(twoOmega_location, :)); 
+
+% % reference everything to first scan. subtract off drift. 
+% peak_phase_offset = peak_phase - peak_phase(1); 
+% peak_phase_offset = reshape(peak_phase_offset, [1, size(peak_phase_offset)]); 
+% % convert phase to time
+% peak_time_offset = peak_phase_offset/(2*2.9979e8/810e-09); 
+% stageTimes_array = stageTimes_array - peak_time_offset; 
+
+HistTot_fft = fftshift(fft(HistTot_array, [], 2), 2); 
+% HistTot_phase = squeeze(angle(HistTot_fft(:,130,:))); 
+HistTot_early_fft = fftshift(fft(HistTot_early, [], 2), 2); 
+% HistTot_early_phase = squeeze(angle(HistTot_early_fft(:,130,:))); 
+
+for ii=1:1:length(peak_phase)
+   HistTot_fft(:,:,ii) = HistTot_fft(:,:,ii).*exp(-1i*peak_phase(ii)); 
+   HistTot_early_fft(:,:,ii) = HistTot_early_fft(:,:,ii).*exp(-1i*peak_phase(ii)); 
+end
+% sum phase matched values
+HistTotSum = sum(HistTot_fft, 3); 
+HistTotSum_early = sum(HistTot_early_fft, 3); 
+
+clear('window', 'window_center','histogram_windows','histogram_windows','peak_vol','peak_fft', 'peak_phase'); 
 
 %% plot Kr Spectrum with harmonics
 fh = figure; 
@@ -215,9 +219,9 @@ end
 %% grab 2w data and Plot Result with Harmonics
 oneOmega_signal = E_SpectraArray(:,121); 
 twoOmega_signal = E_SpectraArray(:,130); 
-% IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.722];
+IP = [(9.553+9.839+10.121)/3,16.56,18.319,21.722];
 % IP = [(9.262+9.553+9.839)/3,16.56,18.319,21.7];
-IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26]; %, 18.318, 21.722];%10.39,10.67]; %
+% IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26]; %, 18.318, 21.722];%10.39,10.67]; %
 
 fh = figure; 
 line(E, mean(abs(E_SpectraArray),2), 'Color', 'k', 'DisplayName', 'average spectra'); 
@@ -250,6 +254,7 @@ plot(E, twoOmega_phi, 'c-', 'DisplayName', '2w phase');
 legend; 
 
 xlim([0 25]); 
+title('400 bins energy conversion'); 
 
 hold off;  
 
@@ -312,7 +317,7 @@ hold off;
 %% plotting in fourier space
 
 df = 1/(stageTimes(end)-stageTimes(1)); 
-freqAxis = (-(numel(stageTimes)-1)/2:1:(numel(stageTimes)-1)/2)*df*; 
+freqAxis = (-(numel(stageTimes)-1)/2:1:(numel(stageTimes)-1)/2)*df*(810*10^(-9))/(3*10^8); 
 
 
 
