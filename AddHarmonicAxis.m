@@ -1,6 +1,5 @@
-function axl = AddHarmonicAxis(fh, Ip, wavelength)
+function axl = AddHarmonicAxis(ax1, Ip, wavelength)
 
-ax1 = fh.Children; %Axis Handle
 POS = ax1.Position; %Position of Axis
 del = 0.07*POS(4);
 
@@ -24,6 +23,7 @@ for i=1:numel(Ip)
     axl(i).YTick = 0;
     axl(i).YTickLabel = '';
     axl(i).XGrid = 'on';
+    axl(i).GridAlpha = 0.6; 
     %xlim(axl(i), [0,20]);
     
     POS(4) = POS(4)-del;

@@ -31,6 +31,7 @@ Eng = 0;
 for i = 0:numel(A)-1
     Eng = Eng + A(i+1) .* x.^i;
 end
+% Eng = energy_conversion(tof, t0, param(2:end)); 
 Eng(tof<=t_prompt)=0;
 
 %Make Linear Energy axis
