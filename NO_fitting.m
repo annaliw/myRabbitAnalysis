@@ -96,16 +96,7 @@ ub = [];
 [paramout, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
 paramout(:,3) = mod(paramout(:,3), 2*pi); 
 
-%%
-
-yfit_abs = y_out(:,1); 
-yfit_phi = y_out(:,2); 
-% yfit = y_out(:,1) + 1j*y_out(:,2); 
-% yfit_abs = abs(yfit); 
-% yfit_phi = -angle(yfit); 
-
-
-plotfun_fit(xin, yin, peaks_guess, paramout); 
+plotfun_fit(IP, wavelength, xin, yin, peaks_guess, paramout)
 
 
 %%

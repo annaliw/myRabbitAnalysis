@@ -5,7 +5,7 @@ clear all
 t0 = 21; 
 
 % data location
-folderString = '/Users/annaliw/code/KrCO2_scan/'; 
+folderString = '/Users/annaliw/code/NOscan/'; 
 saveString = 'extracted_data'; 
 
 % get data files
@@ -24,7 +24,8 @@ numberSubScans = length(dataList);
 
 % load in all the files 
 % count by 2 for Kr
-numFiles = ceil(numberSubScans/2); 
+% numFiles = ceil(numberSubScans/2); 
+numFiles = numberSubScans; 
 for ii=1:1:numFiles
     creationCheck = exist('HistTot'); 
     if creationCheck == 0 
@@ -32,7 +33,8 @@ for ii=1:1:numFiles
     else
         makeArrays = 0; 
     end
-    currentSubScan = dataList(2*ii-1); 
+%     currentSubScan = dataList(2*ii-1); 
+    currentSubScan = dataList(ii); 
     load(char(string(currentSubScan.folder) + '/' + string(currentSubScan.name))); 
     %SigSum is sum of anode signal
     %HistTot is the set of histograms
@@ -63,7 +65,16 @@ stageTimes = squeeze(stageTimes_array(:,46:end-1,1));
 % histTotSum = sum(HistTot_array, 3);
 % stageTimes = squeeze(stageTimes); 
 
-
+%% Calibrate to Kr
+% expected photoelectron energies
+calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00); ((11:1:19)*(1240/wavelength) - 14.665)];
+% corresponding peaks in Kr tof data (hand selected, super annoying)
+tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
+    585 619 657 706 762 840 946 1117 1426])); 
+E_vec = [0, 25, 500]; 
+% calibrate to Kr peaks
+[A, nshift, wavelength_mod] = Kr_EnergyCalibration(21, 810, '/Users/annaliw/code/KrCO2_scan/', E_vec);
+wavelength = wavelength_mod; 
 %% Convert to Energy after loading (no binning)
 t0=21; 
 wavelength = 810; 
@@ -105,60 +116,13 @@ for i=1:1:223
     E_SpectraArray(:,i) = -1/(2*A(2)) .* t.^3 .* HistTot_array(:,i).';  
 end
 
-%% Energy conversion (binning)
-wavelength = 805; 
-E_vec_max = 25; 
-dE = 2*(19*(1240/wavelength)-9.3)/510; 
-% E_vec_size = floor(E_vec_max/dE); 
-E_vec_size = 500; 
-E_vec = [0, E_vec_max, E_vec_size];
 
-t0=25; 
-
-% get conversion parameters
-calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00); ((11:1:19)*(1240/wavelength) - 14.665)];
-n = 9:2:19; 
-% tof_peak = fliplr(flipud([525 548 573 604 639 684 735 803 893 1034 1258; ...
-%     535 558 585 619 657 706 762 840 946 1117 1426])); 
-tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
-    585 619 657 706 762 840 946 1117 1426])); 
-tof_fitvar = 1./(tof_peak-t0).^2; 
-dE_over_dx = -0.665./(tof_fitvar(1,:) - tof_fitvar(2,:)); 
-midpt_x = (tof_fitvar(1,:) + tof_fitvar(2,:))/2;
-
-[paramout, S] = polyfit(midpt_x, dE_over_dx, 1); 
-[yout, delta] = polyval(paramout, midpt_x, S); 
-
-figure; hold on; 
-scatter(midpt_x, dE_over_dx, 'b'); 
-plot(midpt_x, yout, 'b'); 
-plot(midpt_x,yout+2*delta,'c--',midpt_x,yout-2*delta,'c--'); 
-legend('Data','Linear Fit','95% Prediction Interval'); 
-xlabel('x-midpoint'); 
-ylabel('\Delta E/\Delta x'); 
-hold off; 
-
-A = fliplr([paramout(1)/2 paramout(2) 0]); 
-
-% A = polyfit(tof_fitvar(2,:), calibEnergy(2,:), 1); 
-% A = fliplr(A); 
-
-% fun = @(guess,xdata) energy_conversion(xdata(2,:), t0, guess)-energy_conversion(xdata(1,:), t0, guess);
-% guess = [fliplr(polyfit(tof_fitvar(1,:), calibEnergy(1,:), 1))]; 
-% options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
-%     'MaxFunctionEvaluations', 200000, 'MaxIterations', 10000);
-% [paramout, resnorm]=lsqcurvefit(fun,guess,tof_peak,calibEnergy(1,:)-calibEnergy(2,:)); 
-% 
-% figure; hold on; 
-% scatter(tof_peak(:), calibEnergy(:), 'b'); 
-% scatter(tof_peak(:), energy_conversion(tof_peak(:), t0, paramout), 'r'); 
-% hold off; 
 
 %%
 tmp = reshape(HistTot_array, size(HistTot_array,1), []);
 %convert the ToF spectrum to energy (linear energy scale)
 [C,E]=Convert_Eng_V2(1:size(tmp,1), tmp, [t0, A] , E_vec);
-E_SpectraArray = reshape(C.', [E_vec_size size(HistTot_array,2) size(HistTot_array,3)]); 
+E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
 
 
 
@@ -166,7 +130,7 @@ E_SpectraArray = reshape(C.', [E_vec_size size(HistTot_array,2) size(HistTot_arr
 % will compare location of peak (at tof bin 531 in first subscan) 
 
 % cut out window of ~20 tof bins
-window_center = 59; 
+window_center = 69; 
 window = 3; 
 histogram_windows = E_SpectraArray(window_center-window:window_center+window,:,:); 
 % integrate over window
@@ -198,34 +162,31 @@ E_SpectraArray = sum(E_SpectraArray_fft, 3);
 
 % clear('window', 'window_center','histogram_windows','histogram_windows','peak_vol','peak_fft', 'peak_phase'); 
 
-%% plot Kr Spectrum with harmonics
-IP = [14.0, 14.665];
-mode='average'; 
-plotfun_rabbitspectrum(IP, 812, E, E_SpectraArray, mode); 
-
-%%
-tmp1 = A(2)*midpt_x + A(1); 
-tmp2 = A(1) + A(2)*tof_fitvar + A(3)*tof_fitvar.^2
-
-figure; scatter(midpt_x, tmp); title('x_m vs. \Delta E/\Delta x'); 
-
-figure; hold on; 
-s1 = scatter(tof_peak(:), tmp2(:)); s1.MarkerEdgeColor = 'r'; s1.DisplayName = 'fit'; 
-s2 = scatter(tof_peak(1,:), calibEnergy(1,:)); s2.MarkerEdgeColor = 'b'; s2.DisplayName = '14eV peaks'; 
-s3 = scatter(tof_peak(2,:), calibEnergy(2,:)); s3.MarkerEdgeColor = 'b'; s3.DisplayName = '14.6eV peaks'; 
-title('1/t^2 vs. E'); legend; 
-
-figure; scatter(midpt_x, tmp2(1,:)-tmp2(2,:)); title('x_m vs. \Delta E'); 
-
 
 %% grab 2w data and Plot Result with Harmonics
 oneOmega_signal = E_SpectraArray(:,121); 
 twoOmega_signal = E_SpectraArray(:,130); 
 % twoOmega_signal = twoOmega_810; 
-IP = [(9.553+9.839+10.121)/3,16.56,18.319,21.722];
+IP = [9.553,16.56,18.319,21.722];
+IP_label = ['X - HOMO', 'b^3\Pi', 'A^1\Sigma', 'c^3\Pi']; 
 % IP = [9.553 16.56 18.319 21.722]; 
 
-plotfun_rabbitspectrum(IP, 810, E, E_SpectraArray);
+plotfun_rabbitspectrum(nshift, IP, IP_label, wavelength, E, E_SpectraArray, 'twoOmega');
+
+%% redo wavelength calculation for this data (maybe different for Kr calibration set)
+Xpeaks = [14, 15, 16, 17, 18, 19; 11.7225, 13.2775, 14.7869, 16.2276, 17.8971, 19.3149]; 
+% [harmonic_lin,~,mu] = polyfit(Xpeaks(1,:), Xpeaks(2,:), 1); 
+harmonic_lin = polyfit(Xpeaks(1,:), Xpeaks(2,:), 1); 
+
+figure; hold on; 
+scatter(Xpeaks(1,:), Xpeaks(2,:)); 
+% plot(Xpeaks(1,:), polyval(harmonic_lin, Xpeaks(1,:), [], mu); 
+plot(Xpeaks(1,:), polyval(harmonic_lin, Xpeaks(1,:))); 
+
+wavelength = 1240/harmonic_lin(1); 
+IP = [9.5530, 17.7994, 18.551, 21.77]; 
+% nshift = (9:1:19)+harmonic_lin(2)/harmonic_lin(1); 
+plotfun_rabbitspectrum(9:1:19, IP, IP_label, wavelength, E, E_SpectraArray, 'twoOmega');
 
 %% check mystery peaks
 

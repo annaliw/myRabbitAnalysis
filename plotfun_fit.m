@@ -1,11 +1,11 @@
-function trash = plotfun_fit(IP, wavelength, xin, yin, peaks, paramout)
+function trash = plotfun_fit(n, IP, wavelength, xin, yin, peaks, paramout)
     % text and color settings
     text_size = 12; 
     line_weight = 1.5; 
     abs_color = [0 0 0.8]; 
     phi_color = [0 0.7 1]; 
     lgnd_pad = 1.4; 
-    lgnd_pos = 'southeast'; 
+    lgnd_pos = 'best'; 
     
     % plotting input
     yin_abs = yin(:,1); 
@@ -75,7 +75,7 @@ function trash = plotfun_fit(IP, wavelength, xin, yin, peaks, paramout)
 
 
     % harmonic labels
-    axl = AddHarmonicAxis(ax1,IP, wavelength);
+    axl = AddHarmonicAxis(ax1, n, IP, wavelength);
     axl(1).XLabel.String = 'X (avg v. 0-2)';
     axl(2).XLabel.String = 'b ^3\Pi';
     axl(3).XLabel.String = 'A^1\Pi';
