@@ -1,9 +1,9 @@
 function [A, nshift, wavelength_mod] = Kr_EnergyCalibration(t0, wavelength, folderString, E_vec)
-%     % debug input
-%     t0 = 21; 
-%     wavelength=810; 
-%     folderString = '/Users/annaliw/code/KrCO2_scan/';
-%     E_vec = [0, 25, 500]; 
+    % debug input
+    t0 = 21; 
+    wavelength=810; 
+    folderString = '/Users/annaliw/code/KrCO2_scan/';
+    E_vec = [0, 25, 500]; 
     
 
     E_vec_max = E_vec(1); 

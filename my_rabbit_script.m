@@ -2,7 +2,7 @@
 clear all 
 
 % time zero (take as parameter later)
-t0 = 21; 
+t0 = 25; 
 
 % data location
 folderString = '/Users/annaliw/code/NOscan/'; 
@@ -67,58 +67,26 @@ stageTimes = squeeze(stageTimes_array(:,46:end-1,1));
 
 %% Calibrate to Kr
 % expected photoelectron energies
-calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00); ((11:1:19)*(1240/wavelength) - 14.665)];
+wavelength=810; 
+calibEnergy = [((11:1:19)*(1240/wavelength) - 14.665); ((11:1:19)*(1240/wavelength) - 14)];
 % corresponding peaks in Kr tof data (hand selected, super annoying)
 tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
     585 619 657 706 762 840 946 1117 1426])); 
-E_vec = [0, 25, 500]; 
 % calibrate to Kr peaks
-[A, nshift, wavelength_mod] = Kr_EnergyCalibration(21, 810, '/Users/annaliw/code/KrCO2_scan/', E_vec);
-wavelength = wavelength_mod; 
-%% Convert to Energy after loading (no binning)
-t0=21; 
-wavelength = 810; 
-%get conversion parameters
-% calibEnergy = [((11:1:19)*(1239.84e-9/IRwavelength) - 14.00) ((11:1:19)*(1239.84e-9/IRwavelength) - 14.665)];
-calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00) ((11:1:19)*(1240/wavelength) - 14.665)];
-n = 9:2:19; 
-% n = 11:1:19; 
-% tof_peak = [1082, 793, 687, 610, 553, 510]-t0; 
-tof_peak = [1256 1030 892 804 734 684 639 604 573 1424 1118 946 838 763 707 657 619 585]-t0;
-tof_fitvar = 1./tof_peak.^2; 
-IP = 9.3; 
+t0=75; 
+A = ECalibrate(t0, [14.665 14], calibEnergy, tof_peak, 1);
+% wavelength = wavelength_mod; 
 
-A = polyfit(tof_fitvar, calibEnergy, 1); 
-xFit = (1:1:1000)*(tof_fitvar(end)-tof_fitvar(1))/1000 + tof_fitvar(1); 
-yFit = polyval(A, xFit);
+%% NO self calibrate
+wavelength=810; 
+t0=25; 
+IP = [9.553,16.56,18.319,21.722];
+calibEnergy = [((14:1:19)*(1240/wavelength)-IP(2)); ((14:1:19)*(1240/wavelength)-IP(1))];  
+tof_peak = [983 860 785 718 675 625; 646 611 579 553 530 510]; 
+A = ECalibrate(t0, [IP(2), IP(1)], calibEnergy, tof_peak, 1); 
 
-A = fliplr(A); 
-
-% %convert the ToF spectrum to energy (linear energy scale)
-% [C,E]=Convert_Eng_V2(1:length(HistTotSum(:,1)),HistTotSum,[t0, A] , E_vec);
-% %store the converted Energy spectrum
-% E_SpectraArray = C'; 
-
-% Convert tof -> energy no rebinning (nonlinear scale)
-tof = 1:1:8192; 
-t = (tof-t0); %Adjust for prompt time and convert to ns
-x = 1./t.^2;
-
-E = 0;
-for i = 0:numel(A)-1
-    E = E + A(i+1) .* x.^i;
-end
-E(tof<=t0)=0; 
-
-% compensate for change in variables 
-E_SpectraArray = zeros(size(HistTot_array)); 
-for i=1:1:223
-    E_SpectraArray(:,i) = -1/(2*A(2)) .* t.^3 .* HistTot_array(:,i).';  
-end
-
-
-
-%%
+%% Energy conversion (binning)
+E_vec = [0, 25, 500]; 
 tmp = reshape(HistTot_array, size(HistTot_array,1), []);
 %convert the ToF spectrum to energy (linear energy scale)
 [C,E]=Convert_Eng_V2(1:size(tmp,1), tmp, [t0, A] , E_vec);
@@ -130,7 +98,7 @@ E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array
 % will compare location of peak (at tof bin 531 in first subscan) 
 
 % cut out window of ~20 tof bins
-window_center = 69; 
+window_center = 71; 
 window = 3; 
 histogram_windows = E_SpectraArray(window_center-window:window_center+window,:,:); 
 % integrate over window
@@ -171,22 +139,25 @@ IP = [9.553,16.56,18.319,21.722];
 IP_label = ['X - HOMO', 'b^3\Pi', 'A^1\Sigma', 'c^3\Pi']; 
 % IP = [9.553 16.56 18.319 21.722]; 
 
-plotfun_rabbitspectrum(nshift, IP, IP_label, wavelength, E, E_SpectraArray, 'twoOmega');
+plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, E_SpectraArray, 'twoOmega');
 
 %% redo wavelength calculation for this data (maybe different for Kr calibration set)
 Xpeaks = [14, 15, 16, 17, 18, 19; 11.7225, 13.2775, 14.7869, 16.2276, 17.8971, 19.3149]; 
+bpeaks = [14, 15, 16, 17, 18, 19; 4.9667, 6.4476, 7.9929, 9.4416, 10.9547, 12.5322]; 
 % [harmonic_lin,~,mu] = polyfit(Xpeaks(1,:), Xpeaks(2,:), 1); 
-harmonic_lin = polyfit(Xpeaks(1,:), Xpeaks(2,:), 1); 
+fitx = [Xpeaks(1,:), bpeaks(1,:)]; 
+fity = [Xpeaks(2,:)+IP(1), bpeaks(2,:)+IP(2)]; 
+harmonic_lin = polyfit(fitx, fity, 1); 
 
 figure; hold on; 
-scatter(Xpeaks(1,:), Xpeaks(2,:)); 
-% plot(Xpeaks(1,:), polyval(harmonic_lin, Xpeaks(1,:), [], mu); 
-plot(Xpeaks(1,:), polyval(harmonic_lin, Xpeaks(1,:))); 
+scatter(fitx, fity); 
+plot(fitx, polyval(harmonic_lin, fitx));  
+hold off;
 
-wavelength = 1240/harmonic_lin(1); 
-IP = [9.5530, 17.7994, 18.551, 21.77]; 
-% nshift = (9:1:19)+harmonic_lin(2)/harmonic_lin(1); 
-plotfun_rabbitspectrum(9:1:19, IP, IP_label, wavelength, E, E_SpectraArray, 'twoOmega');
+wavelength_mod = 1240/harmonic_lin(1); 
+nshift = (9:1:19)+harmonic_lin(2)/harmonic_lin(1); 
+
+plotfun_rabbitspectrum(nshift, IP, IP_label, wavelength_mod, E, E_SpectraArray, 'twoOmega');
 
 %% check mystery peaks
 
@@ -278,5 +249,49 @@ xlim([0 25]);
 % delete(tmp); 
 
 hold off;  
+
+%% Convert to Energy after loading (no binning)
+t0=21; 
+wavelength = 810; 
+%get conversion parameters
+% calibEnergy = [((11:1:19)*(1239.84e-9/IRwavelength) - 14.00) ((11:1:19)*(1239.84e-9/IRwavelength) - 14.665)];
+calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00) ((11:1:19)*(1240/wavelength) - 14.665)];
+n = 9:2:19; 
+% n = 11:1:19; 
+% tof_peak = [1082, 793, 687, 610, 553, 510]-t0; 
+tof_peak = [1256 1030 892 804 734 684 639 604 573 1424 1118 946 838 763 707 657 619 585]-t0;
+tof_fitvar = 1./tof_peak.^2; 
+IP = 9.3; 
+
+A = polyfit(tof_fitvar, calibEnergy, 1); 
+xFit = (1:1:1000)*(tof_fitvar(end)-tof_fitvar(1))/1000 + tof_fitvar(1); 
+yFit = polyval(A, xFit);
+
+A = fliplr(A); 
+
+% %convert the ToF spectrum to energy (linear energy scale)
+% [C,E]=Convert_Eng_V2(1:length(HistTotSum(:,1)),HistTotSum,[t0, A] , E_vec);
+% %store the converted Energy spectrum
+% E_SpectraArray = C'; 
+
+% Convert tof -> energy no rebinning (nonlinear scale)
+tof = 1:1:8192; 
+t = (tof-t0); %Adjust for prompt time and convert to ns
+x = 1./t.^2;
+
+E = 0;
+for i = 0:numel(A)-1
+    E = E + A(i+1) .* x.^i;
+end
+E(tof<=t0)=0; 
+
+% compensate for change in variables 
+E_SpectraArray = zeros(size(HistTot_array)); 
+for i=1:1:223
+    E_SpectraArray(:,i) = -1/(2*A(2)) .* t.^3 .* HistTot_array(:,i).';  
+end
+
+
+
 
 
