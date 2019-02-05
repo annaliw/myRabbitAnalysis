@@ -13,12 +13,9 @@ if numel(param)>2
 elseif numel(param) == 2
     t_prompt = param(1);
     A = [0,param(2)];
-elseif numel(param) == 1
-    t_prompt = param(1);
-    % A = [0,6.9386E5];
-    A = [0.7980, 4.6454e+06, -2.5990e+10];
 else
-    t_prompt = 0;
+    t_prompt=param(1);
+    %A = [0,6.9386E5];
     A = [0.7980, 4.6454e+06, -2.5990e+10];
 end
 
@@ -31,7 +28,6 @@ Eng = 0;
 for i = 0:numel(A)-1
     Eng = Eng + A(i+1) .* x.^i;
 end
-% Eng = energy_conversion(tof, t0, param(2:end)); 
 Eng(tof<=t_prompt)=0;
 
 %Make Linear Energy axis
@@ -41,6 +37,9 @@ Energy = Emin:Estep:(Emax-Estep);
 
 %Overlap Matrix
 OM = zeros( numel(Energy), numel(Eng) );
+
+%repmat(Energy,numel(Eng),1);
+%repmat(Eng,1,numel(Energy));
 
 for ind1 = 1:numel(Energy)-1
     for ind2 = 1:numel(Eng)-1

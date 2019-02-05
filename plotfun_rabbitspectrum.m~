@@ -1,0 +1,69 @@
+function trash = plotfun_rabbitspectrum(IP, wavelength, E, E_SpectraArray, mode)
+
+    % text and color settings
+    text_size = 12; 
+    line_weight = 1.5; 
+    abs_color = [0 0 0.8]; 
+    phi_color = [0 0.7 1]; 
+    
+    % plotting inputs
+    oneOmega_signal = E_SpectraArray(:,121); 
+    twoOmega_signal = E_SpectraArray(:,130); 
+    twoOmega_abs = abs(twoOmega_signal); 
+    twoOmega_phi = angle(twoOmega_signal); 
+    % oneOmega_abs = abs(oneOmega_signal); 
+    % oneOmega_phi = angle(oneOmega_signal); 
+
+    fh = figure('Position', [10 10 400*2.5 400]); 
+    hold on; 
+    
+    if strcmp(mode,'twoOmega')==1
+        ax1 = gca; 
+        ax1_pos = ax1.Position; 
+        ax1.XColor = 'k'; 
+        ax1.XLabel.String = 'Photoelectron Energy (eV)'; 
+        ax1.YLabel.String = 'Amplitude (arbitrary units)';
+        ax1.FontSize = text_size; 
+        ax1.YColor = abs_color; 
+        ax1.LineWidth = line_weight*0.5; 
+        line(E, movmean(twoOmega_abs./(mean(abs(E_SpectraArray), 2)), 4), ...
+            'Parent', ax1, 'Color', abs_color, 'LineWidth', line_weight, ...
+            'DisplayName', '2w amplitude');
+        % plot(E, movmean(oneOmega_abs, 3), 'r-', 'DisplayName', '1w amplitude'); 
+
+        ax2 = axes('Position', ax1_pos, ...
+            'XAxisLocation', 'top', 'YAxisLocation', 'right', ...
+            'Color', 'none', 'LineWidth', line_weight*0.5); 
+        ax2.XColor = 'none'; 
+        ax2.YColor = phi_color; 
+        ax2.YLabel.String = 'phase (radians)'; 
+        ax2.FontSize = text_size; 
+        line(E, unwrap(twoOmega_phi), ...
+            'Parent', ax2, 'Color', phi_color, 'LineWidth', line_weight, ...
+            'DisplayName', '2w phase'); 
+        % plot(E, unwrap(oneOmega_phi), 'm-', 'DisplayName', '1w phase'); 
+    else
+        ax1 = gca; 
+        line(E, mean(abs(E_SpectraArray), 2), 'Color', 'k'); 
+    end
+    
+    axl = AddHarmonicAxis(ax1,IP, wavelength);
+
+    for i = 1:numel(IP)
+        axl(i).XLabel.Position = [ -1.9    0.99];
+        axl(i).FontSize = text_size*0.75; 
+        axl(i
+    end
+%     axl(4).XLabel.Position = [-1.9 14.8]; % figure out why this one is different
+%     hold on; 
+    
+    
+%     legend({}, 'FontSize', text_size); 
+
+    xlim([E(end) E(1)]); 
+
+    hold off;  
+    
+    trash=1; 
+    
+end
