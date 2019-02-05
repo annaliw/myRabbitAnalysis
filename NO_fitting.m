@@ -4,31 +4,33 @@
 % % y1 = fliplr(twoOmega_abs.'); 
 % % y3 = fliplr(twoOmega_phi.'); 
 % y3 = mod(fliplr(twoOmega_phi.'), 2*pi); 
+twoOmega_abs = abs(E_SpectraArray(:,130)); 
+twoOmega_phi = angle(E_SpectraArray(:,130)); 
 
-x1 = fliplr(E); 
-y1 = fliplr((twoOmega_abs.')./((mean(abs(E_SpectraArray), 2)).')); 
-% y1 = fliplr(twoOmega_abs.'); 
-% y3 = fliplr(twoOmega_phi.'); 
-y3 = fliplr(mod(twoOmega_phi.', 2*pi)); 
+% x1 = fliplr(E); 
+% y1 = fliplr((twoOmega_abs.')./((mean(abs(E_SpectraArray), 2)).')); 
+% % y1 = fliplr(twoOmega_abs.'); 
+% % y3 = fliplr(twoOmega_phi.'); 
+% y3 = fliplr(mod(twoOmega_phi.', 2*pi)); 
+
+x1 = E; 
+y1 = (twoOmega_abs.')./((mean(abs(E_SpectraArray), 2)).'); 
+y3 = mod(twoOmega_phi.', 2*pi); 
 
 %% expected peak positions 
-n = 9:1:19; 
-% IP = [(9.553+9.839+10.121)/3, 16.56, 15.667, 15.8, 15.9, 16.11, 16.26];% n, IP should already be
-% defined in NO workspace
-% IP = [(9.553+9.839+10.121+10.39)/4, 16.56, 18.318, 21.722-0.07, (15.667+15.816+15.970)/3]; 
-IP = [(9.553+9.839+10.121)/3, 16.56, 18.318, 21.722]; 
-% IP = [13.778+0.1, 17.706-0.2, 18.077, 19.394];  % CO2 IP
-% w_slopes = [0.45, 0.0889, 0.03, 0.03, 0.03, 0.03, 0.03];
-% w_slopes = [(0.33-0.18)/6 
-% w_offsets = [
-
-% IP = (9.553+9.839+10.121)/3; 
+% n = 9:1:19; 
+n = nshift+0.05; 
+wavelength = wavelength_mod; 
+% IP = [9.553, 16.56, 18.318, 21.722]; 
+% IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma", "c^3\Pi"]; 
+IP = [9.553, 16.56, 18.318]; 
+IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma"]; 
 
 % widths = zeros(length(IP), length(n)); 
 peaks = zeros(length(IP), length(n)); 
 for i=1:1:length(IP)
 %     widths(i,:) = state_widths(i); 
-    peaks(i,:) = n*(1240/810)-IP(i); 
+    peaks(i,:) = n*(1240/wavelength)-IP(i); 
 end
 peaks = peaks(:).'; 
 % widths = widths(:).'; 
@@ -96,7 +98,7 @@ ub = [];
 [paramout, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
 paramout(:,3) = mod(paramout(:,3), 2*pi); 
 
-plotfun_fit(IP, wavelength, xin, yin, peaks_guess, paramout)
+plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks_guess, paramout)
 
 
 %%

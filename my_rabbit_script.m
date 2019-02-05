@@ -79,7 +79,7 @@ A = ECalibrate(t0, [14.665 14], calibEnergy, tof_peak, 1);
 
 %% NO self calibrate
 wavelength=810; 
-t0=25; 
+t0=75; 
 IP = [9.553,16.56,18.319,21.722];
 calibEnergy = [((14:1:19)*(1240/wavelength)-IP(2)); ((14:1:19)*(1240/wavelength)-IP(1))];  
 tof_peak = [983 860 785 718 675 625; 646 611 579 553 530 510]; 
@@ -98,7 +98,7 @@ E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array
 % will compare location of peak (at tof bin 531 in first subscan) 
 
 % cut out window of ~20 tof bins
-window_center = 71; 
+window_center = 67; 
 window = 3; 
 histogram_windows = E_SpectraArray(window_center-window:window_center+window,:,:); 
 % integrate over window
@@ -136,8 +136,7 @@ oneOmega_signal = E_SpectraArray(:,121);
 twoOmega_signal = E_SpectraArray(:,130); 
 % twoOmega_signal = twoOmega_810; 
 IP = [9.553,16.56,18.319,21.722];
-IP_label = ['X - HOMO', 'b^3\Pi', 'A^1\Sigma', 'c^3\Pi']; 
-% IP = [9.553 16.56 18.319 21.722]; 
+IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma", "c^3\Pi"]; 
 
 plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, E_SpectraArray, 'twoOmega');
 

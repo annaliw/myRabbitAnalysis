@@ -1,4 +1,4 @@
-function trash = plotfun_fit(n, IP, wavelength, xin, yin, peaks, paramout)
+function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks, paramout)
     % text and color settings
     text_size = 12; 
     line_weight = 1.5; 
@@ -76,14 +76,10 @@ function trash = plotfun_fit(n, IP, wavelength, xin, yin, peaks, paramout)
 
     % harmonic labels
     axl = AddHarmonicAxis(ax1, n, IP, wavelength);
-    axl(1).XLabel.String = 'X (avg v. 0-2)';
-    axl(2).XLabel.String = 'b ^3\Pi';
-    axl(3).XLabel.String = 'A^1\Pi';
-    axl(4).XLabel.String = 'c^3\Pi'; 
-
     for i = 1:numel(IP)
         axl(i).XLabel.Position = [ -1.9    0.99];
         axl(i).FontSize = text_size*0.75; 
+        axl(i).XLabel.String = IP_label(i); 
     end
     ax1.XLim = [xout(1), xout(end)]; 
     ax1.YLim = [0, max(yout_abs)*lgnd_pad]; 

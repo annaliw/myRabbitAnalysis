@@ -27,6 +27,7 @@ function A = ECalibrate(t0, IP, calibEnergy, tof_peak, plotting)
     % plot fit results
     if plotting==1
         figure; hold on; 
+        ax = gca; ax.FontSize=12; 
         scatter(midpt_x, dE_over_dx, 'b'); 
         plot(midpt_x, yout, 'b'); 
         plot(midpt_x,yout+2*delta,'c--',midpt_x,yout-2*delta,'c--'); 
@@ -49,9 +50,10 @@ function A = ECalibrate(t0, IP, calibEnergy, tof_peak, plotting)
 
     if plotting==1
         figure; hold on; 
+        ax = gca; ax.FontSize=12; 
         s1 = scatter(tof_peak(1,:), calibEnergy(1,:)); s1.MarkerEdgeColor = 'b'; s1.DisplayName = 'b'; 
         s2 = scatter(tof_peak(2,:), calibEnergy(2,:)); s2.MarkerEdgeColor = 'r'; s2.DisplayName = 'X'; 
-        p1 = plot(peaksinorder, Eng(order)); p1.Color = 'c';   
+        p1 = plot(peaksinorder, Eng(order)); p1.Color = 'c'; p1.DisplayName = 'calibration';  
         title('Energy Calibration Result'); 
         xlabel('time of flight'); 
         ylabel('photoelectron energy'); 

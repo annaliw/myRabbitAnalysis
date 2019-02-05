@@ -60,7 +60,7 @@ function [A, nshift, wavelength_mod] = Kr_EnergyCalibration(t0, wavelength, fold
 %     E_vec = [0, E_vec_max, E_vec_size];
 %%
     % expected photoelectron energies
-    calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00); ((11:1:19)*(1240/wavelength) - 14.665)];
+    calibEnergy = [((11:1:19)*(1240/wavelength) - 14.665); ((11:1:19)*(1240/wavelength) - 14)];
     % corresponding peaks in Kr tof data (hand selected, super annoying)
     tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
         585 619 657 706 762 840 946 1117 1426])); 
@@ -93,7 +93,7 @@ function [A, nshift, wavelength_mod] = Kr_EnergyCalibration(t0, wavelength, fold
     % user input select reference peak
 %     figure; plot(E_SpectraArray(:,10,1)); 
 %     window_center = round(ginput); 
-    window_center = 59; 
+    window_center = 57; 
     window = 3; 
     histogram_windows = E_SpectraArray(window_center(1)-window:window_center(1)+window,:,:); 
     % integrate over window
@@ -110,27 +110,27 @@ function [A, nshift, wavelength_mod] = Kr_EnergyCalibration(t0, wavelength, fold
     E_SpectraArray = sum(E_SpectraArray_fft, 3); 
 %%
     % plot Kr Spectrum with harmonics
-    IP = [14.0, 14.665];
+    IP = [14.665, 14];
     IP_label = ["14.665eV", "14eV"]; 
     mode='average'; 
     n = 9:1:19; 
-%     plotfun_rabbitspectrum(n, IP, IP_label, 813, E, E_SpectraArray, mode); 
-
+    plotfun_rabbitspectrum(n, IP, IP_label, 810, E, E_SpectraArray, mode); 
+    
     % diagnostic plots
     tmp1 = A(3)*midpt_x + A(2); 
     tmp2 = A(1) + A(2)*tof_fitvar + A(3)*tof_fitvar.^2; 
     photon_energy(1,:) = tmp2(1,:)+14.665; 
     photon_energy(2,:) = tmp2(2,:)+14; 
 
-%     figure; hold on; scatter(midpt_x, tmp1); title('x_m vs. \Delta E/\Delta x'); 
-% 
-%     figure; hold on; 
-%     s1 = scatter(tof_peak(:), tmp2(:)); s1.MarkerEdgeColor = 'r'; s1.DisplayName = 'fit'; 
-%     s2 = scatter(tof_peak(1,:), calibEnergy(1,:)); s2.MarkerEdgeColor = 'b'; s2.DisplayName = '14eV peaks'; 
-%     s3 = scatter(tof_peak(2,:), calibEnergy(2,:)); s3.MarkerEdgeColor = 'b'; s3.DisplayName = '14.6eV peaks'; 
-%     title('1/t^2 vs. E'); legend; 
-% 
-%     figure; scatter(midpt_x, tmp2(1,:)-tmp2(2,:)); title('x_m vs. \Delta E'); 
+    figure; hold on; scatter(midpt_x, tmp1); title('x_m vs. \Delta E/\Delta x'); 
+
+    figure; hold on; 
+    s1 = scatter(tof_peak(:), tmp2(:)); s1.MarkerEdgeColor = 'r'; s1.DisplayName = 'fit'; 
+    s2 = scatter(tof_peak(1,:), calibEnergy(1,:)); s2.MarkerEdgeColor = 'b'; s2.DisplayName = '14eV peaks'; 
+    s3 = scatter(tof_peak(2,:), calibEnergy(2,:)); s3.MarkerEdgeColor = 'b'; s3.DisplayName = '14.6eV peaks'; 
+    title('1/t^2 vs. E'); legend; 
+
+    figure; scatter(midpt_x, tmp2(1,:)-tmp2(2,:)); title('x_m vs. \Delta E'); 
     
 % %% test harmonic drift compensation 
 %     n = 11:1:19;
