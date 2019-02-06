@@ -2,7 +2,7 @@
 clear all 
 
 % time zero (take as parameter later)
-t0 = 25; 
+t0 = 75; 
 
 % data location
 folderString = '/Users/annaliw/code/NOscan/'; 
@@ -22,10 +22,10 @@ numberSubScans = length(dataList);
 % hold off; 
 % % I will track a sideband that appears at tof bin 531 in the reference scan
 
-% load in all the files 
-% count by 2 for Kr
-% numFiles = ceil(numberSubScans/2); 
-numFiles = numberSubScans; 
+load in all the files 
+count by 2 for Kr
+numFiles = ceil(numberSubScans/2); 
+% numFiles = numberSubScans; 
 for ii=1:1:numFiles
     creationCheck = exist('HistTot'); 
     if creationCheck == 0 
@@ -33,8 +33,8 @@ for ii=1:1:numFiles
     else
         makeArrays = 0; 
     end
-%     currentSubScan = dataList(2*ii-1); 
-    currentSubScan = dataList(ii); 
+    currentSubScan = dataList(2*ii); 
+%     currentSubScan = dataList(ii); 
     load(char(string(currentSubScan.folder) + '/' + string(currentSubScan.name))); 
     %SigSum is sum of anode signal
     %HistTot is the set of histograms
@@ -93,7 +93,6 @@ tmp = reshape(HistTot_array, size(HistTot_array,1), []);
 E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
 
 
-
 %% identify and compensate for stage drift
 % will compare location of peak (at tof bin 531 in first subscan) 
 
@@ -135,8 +134,10 @@ E_SpectraArray = sum(E_SpectraArray_fft, 3);
 oneOmega_signal = E_SpectraArray(:,121); 
 twoOmega_signal = E_SpectraArray(:,130); 
 % twoOmega_signal = twoOmega_810; 
-IP = [9.553,16.56,18.319,21.722];
-IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma", "c^3\Pi"]; 
+% IP = [9.553,16.56,18.319,21.722];
+% IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma", "c^3\Pi"]; 
+IP = [9.262, 9.553, 9.839, 10.121, 10.39]; 
+IP_label = ["0", "1", "2", "3", "4"]; 
 
 plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, E_SpectraArray, 'twoOmega');
 

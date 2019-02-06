@@ -14,12 +14,13 @@ twoOmega_phi = angle(E_SpectraArray(:,130));
 % y3 = fliplr(mod(twoOmega_phi.', 2*pi)); 
 
 x1 = E; 
-y1 = (twoOmega_abs.')./((mean(abs(E_SpectraArray), 2)).'); 
+% y1 = (twoOmega_abs.')./((mean(abs(E_SpectraArray), 2)).'); 
+y1 = twoOmega_abs.'; 
 y3 = mod(twoOmega_phi.', 2*pi); 
 
 %% expected peak positions 
 % n = 9:1:19; 
-n = nshift+0.05; 
+n = nshift; 
 wavelength = wavelength_mod; 
 % IP = [9.553, 16.56, 18.318, 21.722]; 
 % IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma", "c^3\Pi"]; 
@@ -59,13 +60,14 @@ end
 amp_guess = test_yamp(peak_ind); 
 
 % form peak width guess
-sig_guess = ones(1, length(peaks_guess))*0.1; 
+% sig_guess = ones(1, length(peaks_guess))*0.1; 
 
 % form phase guess
 pha_guess = test_ypha(peak_ind); 
 
 % guess = [-amp_guess; peaks_guess; sig_guess; -pha_guess].'; 
-guess = [amp_guess; sig_guess; pha_guess].'; 
+guess = [amp_guess; peaks_guess; pha_guess].'; 
+width = 0.1; 
 
 
 
@@ -84,7 +86,7 @@ yin = [yin_abs ; yin_phi].';
 % [paramout, fval] = fmincon(@(x) myfit(xin, yin, peaks_guess, x), guess); 
 % fun_abs = @(x,xdata) abs(mydist(xdata, peaks_guess, x));
 % fun_phi = @(x,xdata) angle(mydist(xdata, peaks_guess, x)); 
-fun = @(guess,xdata) mydist(xdata, peaks_guess, guess);
+fun = @(guess,xdata) mydist(xdata, width, guess);
 options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
     'MaxFunctionEvaluations', 200000, 'MaxIterations', 10000);
 % lb = zeros(size(guess));
@@ -93,17 +95,18 @@ options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
 %     lb(i,:) = [0, 0, -2*pi()]; 
 %     ub(i,:) = [amp_guess(i)*1.2, amp_guess(i)*0.1, 2*pi()];
 % end
-lb = []; 
-ub = []; 
+lb = [zeros([size(guess,2),1]);   guess(:,2)-0.1; 0].'; 
+ub = [guess(:,1)*5; guess(:,2)+0.1; 2*pi].'; 
 [paramout, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
 paramout(:,3) = mod(paramout(:,3), 2*pi); 
 
-plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks_guess, paramout)
+plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, paramout)
 
 
-%%
-figure; hold on; 
-plotfun(xin, yin(:,1), yin(:,2), x_out, y_out(:,1), y_out(:,2), peaks_guess, paramout); 
+%% check found peak values (not useful....)
+diff = peaks_guess-paramout(:,2).'; 
+IPtest = IP-diff; 
+plotfun_rabbitspectrum(nshift, IPtest, IP_label, wavelength_mod, E, E_SpectraArray, 'twoOmega');; 
 
 
 %% window variation test

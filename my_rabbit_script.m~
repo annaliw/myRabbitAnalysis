@@ -2,7 +2,7 @@
 clear all 
 
 % time zero (take as parameter later)
-t0 = 25; 
+t0 = 75; 
 
 % data location
 folderString = '/Users/annaliw/code/NOscan/'; 
@@ -22,10 +22,10 @@ numberSubScans = length(dataList);
 % hold off; 
 % % I will track a sideband that appears at tof bin 531 in the reference scan
 
-% load in all the files 
-% count by 2 for Kr
-% numFiles = ceil(numberSubScans/2); 
-numFiles = numberSubScans; 
+load in all the files 
+count by 2 for Kr
+numFiles = ceil(numberSubScans/2); 
+% numFiles = numberSubScans; 
 for ii=1:1:numFiles
     creationCheck = exist('HistTot'); 
     if creationCheck == 0 
@@ -67,20 +67,23 @@ stageTimes = squeeze(stageTimes_array(:,46:end-1,1));
 
 %% Calibrate to Kr
 % expected photoelectron energies
-calibEnergy = [((11:1:19)*(1240/wavelength) - 14.00); ((11:1:19)*(1240/wavelength) - 14.665)];
+wavelength=810; 
+calibEnergy = [((11:1:19)*(1240/wavelength) - 14.665); ((11:1:19)*(1240/wavelength) - 14)];
 % corresponding peaks in Kr tof data (hand selected, super annoying)
 tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
     585 619 657 706 762 840 946 1117 1426])); 
 % calibrate to Kr peaks
-A = ECalibrate(21, wavelength, calibEnergy, tof_peak, 1);
-wavelength = wavelength_mod; 
+t0=75; 
+A = ECalibrate(t0, [14.665 14], calibEnergy, tof_peak, 1);
+% wavelength = wavelength_mod; 
 
 %% NO self calibrate
 wavelength=810; 
+t0=75; 
 IP = [9.553,16.56,18.319,21.722];
 calibEnergy = [((14:1:19)*(1240/wavelength)-IP(2)); ((14:1:19)*(1240/wavelength)-IP(1))];  
 tof_peak = [983 860 785 718 675 625; 646 611 579 553 530 510]; 
-A = ECalibrate(t0, wavelength, [IP(2), IP(1)], calibEnergy, tof_peak, 1); 
+A = ECalibrate(t0, [IP(2), IP(1)], calibEnergy, tof_peak, 1); 
 
 %% Energy conversion (binning)
 E_vec = [0, 25, 500]; 
@@ -90,12 +93,11 @@ tmp = reshape(HistTot_array, size(HistTot_array,1), []);
 E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
 
 
-
 %% identify and compensate for stage drift
 % will compare location of peak (at tof bin 531 in first subscan) 
 
 % cut out window of ~20 tof bins
-window_center = 69; 
+window_center = 67; 
 window = 3; 
 histogram_windows = E_SpectraArray(window_center-window:window_center+window,:,:); 
 % integrate over window
@@ -132,9 +134,10 @@ E_SpectraArray = sum(E_SpectraArray_fft, 3);
 oneOmega_signal = E_SpectraArray(:,121); 
 twoOmega_signal = E_SpectraArray(:,130); 
 % twoOmega_signal = twoOmega_810; 
-IP = [9.553,16.56,18.319,21.722];
-IP_label = ['X - HOMO', 'b^3\Pi', 'A^1\Sigma', 'c^3\Pi']; 
-% IP = [9.553 16.56 18.319 21.722]; 
+% IP = [9.553,16.56,18.319,21.722];
+% IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma", "c^3\Pi"]; 
+IP = [9.262, 9.553, 9.839, 10.121, 10.39]; 
+IP_label = ["0", "1", "2", "3", "4"]; 
 
 plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, E_SpectraArray, 'twoOmega');
 
@@ -148,11 +151,8 @@ harmonic_lin = polyfit(fitx, fity, 1);
 
 figure; hold on; 
 scatter(fitx, fity); 
-plot(fitx, polyval(harmonic_lin, fitx)); 
+plot(fitx, polyval(harmonic_lin, fitx));  
 hold off;
-
-harmonic_lin = polyfit(11:1:19, photon_energy(1,:), 1); 
-harmonic_sub = polyval(harmonic_lin, 11:1:19); 
 
 wavelength_mod = 1240/harmonic_lin(1); 
 nshift = (9:1:19)+harmonic_lin(2)/harmonic_lin(1); 

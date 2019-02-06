@@ -1,4 +1,4 @@
-function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks, paramout)
+function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, paramout)
     % text and color settings
     text_size = 12; 
     line_weight = 1.5; 
@@ -12,7 +12,7 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks, param
     yin_phi = mod(yin(:,2), 2*pi); 
 
     xout = linspace(xin(1,1),xin(1,end),length(xin(1,:))*100);
-    yout = mydist(xout, peaks, paramout); 
+    yout = mydist(xout, width, paramout); 
     yout_abs = yout(:,1); 
     yout_phi = mod(yout(:,2), 2*pi); 
 
@@ -36,8 +36,8 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks, param
     l1 = line(xout, yout_abs, 'Parent', ax1, ...
         'Color', abs_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
         'DisplayName', 'total amplitude fit'); 
-    for i=1:1:(length(peaks))
-        tmp = mydist(xout, peaks(i), paramout(i,:)); 
+    for i=1:1:(length(paramout(:,1)))
+        tmp = mydist(xout, width, paramout(i,:)); 
 %         tmp_abs = abs(tmp(:,1).*exp(1j*tmp(:,2))); 
         tmp_abs = tmp(:,1); 
         line(xout, tmp_abs, 'Parent', ax1, ...
@@ -61,8 +61,8 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks, param
     l2 = line(xout, yout_phi, 'Parent', ax2, ...
         'Color', phi_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
         'DisplayName', 'total phase fit'); 
-    for i=1:1:(length(peaks))
-        tmp = mydist(xout, peaks(i), paramout(i,:));
+    for i=1:1:(length(paramout(:,1)))
+        tmp = mydist(xout, width, paramout(i,:));
 %         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
         tmp_phi = mod(tmp(:,2), 2*pi); 
         line(xout, tmp_phi, 'Parent', ax2, ...
