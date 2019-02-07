@@ -19,8 +19,8 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramou
         yout = mydist_fixwidth(xout, fix, paramout, slope); 
     end
     yout_abs = yout(:,1); 
-%     yout_phi = mod(yout(:,2), 2*pi); 
-    yout_phi = yout(:,2); 
+    yout_phi = mod(yout(:,2), 2*pi); 
+%     yout_phi = yout(:,2); 
 
     
     fh = figure('Position', [10 600 560 400]); 
@@ -71,18 +71,18 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramou
     l2 = line(xout, yout_phi, 'Parent', ax2, ...
         'Color', phi_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
         'DisplayName', 'total phase fit'); 
-%     for i=1:1:(length(paramout(:,1)))
-%         if length(fix) > 1
-%             tmp = mydist_fixpeaks(xout, fix, paramout(i,:), slope); 
-%         else
-%             tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
-%         end
-% %         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
-%         tmp_phi = mod(tmp(:,2), 2*pi); 
-%         line(xout, tmp_phi, 'Parent', ax2, ...
-%             'Color', phi_color, 'LineStyle', '--', 'LineWidth', line_weight, ...
-%             'HandleVisibility', 'off'); 
-%     end
+    for i=1:1:(length(paramout(:,1)))
+        if length(fix) > 1
+            tmp = mydist_fixpeaks(xout, fix, paramout(i,:), slope); 
+        else
+            tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
+        end
+%         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
+        tmp_phi = mod(tmp(:,2), 2*pi); 
+        line(xout, tmp_phi, 'Parent', ax2, ...
+            'Color', phi_color, 'LineStyle', '--', 'LineWidth', line_weight, ...
+            'HandleVisibility', 'off'); 
+    end
     
     linkaxes([ax1,ax2],'x')
 %     xlabel('photoelectron energy (eV)'); 

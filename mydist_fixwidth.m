@@ -13,8 +13,9 @@ function yfit_mat = mydist_fixwidth(xdata, width, paramlist, slope)
             yfit = yfit + param(1)*exp(-(xdata-param(2)).^2/(2*width^2))...
                 .*exp(1j*param(3)); 
         else
+            slopevar = paramlist(1,4); 
             yfit = yfit + param(1)*exp(-(xdata-param(2)).^2/(2*width^2))...
-                .*exp(1j*(param(3)+param(4)*(xdata-param(2)))); 
+                .*exp(1j*(param(3)+slopevar*(xdata-param(2)))); 
         end
     end
     

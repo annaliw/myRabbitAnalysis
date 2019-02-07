@@ -11,8 +11,8 @@ y3 = mod(angle(restackedSpectra), 2*pi);
 
 %% expected peak positions 
 n=9:1:19; 
-IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206]; 
-IP_label = ["0", "1", "2", "3", "4", "5"]; 
+IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206 16.7461]; 
+IP_label = ["0", "1", "2", "3", "4", "5", "5.5"]; 
 
 % widths = zeros(length(IP), length(n)); 
 peaks = zeros(length(IP), length(n)); 
@@ -27,7 +27,7 @@ plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, restackedSpectra, 'twoOme
 start = find(abs(x1-in1(1))<0.05, 1); 
 stop = find(abs(x1-in2(1))<0.05, 1); 
 test_x = x1(start:stop); 
-test_yamp = y1(start:stop); 
+test_yamp = y1(start:stop);
 test_ypha = y3(start:stop); 
 test_ycom = test_yamp .* exp(1j*test_ypha);
 
@@ -53,7 +53,7 @@ sig_guess = ones(1, length(peaks_guess))*0.1;
 pha_guess = test_ypha(peak_ind); 
 
 % form slope guess (optional)
-slope_guess = zeros(size(peak_ind)) + 0.1; 
+slope_guess = zeros(size(peak_ind)) + 1; 
 %     slope_guess(end) = -0.4; 
 guess_fixwidth = [amp_guess; peaks_guess; pha_guess; slope_guess].'; 
 guess_fixpeaks = [amp_guess; sig_guess; pha_guess; slope_guess].'; 
@@ -64,15 +64,16 @@ width=0.1;
 %% fit using fixed peaks to get width estimate
 xin = test_x;  
 yin_abs = test_yamp;
-yin_phi = unwrap(test_ypha); 
+% yin_phi = unwrap(test_ypha); 
+yin_phi = test_ypha; 
 yin = [yin_abs ; yin_phi].'; 
 
 slope = 1; 
-variance = 0.002; 
+variance = 0.02; 
 meanValue = 0.01; 
 guess = guess_fixpeaks; 
-lb = [guess(:,1)*0, guess(:,2)-0.1, guess(:,3)-0.1, guess(:,4)*0]; 
-ub = [guess(:,1)*5, guess(:,2)+0.1, guess(:,3)+0.1, guess(:,4)+0.1]; 
+lb = [guess(:,1)*0.5, guess(:,2)-0.1, guess(:,3)-0.1, guess(:,4)*0]; 
+ub = [guess(:,1)*5, guess(:,2)+0.1, guess(:,3)+0.1, guess(:,4)*10]; 
 if slope==0
     guess = guess_fixwidth(:,1:3); 
     lb = lb(:,1:3); 
@@ -90,8 +91,8 @@ options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
 
 plotfun_fit(n, IP, IP_label, wavelength, xin, yin, peaks_guess, paramout_fixpeaks, slope); 
 
-%% fit using fixed peaks to get width estimate
-width = mean(paramout_fixpeaks(:,2)); 
+%% fit using fixed width and variable peak
+width = mean(paramout_fixpeaks(1:end-1,2)); 
 % yin(:,2) = unwrap(yin(:,2)); 
 
 
@@ -100,7 +101,7 @@ variance = 0.02;
 meanValue = 0.01; 
 guess = guess_fixwidth; 
 lb = [guess(:,1)*0, guess(:,2)-0.1, guess(:,3)-0.1, guess(:,4)*0]; 
-ub = [guess(:,1)*5, guess(:,2)+0.1, guess(:,3)+0.1, guess(:,4)+0.1]; 
+ub = [guess(:,1)*5, guess(:,2)+0.1, guess(:,3)+0.1, guess(:,4)*10]; 
 if slope==0
     guess = guess_fixwidth(:,1:3); 
     lb = lb(:,1:3); 
@@ -118,6 +119,7 @@ options = optimoptions('lsqcurvefit','Algorithm','levenberg-marquardt', ...
 % ub = []; 
 [paramout_fixwidth, resnorm]=lsqcurvefit(fun,guess,xin,yin,lb,ub,options); 
 paramout_fixwidth(:,3) = mod(paramout_fixwidth(:,3), 2*pi); 
+paramout_fixwidth(:,4) = paramout_fixwidth(1,4); 
 
 plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, paramout_fixwidth, slope); 
 [paramout_fixwidth(:,3) paramout_fixwidth(:,4)]
