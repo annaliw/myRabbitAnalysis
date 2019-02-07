@@ -1,4 +1,4 @@
-function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, paramout)
+function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramout, slope)
     % text and color settings
     text_size = 12; 
     line_weight = 1.5; 
@@ -9,12 +9,18 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, param
     
     % plotting input
     yin_abs = yin(:,1); 
-    yin_phi = mod(yin(:,2), 2*pi); 
+%     yin_phi = mod(yin(:,2), 2*pi); 
+    yin_phi = yin(:,2); 
 
     xout = linspace(xin(1,1),xin(1,end),length(xin(1,:))*100);
-    yout = mydist(xout, width, paramout); 
+    if length(fix) > 1
+        yout = mydist_fixpeaks(xout, fix, paramout, slope); 
+    else
+        yout = mydist_fixwidth(xout, fix, paramout, slope); 
+    end
     yout_abs = yout(:,1); 
-    yout_phi = mod(yout(:,2), 2*pi); 
+%     yout_phi = mod(yout(:,2), 2*pi); 
+    yout_phi = yout(:,2); 
 
     
     fh = figure('Position', [10 600 560 400]); 
@@ -37,7 +43,11 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, param
         'Color', abs_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
         'DisplayName', 'total amplitude fit'); 
     for i=1:1:(length(paramout(:,1)))
-        tmp = mydist(xout, width, paramout(i,:)); 
+        if length(fix) > 1
+            tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
+        else
+            tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
+        end
 %         tmp_abs = abs(tmp(:,1).*exp(1j*tmp(:,2))); 
         tmp_abs = tmp(:,1); 
         line(xout, tmp_abs, 'Parent', ax1, ...
@@ -61,14 +71,18 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, param
     l2 = line(xout, yout_phi, 'Parent', ax2, ...
         'Color', phi_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
         'DisplayName', 'total phase fit'); 
-    for i=1:1:(length(paramout(:,1)))
-        tmp = mydist(xout, width, paramout(i,:));
-%         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
-        tmp_phi = mod(tmp(:,2), 2*pi); 
-        line(xout, tmp_phi, 'Parent', ax2, ...
-            'Color', phi_color, 'LineStyle', '--', 'LineWidth', line_weight, ...
-            'HandleVisibility', 'off'); 
-    end
+%     for i=1:1:(length(paramout(:,1)))
+%         if length(fix) > 1
+%             tmp = mydist_fixpeaks(xout, fix, paramout(i,:), slope); 
+%         else
+%             tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
+%         end
+% %         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
+%         tmp_phi = mod(tmp(:,2), 2*pi); 
+%         line(xout, tmp_phi, 'Parent', ax2, ...
+%             'Color', phi_color, 'LineStyle', '--', 'LineWidth', line_weight, ...
+%             'HandleVisibility', 'off'); 
+%     end
     
     linkaxes([ax1,ax2],'x')
 %     xlabel('photoelectron energy (eV)'); 

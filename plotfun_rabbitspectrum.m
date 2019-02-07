@@ -1,5 +1,6 @@
-function trash = plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, E_SpectraArray, mode)
-
+function trash = plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, data, mode)
+    
+    checksize = size(data); 
     % text and color settings
     text_size = 12; 
     line_weight = 1.5; 
@@ -14,8 +15,12 @@ function trash = plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, E_Spectr
     if strcmp(mode,'twoOmega')==1
         
         % plotting inputs
-        oneOmega_signal = E_SpectraArray(:,121); 
-        twoOmega_signal = E_SpectraArray(:,130); 
+        if ismember(1, checksize)==0
+            oneOmega_signal = data(:,121); 
+            twoOmega_signal = data(:,130); 
+        else
+            twoOmega_signal = data; 
+        end
         twoOmega_abs = abs(twoOmega_signal); 
         twoOmega_phi = angle(twoOmega_signal); 
         % oneOmega_abs = abs(oneOmega_signal); 
@@ -50,7 +55,7 @@ function trash = plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, E_Spectr
         % plot(E, unwrap(oneOmega_phi), 'm-', 'DisplayName', '1w phase'); 
     else
         ax1 = gca; 
-        line(E, mean(abs(E_SpectraArray), 2), 'Color', 'k'); 
+        line(E, mean(abs(data), 2), 'Color', 'k'); 
         ax1.XLabel.String = 'photoelectron energy (eV)'; 
     end
     
@@ -68,6 +73,7 @@ function trash = plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, E_Spectr
 %     legend({}, 'FontSize', text_size); 
 
     xlim([min(E(end), E(1)) max(E(end),E(1))]); 
+    linkaxes([ax1,ax2],'x')
 
     hold off;  
     
