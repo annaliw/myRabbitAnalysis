@@ -1,176 +1,23 @@
 % load data into arrays, don't do anything else in this cell 
 clear all 
+[HistTot_array, stageTimes, freqAxis] = getrawdata('/Users/annaliw/code/KrCO2_scan/', 1); 
 
-% time zero (take as parameter later)
+%%
 t0 = 75; 
-
-% data location
-folderString = '/Users/annaliw/code/KrCO2_scan/'; 
-saveString = 'extracted_data'; 
-
-% get data files
-dataList = dir(fullfile(folderString, '*.mat'));
-numberSubScans = length(dataList);
-
-% % load a single scan for reference
-% currentSubScan = dataList(1); 
-% load(char(string(currentSubScan.folder) + '/' + string(currentSubScan.name))); 
-% % get delay averaged histogram (just a sum of all positions)
-% histSum = sum(HistTot,2)/length(stage_positions); 
-% figure; hold on; 
-% plot(histSum); plot(HistTot(:,end)); 
-% hold off; 
-% % I will track a sideband that appears at tof bin 531 in the reference scan
-
-% load in all the files 
-numFiles = numberSubScans; 
-for ii=1:1:numFiles
-    creationCheck = exist('HistTot'); 
-    if creationCheck == 0 
-        makeArrays = 1; 
-    else
-        makeArrays = 0; 
-    end
-    currentSubScan = dataList(ii); 
-    load(char(string(currentSubScan.folder) + '/' + string(currentSubScan.name))); 
-    %SigSum is sum of anode signal
-    %HistTot is the set of histograms
-    %stage_positions are the stage positions for each scan
-    if makeArrays == 1  
-        SigSum_array = zeros([size(SigSum), numFiles]); 
-        HistTot_array = zeros([size(HistTot), numFiles]); 
-        stagePositions_array = zeros([size(stage_positions), numFiles]); 
-    end
-    % saving each subscan data in an array
-    SigSum_array(:,:,ii) = SigSum; 
-    HistTot_array(:,:,ii) = HistTot; 
-    stagePositions_array(:,:,ii) = stage_positions; 
-end
-
-%% make stage times
-stage_times = (stage_positions*2*1e-3)/(2.9979e8);
-stageCenter = stage_times(round(length(stage_times)/2));
-stageTimes_array = (stagePositions_array*2*1e-3)/(2.9979e8) - stageCenter;
-
-
-%% trim off non-overlapped data 
-HistTot_early = HistTot_array(:,1:45,:); 
-stageTimes_early = squeeze(stageTimes_array(:,1:45,1));
-
-HistTot_array = HistTot_array(:,46:end-1,:); 
-stageTimes = squeeze(stageTimes_array(:,46:end-1,1));
-%% (or not...)
-HistTot_array = HistTot_array(:,1:end-1,:); 
-stageTimes = squeeze(stageTimes_array(:,1:end-1,1)); 
-
-%% plotting in fourier space
-
-df = 1/(stageTimes(end)-stageTimes(1)); 
-freqAxis = (-(numel(stageTimes)-1)/2:1:(numel(stageTimes)-1)/2)*df*(810*10^(-9))/(3*10^8); 
-
-%% Calibrate to Kr
-% expected photoelectron energies
-wavelength=810; 
-calibEnergy = [((11:1:19)*(1240/wavelength) - 14.665); ((11:1:19)*(1240/wavelength) - 14)];
-% corresponding peaks in Kr tof data (hand selected, super annoying)
-tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
-    585 619 657 706 762 840 946 1117 1426])); 
-% calibrate to Kr peaks
-t0=21; 
-A = ECalibrate(t0, [14.665 14], calibEnergy, tof_peak, 1);
-% wavelength = wavelength_mod; 
-
-%% NO self calibrate
-wavelength=810; 
-t0=75; 
-IP = [9.553,16.56,18.319,21.722];
-calibEnergy = [((14:1:19)*(1240/wavelength)-IP(2)); ((14:1:19)*(1240/wavelength)-IP(1))];  
-tof_peak = [983 860 785 718 675 625; 646 611 579 553 530 510]; 
-A = ECalibrate(t0, [IP(2), IP(1)], calibEnergy, tof_peak, 1); 
-
-%% Energy conversion (binning)
-E_vec = [0, 25, 500]; 
-tmp = reshape(HistTot_array, size(HistTot_array,1), []);
-%convert the ToF spectrum to energy (linear energy scale)
-[C,E]=Convert_Eng_V2(1:size(tmp,1), tmp, [t0, A] , E_vec);
-E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
-E_SpectraArray_noshift = E_SpectraArray; 
-
-%% identify and compensate for stage drift
-
-E_SpectraArray = E_SpectraArray_noshift(:,:,2:2:end); 
-E_SpectraArray_fft = fftshift(fft(E_SpectraArray, [], 2), 2); 
-twoOmega_location = 130; 
-twoOmega_signal = squeeze(E_SpectraArray_fft(:,twoOmega_location,:)); 
-% cut out window of ~6 tof bins
-% sideband_list = [(12:2:18)*1240/810 - 13.778, (12:2:18)*1240/810 - 17.706];
-sideband_list = [16*1240/810-13.778]; 
-peak_phase = 0; 
-for i=1:1:length(sideband_list)
-    [~, index] = min(abs(E - sideband_list(i)));
-    window_center = index; 
-    window = 3; 
-    histogram_windows = twoOmega_signal((window_center-window):(window_center+window),:); 
-    % integrate over window
-    peak_phase = peak_phase + squeeze(sum(histogram_windows, 1)); 
-    % % fft wrt IR delay 
-    % peak_fft = fftshift(fft(peak_vol, [], 1), 1); 
-    % peak_phase = angle(peak_fft(twoOmega_location, :)); 
-end
-
-peak_phase = angle(peak_phase); 
-
-for ii=1:1:length(peak_phase)
-   E_SpectraArray_fft(:,:,ii) = E_SpectraArray_fft(:,:,ii).*exp(-1j*peak_phase(ii)); 
-end
-% sum phase matched values
-E_SpectraArray = sum(E_SpectraArray_fft, 3); 
-
-% for ii=1:1:length(peak_phase)
-%     twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*peak_phase(ii)); 
-% end
-% twoOmega_signal = sum(twoOmega_signal, 2); 
-
-% clear('window', 'window_center','histogram_windows','histogram_windows','peak_vol','peak_fft', 'peak_phase'); 
-%% Andrei additions
-E_SpectraArray = E_SpectraArray_noshift(:,:,2:2:end); 
-E_SpectraArray_fft = fftshift(fft(E_SpectraArray, [], 2), 2); 
-summedVec = zeros(size(squeeze(E_SpectraArray_fft(:,131,1))));
-
-for ii=1:1:length(peak_phase)
-   summedVec = summedVec + squeeze(E_SpectraArray_fft(:,131,ii)).*exp(-1j*peak_phase(ii)); 
-   E_SpectraArray_fft(:,:,ii) = E_SpectraArray_fft(:,:,ii).*exp(-1i*peak_phase(ii)); 
-end
-% sum phase matched values
-E_SpectraArray = sum(E_SpectraArray_fft, 3); 
-
-figure;
-clf;
-hold on;
-plot(abs(summedVec));
-yyaxis right
-plot(unwrap(angle(summedVec)));
-
-figure;
-clf;
-hold on;
-plot(abs(E_SpectraArray(:,131)));
-yyaxis right
-plot(unwrap(angle(E_SpectraArray(:,131))));
-
-%% grab 2w data and Plot Result with Harmonics
-oneOmega_signal = E_SpectraArray(:,121); 
-twoOmega_signal = E_SpectraArray(:,twoOmega_location); 
-% twoOmega_signal = twoOmega_810; 
-% IP = [9.553,16.56,18.319,21.722];
-% IP_label = ["X HOMO", "b^3\Pi", "A^1\Sigma", "c^3\Pi"]; 
-% IP = [9.262, 9.553, 9.839, 10.121, 10.39]; 
-% IP_label = ["0", "1", "2", "3", "4"]; 
+wavelength = 810; 
 IP = [13.778, 17.706, 18.077, 19.394]; 
 IP_label = ["X", "A", "B", "C"]; 
-% IP = [14, 14.665]; 
-% IP_label = ["14eV", "14.665eV"]; 
-plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, E_SpectraArray, 'twoOmega');
+calibType = 'Kr'; 
+E_vec = [0 25 500]; % need to add no binning option to get2wdata
+alternate = [2, 2]; % right now there are two optional variables in get2wdata. 
+                    % if plotting is used but not alternate it will not
+                    % work. Need both or neither. Fix this. 
+plotting = 0; 
+
+
+[E, E_SpectraArray, twoOmega_signal] = get2wdata(HistTot_array, t0, IP, calibType, E_vec, alternate, plotting); 
+
+plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, twoOmega_signal, 'twoOmega');
 
 %% redo wavelength calculation for this data (maybe different for Kr calibration set)
 Xpeaks = [14, 15, 16, 17, 18, 19; 11.7225, 13.2775, 14.7869, 16.2276, 17.8971, 19.3149]; 
