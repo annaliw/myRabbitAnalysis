@@ -13,7 +13,8 @@ function yfit_mat = mydist_fixpeaks(xdata, peaks, paramlist, slope)
             yfit = yfit + param(1)*exp(-(xdata-peaks(i)).^2/(2*param(2)^2))...
                 .*exp(1j*param(3)); 
         else
-            slopevar = paramlist(1,4); 
+%             slopevar = paramlist(1,4); 
+            slopevar = param(4); 
             yfit = yfit + param(1)*exp(-(xdata-peaks(i)).^2/(2*param(2)^2))...
                 .*exp(1j*(param(3)+slopevar*(xdata-peaks(i)))); 
         end

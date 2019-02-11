@@ -1,6 +1,6 @@
 % load data into arrays, don't do anything else in this cell 
 clear all 
-[HistTot_array, stageTimes, freqAxis] = getrawdata('/Users/annaliw/code/KrCO2_scan/', 1); 
+[HistTot_array, stageTimes, freqAxis] = getrawdata('/Users/annaliw/code/KrCO2_scan/', 1, 810); 
 
 %%
 t0 = 75; 
@@ -9,7 +9,7 @@ IP = [13.778, 17.706, 18.077, 19.394];
 IP_label = ["X", "A", "B", "C"]; 
 calibType = 'Kr'; 
 E_vec = [0 25 500]; % need to add no binning option to get2wdata
-alternate = [2, 2]; % right now there are two optional variables in get2wdata. 
+alternate = [1, 2]; % right now there are two optional variables in get2wdata. 
                     % if plotting is used but not alternate it will not
                     % work. Need both or neither. Fix this. 
 plotting = 0; 
@@ -18,6 +18,8 @@ plotting = 0;
 [E, E_SpectraArray, twoOmega_signal] = get2wdata(HistTot_array, t0, IP, calibType, E_vec, alternate, plotting); 
 
 plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, twoOmega_signal, 'twoOmega');
+
+%% ADD SAVING
 
 %% redo wavelength calculation for this data (maybe different for Kr calibration set)
 Xpeaks = [14, 15, 16, 17, 18, 19; 11.7225, 13.2775, 14.7869, 16.2276, 17.8971, 19.3149]; 

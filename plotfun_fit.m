@@ -1,4 +1,8 @@
-function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramout, slope)
+function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramout, slope, peakflag)
+
+    if ~exist('peakflag', 'var')
+        peakflag = 0; 
+    end
     % text and color settings
     text_size = 12; 
     line_weight = 1.5; 
@@ -16,7 +20,11 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramou
     if length(fix) > 1
         yout = mydist_fixpeaks(xout, fix, paramout, slope); 
     else
-        yout = mydist_fixwidth(xout, fix, paramout, slope); 
+        if peakflag==1
+            yout = mydist_fixpeaks(xout, fix, paramout, slope); 
+        else
+            yout = mydist_fixwidth(xout, fix, paramout, slope); 
+        end
     end
     yout_abs = yout(:,1); 
     yout_phi = mod(yout(:,2), 2*pi); 
@@ -46,7 +54,11 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramou
         if length(fix) > 1
             tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
         else
-            tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
+            if peakflag==1
+                tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
+            else
+                tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
+            end
         end
 %         tmp_abs = abs(tmp(:,1).*exp(1j*tmp(:,2))); 
         tmp_abs = tmp(:,1); 
@@ -73,9 +85,13 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramou
         'DisplayName', 'total phase fit'); 
     for i=1:1:(length(paramout(:,1)))
         if length(fix) > 1
-            tmp = mydist_fixpeaks(xout, fix, paramout(i,:), slope); 
+            tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
         else
-            tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
+            if peakflag==1
+                tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
+            else
+                tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
+            end
         end
 %         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
         tmp_phi = mod(tmp(:,2), 2*pi); 
