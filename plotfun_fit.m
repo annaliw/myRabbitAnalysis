@@ -13,8 +13,8 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramou
     
     % plotting input
     yin_abs = yin(:,1); 
-%     yin_phi = mod(yin(:,2), 2*pi); 
-    yin_phi = yin(:,2); 
+    yin_phi = mod(yin(:,2), 2*pi); 
+%     yin_phi = yin(:,2); 
 
     xout = linspace(xin(1,1),xin(1,end),length(xin(1,:))*100);
     if length(fix) > 1
@@ -95,6 +95,7 @@ function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramou
         end
 %         tmp_phi = angle(tmp(:,1).*exp(1j*tmp(:,2))); 
         tmp_phi = mod(tmp(:,2), 2*pi); 
+%         tmp_phi = tmp(:,2); 
         line(xout, tmp_phi, 'Parent', ax2, ...
             'Color', phi_color, 'LineStyle', '--', 'LineWidth', line_weight, ...
             'HandleVisibility', 'off'); 
