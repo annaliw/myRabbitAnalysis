@@ -1,4 +1,4 @@
-function [Counts, Energy]=Convert_Eng_V2(tof,tcounts,param,Espec)
+function [Counts, Energy, OM]=Convert_Eng_V2(tof,tcounts,param,Espec)
 %[Counts, Energy]=Convert_Eng(tof,tcounts,[t_prompt,A],[Emin,Emax,nbins])
 %tof and t_prompt must be in same units.  
 %A is the conversion from time units to energy units 

@@ -102,7 +102,7 @@ paramout_fixwidth(:,3) = mod(paramout_fixwidth(:,3), 2*pi);
 plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, paramout_fixwidth, slope, 0); 
 [paramout_fixwidth(:,3) paramout_fixwidth(:,4)]
 
-%% save Argon results
+%% save Argon results, compare to H2 results
 Ar_phase = [12 14 16 18; 5.1850 5.8276 0.3966 1.4859; 1.0978 1.037 0.9039 0.4485]; 
 % H2_12_phase = [1 2 3 4 5; 4.7957 4.8650 4.6856 4.7727 4.6740; 0.0074 1.3941 0.0064 0.0210 0.7634]; 
 % H2_14_phase = [1 2 3 4 5; 5.4877 5.4769 5.4476 5.3375 5.3559; 1.6247 0.1434 -0.9406 -1.0431 0.2741]; 
@@ -187,29 +187,27 @@ end
 figure; hold on; 
 scatter(width_list, resnorm_ii(1,:)); 
 hold off; 
-%% single peak parameter variations
-% slope = 1; 
-% width = 0.08; 
-% data = [xin; yin_abs.*exp(1j*yin_phi)]; 
-% param = guess_fixwidth; 
-% range = [1, 0.1, 0.5, 2];  
-% testval = 1:1:20; 
-% varindex = 2; 
-% 
-% for ii = 1:1:length(range)
-%     range_ii = -range(ii):(2*range(ii)/length(testval)):range(ii); 
-%     for jj = 1:1:length(testval)
-%         param(:, varindex) = guess_fixwidth(:, varindex) + range_ii(ii)*guess_fixwidth(:, varindex); 
-%         testval(jj) = complex_lsq(data, width, param, slope, 0); 
-% end
-% 
-% figure; hold on; 
-% scatter(range*guess_fixwidth(:, varindex), testval); 
-% hold off; 
-% 
-% [M, I] = min(testval); 
-% param(:, varindex) = guess_fixwidth(:, varindex) + range(I)*guess_fixwidth(:, varindex); 
-% plotfun_fit(n, IP, IP_label, wavelength, xin, yin, width, param, slope, 0); 
+
+%% data fluctuation for error bars
+
+samples = 10; 
+
+width = 0.11; 
+slope = 1; 
+guess = guess_fixwidth; 
+fun = @(guess, data) complex_lsq(data, width, guess, slope, peakflag); 
+options = optimset('MaxFunEvals', 200000, 'MaxIter', 100000); 
+
+param_array = zeros([size(guess), samples]); 
+
+for ii=1:1:samples
+    data = [xin; yin_abs.*exp(1j*yin_phi)]; 
+    [paramout_fixwidth, fval, exitflag, output] = fminsearch(@(x) complex_lsq(data, width, x, slope, 0), guess, options); 
+    paramout_fixwidth(:,3) = mod(paramout_fixwidth(:,3), 2*pi); 
+    
+    param_array(:,:,ii) = paramout_fixwidth; 
+end
+
 
 %% fit using fixed peaks to get width estimate
 

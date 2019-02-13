@@ -1,0 +1,55 @@
+function [paramout, resnorm, exitflag, output] = complexfit_section(IP, IP_label, E, data, fitRegion, width, slope_guess, slope, peakflag)
+    % ONLY FIXED WIDTH VERSION OF FITTING
+    if ~exist('peakflag', 'var')
+        peakflag = 0; 
+    end
+    if ~exist('slopeflag', 'var')
+        slopeflag = 0; 
+    end
+    
+    % full data set-up
+    x = E; 
+    y_abs = abs(data); 
+    y_phi = mod(angle(data), 2*pi); 
+    n=9:1:19; 
+    peaks = zeros(length(IP), length(n)); 
+    for i=1:1:length(IP)
+    %     widths(i,:) = state_widths(i); 
+        peaks(i,:) = n*(1240/wavelength)-IP(i); 
+    end
+    peaks = peaks(:).'; 
+    
+    % fit section set-up
+    start = find(abs(x-fitRegion(1))<0.05, 1); 
+    stop = find(abs(x1-fitRegion(2))<0.05, 1); 
+    xin = x(start:stop); 
+    yin_abs = y_abs(start:stop); 
+    yin_phi = unwrap(y_phi(start:stop)); 
+%     test_ycom = test_yamp .* exp(1j*test_ypha);
+    yin = [yin_abs ; yin_phi].'; 
+
+    % find peaks and their indices
+    peaks_guess = peaks; 
+    remove = [find(peaks_guess < test_x(1)) find(peaks_guess > test_x(end))]; 
+    peaks_guess(remove) = []; 
+    peak_ind = 1:1:length(peaks_guess); 
+    for i=1:1:length(peaks_guess)
+        peak_ind(i) = find(abs(test_x - peaks_guess(i)) < 0.03, 1);  
+    end
+    % form amplitude guess
+    amp_guess = yin_abs(peak_ind); 
+    % form peak width guess
+    sig_guess = ones(1, length(peaks_guess))*0.1; 
+    % form phase guess
+    phi_guess = yin_phi(peak_ind); 
+    % form slope guess
+    slope_guess = zeros(size(peak_ind)) + slope_guess; 
+    % full guess matrix
+    guess_fixpeaks = [amp_guess; sig_guess; phi_guess; slope_guess].';
+    if slope==0
+        guess = guess_fixwidth(:,1:3); 
+        lb = lb(:,1:3); 
+        ub = ub(:,1:3); 
+    end
+
+end
