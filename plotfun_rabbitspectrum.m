@@ -1,4 +1,7 @@
-function trash = plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, data, mode)
+function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
+
+    global IP
+    global IP_label
     
     checksize = size(data); 
     % text and color settings

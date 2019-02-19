@@ -1,4 +1,7 @@
-function [E, E_SpectraArray, twoOmega_signal] = get2wdata(HistTot_array, t0, IP, calibType, E_vec, alternate, plotting)   
+function [E, E_SpectraArray, twoOmega_signal] = get2wdata(HistTot_array, t0, calibType, E_vec, alternate, plotting)   
+
+    global IP
+    global IP_label
     
     if ~exist('alternate', 'var')
         alternate = [1, 1]; 
@@ -18,7 +21,7 @@ function [E, E_SpectraArray, twoOmega_signal] = get2wdata(HistTot_array, t0, IP,
         tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
             585 619 657 706 762 840 946 1117 1426])); 
         % calibrate to Kr peaks
-        A = ECalibrate(t0, [IPcal(2), IPcal(1)], calibEnergy, tof_peak, plotting);
+        A = ECalibrate(t0, calibType, plotting);
         % wavelength = wavelength_mod; 
     elseif strcmp(calibType, 'NO') == 1
         % NO self calibrate

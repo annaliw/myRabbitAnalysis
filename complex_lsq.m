@@ -22,6 +22,7 @@ function leastsq = complex_lsq(data, fix, param, slope, peakflag)
     yout = yout(:,1).*exp(1j*yout(:,2)); 
     yout = yout.'; 
 
-    leastsq = sum((yin-yout).*conj(yin-yout)./abs(yout)); 
+%     leastsq = sum((yin-yout).*conj(yin-yout)./abs(yout)); 
+    leastsq = sum((real(yin)-real(yout)).^2) + sum((imag(yin)-imag(yout)).^2); 
 
 end

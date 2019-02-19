@@ -1,5 +1,8 @@
-function trash = plotfun_fit(n, IP, IP_label, wavelength, xin, yin, fix, paramout, slope, peakflag)
+function trash = plotfun_fit(n, wavelength, xin, yin, fix, paramout, slope, peakflag)
 
+    global IP
+    global IP_label 
+    
     if ~exist('peakflag', 'var')
         peakflag = 0; 
     end

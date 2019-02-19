@@ -13,7 +13,9 @@ y3 = mod(angle(restackedSpectra), 2*pi);
 n=9:1:19; 
 % IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206 16.7461]; 
 % IP_label = ["0", "1", "2", "3", "4", "5", "5.5"]; 
+global IP
 IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206]; 
+global IP_label
 IP_label = ["0", "1", "2", "3", "4", "5"]; 
 % IP = [15.76 27.63]; 
 % IP_label = ["S0", "P3/2"]; 
@@ -25,7 +27,7 @@ for i=1:1:length(IP)
     peaks(i,:) = n*(1240/wavelength)-IP(i); 
 end
 peaks = peaks(:).'; 
-plotfun_rabbitspectrum(n, IP, IP_label, wavelength, E, restackedSpectra, 'twoOmega'); 
+plotfun_rabbitspectrum(n, wavelength, E, restackedSpectra, 'twoOmega'); 
 %% fit section
 start = find(abs(x1-in1(1))<0.05, 1); 
 stop = find(abs(x1-in2(1))<0.05, 1); 

@@ -15,9 +15,9 @@ alternate = [1, 2]; % right now there are two optional variables in get2wdata.
 plotting = 0; 
 
 
-[E, E_SpectraArray, twoOmega_signal] = get2wdata(HistTot_array, t0, IP, calibType, E_vec, alternate, plotting); 
+[E, E_SpectraArray, twoOmega_signal] = get2wdata(HistTot_array, t0, calibType, E_vec, alternate, plotting); 
 
-plotfun_rabbitspectrum(9:1:19, IP, IP_label, 810, E, twoOmega_signal, 'twoOmega');
+plotfun_rabbitspectrum(9:1:19, 810, E, twoOmega_signal, 'twoOmega');
 
 %% ADD SAVING
 

@@ -26,7 +26,6 @@ function A = ECalibrate(t0, calibType, plotting)
         tof_peak = fliplr(flipud([573 604 639 684 735 803 893 1034 1258; ...
             585 619 657 706 762 840 946 1117 1426])); 
         % calibrate to Kr peaks
-        A = ECalibrate(t0, [IPcal(2), IPcal(1)], calibEnergy, tof_peak, plotting);
         % wavelength = wavelength_mod; 
     elseif strcmp(calibType, 'NO') == 1
         % NO self calibrate
@@ -34,7 +33,6 @@ function A = ECalibrate(t0, calibType, plotting)
         IPcal = [9.553,16.56];
         calibEnergy = [((14:1:19)*(1240/wavelength)-IPcal(2)); ((14:1:19)*(1240/wavelength)-IPcal(1))];  
         tof_peak = [983 860 785 718 675 625; 646 611 579 553 530 510]; 
-        A = ECalibrate(t0, [IPcal(2), IPcal(1)], calibEnergy, tof_peak, plotting); 
     else
         error("Unknown calibration type. Choose 'Kr' or 'NO'. ")
     end
@@ -43,7 +41,7 @@ function A = ECalibrate(t0, calibType, plotting)
 
     % prepare for linearized fit of Kr 14 and 14.6 eV peak separations
     tof_fitvar = 1./(tof_peak-t0).^2; 
-    dE_over_dx = (min(IP_cal)-max(IP_cal))./(tof_fitvar(1,:) - tof_fitvar(2,:)); 
+    dE_over_dx = (min(IPcal)-max(IPcal))./(tof_fitvar(1,:) - tof_fitvar(2,:)); 
     midpt_x = (tof_fitvar(1,:) + tof_fitvar(2,:))/2;
     [paramout, S] = polyfit(midpt_x, dE_over_dx, 1); 
     [yout, delta] = polyval(paramout, midpt_x, S); 
