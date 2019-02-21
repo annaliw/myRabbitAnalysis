@@ -1,4 +1,4 @@
-function [paramout_fixwidth, fval, exitflag, output] = complexfit_section(wavelength, E, data, fitRegion, varargin)
+function [paramout_fixwidth, fval, exitflag, output] = complexfit_section(wavelength, E, data, fitRegion, config)
     % ONLY FIXED WIDTH VERSION OF FITTING, fminsearch on lsq
     
     global IP
@@ -6,84 +6,57 @@ function [paramout_fixwidth, fval, exitflag, output] = complexfit_section(wavele
     plotting = 0; 
     fixguess = 0; 
     
-    if (~isempty(varargin))
-        
-        for c=1:length(varargin)
-            switch varargin{c}
-                case {'FixWidth'}
-                    fixpeaks = 0;
-                    fixwidth = 1; 
-                
-                case {'FixPeaks'}
-                    fixpeaks = 1; 
-                    fixwidth = 0; 
-
-                case {'FitSlope'}
-                    slopeflag = 1; 
-                    if length(fitRegion) == 2
-                        slope_guess = 1; 
-                    elseif length(fitRegion) == 3
-                        slope_guess = fitRegion(3); 
-                    elseif length(fitRegion) == 4
-                        slope_guess = fitRegion(4); 
-                    else
-                        error('Bad fitRegion size.')
-                    end
-    
-%                 case {'FixGuess'}
-%                     guess = 
-                case {'Plot'}
-                    plotting = 1;
-                    
-                case {'FixGuess'}
-                    fixguess = 1; 
-                    
-            % (continued)
-            
-            otherwise         
-                error(['Invalid optional argument, ', ...
-                    varargin{c}]);
-            end % switch
-        end % for
-    else 
-        % default to fixed width, no slope, no plotting
+    %Check Configs
+    if (~isfield(config,'FixPeaks')) % Peak positions:
         fixpeaks = 0; 
-        fixwidth = 1; 
-        slopeflag = 0; 
-        if length(fitRegion) == 2
-            width = 0.1; 
-        elseif length(fitRegion) == 3
-            width = fitRegion(3); 
-        end
-        plotting = 0; 
-    end % if
+    else
+        fixpeaks = config.FixPeaks;
+    end
+
+    if (~isfield(config,'FixWidth')) % Peak width:
+        fixwidth = 0; 
+    else
+        width = config.FixWidth;
+    end
+
+    if (~isfield(config,'FixGuess')) % Peak width:
+        fixguess = 0; 
+    else
+        p0 = config.FixGuess;
+        fixguess = 1; 
+    end
     
-%     if ~exist('peakflag', 'var')
-%         peakflag = 0; 
-%     end
-%     if ~exist('IP_label', 'var')
-%         plotting = 0; 
-%     else
-%         plotting = 1; 
-%     end
-%     if length(fitRegion)==2
-%         slopeflag = 0; 
-%         slope_guess = 0; 
-%     elseif length(fitRegion)==3
-%         slopeflag = 0;
-%         slope_guess = 0; 
-%         width = fitRegion(3); 
-%     elseif length(fitRegion)==4
-%         slopeflag = 1; 
-%         slope_guess = fitRegion(4); 
-%         width = fitRegion(3); 
-%     else
-%         error('invalid fitRegion size'); 
-%     end
+    if (~isfield(config, 'FitSlope'))
+        slopeflag = 0; 
+        slope_guess = 0; 
+    else
+        slopeflag = config.FitSlope;
+        if slopeflag == 1
+            if length(fitRegion) == 2
+                slope_guess = 1; 
+            elseif length(fitRegion) == 3
+                slope_guess = fitRegion(3); 
+            elseif length(fitRegion) == 4
+                slope_guess = fitRegion(4); 
+            else
+                error('Bad fitRegion size.')
+            end
+        else 
+            slope_guess = 0; 
+        end
+    end
+    
+    if (~isfield(config, 'Plot'))
+        plotting = 0; 
+    else
+        plotting = config.Plot; 
+    end
+    
     
     
     % full data set-up
     x = E; 
+%     data = data ./ max(abs(data)); % normalize
     y_abs = abs(data).'; 
     y_phi = mod(angle(data), 2*pi).'; 
     n=9:1:19; 
@@ -122,15 +95,13 @@ function [paramout_fixwidth, fval, exitflag, output] = complexfit_section(wavele
         guess_flag = 1; 
         if slopeflag==0
             guess = guess_fixwidth(:,1:3);
-            guess(:,1) = fixguess(1); 
-%             guess(:,2) = fixguess(2); 
-            guess(:,3) = fixguess(3); 
+            guess(:,1) = p0(1); 
+            guess(:,3) = p0(2); 
         else
             guess = guess_fixwidth; 
-            guess(:,1) = fixguess(1); 
-%             guess(:,2) = fixguess(2); 
-            guess(:,3) = fixguess(3); 
-            guess(:,4) = fixguess(4); 
+            guess(:,1) = p0(1); 
+            guess(:,3) = p0(2); 
+            guess(:,4) = p0(3); 
         end
     end
     

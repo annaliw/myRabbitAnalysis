@@ -69,6 +69,8 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     %convert the ToF spectrum to energy (linear energy scale)
     [C,E,OM]=Convert_Eng_V2(tof, tmp, [t0, A] , E_vec); % OM will be used in loop
     E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
+    % Difference signal
+    E_SpectraArray = E_SpectraArray - mean(E_SpectraArray,2); 
     % fft data
     E_SpectraArray = fftshift(fft(E_SpectraArray, [], 2), 2); 
     twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
@@ -99,16 +101,68 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
 
     %%
     % fit data
-    fitRegion = [1.6387 2.8 0.08 slope_guess]; 
-    fixguess = [1,4.5,1]; 
+    fitRegion = [1.7 2.76 0.08 slope_guess]; 
+    fixguess = [4000,4.5,1]; 
+    clear config; 
+    config.FixGuess = fixguess; 
+    config.Plot = 1; 
+    config.FitSlope = 1; 
+    config.FixWidth = 0.07; 
     [paramout, fval, exitflag, output] = ...
-        complexfit_section(wavelength, E, twoOmega_signal, fitRegion, 'FixWidth', 'FixGuess', 'FitSlope', 'Plot'); 
+        complexfit_section(wavelength, E, twoOmega_test, fitRegion, config); 
     % save as labeled variables
     paramout_allfiles = paramout; 
     fval_allfiles = fval; 
     exitflag_allfiles = exitflag; 
     output_allfiles = output; 
    
+    %% NEW RESAMPLING
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % array to save fit parameters
+    paramout_array = zeros([size(paramout_allfiles), trials]); 
+    fval_array = zeros([1, trials]); 
+    exitflag_array = zeros([1, trials]);  
+    
+    % loop over each file nn
+    % generate data fluctuation mm times
+
+    for mm=1:1:trials
+
+        % add Poisson fluctuation to data
+        tmp = poissrnd(HistTot_array(:,:,nn)); % make this fluctuation on HistTot_array(:,:,nn)
+        tof = 1:1:size(HistTot_array, 1); 
+        %Convert ToF to Energy using previously calculated Overlap Matrix (OM)
+        if (numel(tof) == size(tmp,1))
+            Counts = zeros( size(tmp,2), numel(E) );
+            for ind = 1:size(tmp,2)
+                %Counts(ind, :) = OM * [tcounts(2:end,ind);0];
+                Counts(ind, :) = OM * circshift(tmp(:,ind),-1);
+            end
+        elseif (numel(tof) == size(tmp,2))
+            Counts = zeros( size(tmp,1), numel(E) );
+            for ind = 1:size(tmp,1)
+                %Counts(ind, :) = OM * [tcounts(ind,2:end)';0];
+                Counts(ind, :) = OM * circshift(tmp(ind,:)',-1);
+            end
+        else
+            Counts = 0;
+        end
+        E_SpectraArray = reshape(Counts.', [E_vec(3) size(HistTot_array,2)]); 
+        % fft data
+        E_SpectraArray = fftshift(fft(E_SpectraArray, [], 2), 2); 
+        twoOmega_signal = E_SpectraArray(:,130);  % hard-coded 2w location....fix this eventually
+
+        % fit data
+        [paramout, fval, exitflag, output] = ...
+            complexfit_section(wavelength, E, twoOmega_signal, fitRegion, 'FixWidth', 'FitSlope'); 
+        paramout_array(:,:,nn,mm) = paramout; 
+        fval_array(nn,mm) = fval; 
+        exitflag_array(nn,mm) = exitflag; 
+
+    end % end mm (trials) loop
+
+    
     %%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

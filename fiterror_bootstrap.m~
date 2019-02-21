@@ -31,7 +31,7 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     IP_label = ["0", "1", "2", "3", "4", "5"]; 
 %     IP = [13.9, 17.706, 18.077, 19.394]; 
 %     IP_label = ["X", "A", "B", "C"]; 
-    E_vec = [0 25 500]; 
+    E_vec = [0 20 900]; 
     trials = 5; 
     energy_range_start = 1.5355; 
     energy_range_stop = 2.8258; 
@@ -99,9 +99,15 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
 
     %%
     % fit data
-%     fitRegion = [8.7581 10.1452 0.2 -0.5]; 
+    fitRegion = [1.7 2.8774 0.08 slope_guess]; 
+    fixguess = [4000,4.5,1]; 
+    clear config; 
+    config.FixGuess = fixguess; 
+    config.Plot = 1; 
+    config.FitSlope = 1; 
+    config.FixWidth = 0.07; 
     [paramout, fval, exitflag, output] = ...
-        complexfit_section(wavelength, E, twoOmega_signal, fitRegion, 'FixPeaks', 'FitSlope', 'Plot'); 
+        complexfit_section(wavelength, E, restackedSpectra, fitRegion, config); 
     % save as labeled variables
     paramout_allfiles = paramout; 
     fval_allfiles = fval; 
@@ -150,7 +156,7 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
             
             % fit data
             [paramout, fval, exitflag, output] = ...
-                complexfit_section(IP, wavelength, E, twoOmega_signal, fitRegion, peakflag, fixguess); 
+                complexfit_section(wavelength, E, twoOmega_signal, fitRegion, 'FixWidth', 'FitSlope'); 
             paramout_array(:,:,nn,mm) = paramout; 
             fval_array(nn,mm) = fval; 
             exitflag_array(nn,mm) = exitflag; 
