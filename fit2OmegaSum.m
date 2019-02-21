@@ -1,13 +1,26 @@
 function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess)
 
-    chi2 = @(x) sum( (yin - Spectrum(xin, gaussian, x) ).^2 ); 
+    figure; hold on; 
+    yyaxis left
+    scatter(xin, abs(yin)); 
+    plot(xin, abs(Spectrum(xin, gaussian, guess)));
+    yyaxis right
+    scatter(xin, angle(yin)); 
+    plot(xin, angle(Spectrum(xin, gaussian, guess))); 
+    hold off; 
+    
+    chi2 = @(x) sum((real(yin)-real(Spectrum(xin, gaussian, x))).^2)... 
+        + sum((imag(yin)-imag(Spectrum(xin, gaussian, x))).^2); 
     [paramout, fval] = fminsearch(chi2,guess,optimset('MaxFunEvals', 1E6, 'MaxIter',5E5));
 
 
     figure; hold on; 
-    scatter(xin, yin); 
-    plot(xin, Spectrum(xin, gaussian, paramout));
-    plot(xin, Spectrum(xin, gaussian, guess)); 
+    yyaxis left
+    scatter(xin, abs(yin)); 
+    plot(xin, abs(Spectrum(xin, gaussian, paramout)));
+    yyaxis right
+    scatter(xin, angle(yin)); 
+    plot(xin, angle(Spectrum(xin, gaussian, paramout))); 
     hold off; 
 
 
@@ -18,6 +31,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess)
         % sum the 2w signal
         for n = 1:size(p,1)
             Amp = gaussian(n,1); 
+%             Amp = 1; 
             E0 = gaussian(n,2); 
             wid = gaussian(n,3); 
             

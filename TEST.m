@@ -9,7 +9,11 @@ for i=1:1:length(IP)
 end
 
 x = E; 
-y = squeeze(sum(sum(abs(E_SpectraArray),2),3));
+y = sum(abs(E_SpectraArray),3);
+y = squeeze(mean(y,2)); 
+norm = mean(abs(E_SpectraArray),2); 
+norm = sum(sum(norm, 3),1); 
+y = y./norm; 
 n=9:1:19; 
 peaks = zeros(length(IP), length(n)); 
 for i=1:1:length(IP)
@@ -39,13 +43,20 @@ guess = [amp_guess; peaks_guess; sig_guess].'; % full guess matrix
 
 %% fit complex 2w data using gaussians found in above cell
 xin = x(start:stop); 
-yin = twoOmega_signal(start:stop).'; 
+yin = twoOmega_signal(start:stop);
+% yin = yin./squeeze(sum(sum(abs(E_SpectraArray(start:stop,:,:)),2),3)); 
+yin = yin./sum(abs(twoOmega_signal(:))); 
+yin = yin.'; 
 
-a_guess = abs(twoOmega_signal(peak_ind)); 
-b_guess = angle(twoOmega_signal(peak_ind)); 
+% a_guess = abs(twoOmega_signal(peak_ind));
+a_guess = ones([1 size(paramout_gauss,1)]); 
+b_guess = angle(twoOmega_signal(peak_ind)).'; 
 guess = [a_guess; b_guess].'; 
 
 [paramout, fval] = fit2OmegaSum(xin, yin, paramout_gauss, guess); 
+paramout(:,2) = mod(paramout(:,2), 2*pi); 
+
+% plotfun_fit(n, 810, xin, yin, fix, paramout, slope, peakflag)
 
 
 

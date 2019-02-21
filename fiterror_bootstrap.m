@@ -93,11 +93,13 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
         % peak_phase = angle(peak_fft(twoOmega_location, :)); 
     end
     peak_phase = angle(peak_phase); 
-    for ii=1:1:length(peak_phase)
-       twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*peak_phase(ii)); 
-    end
-    % sum phase matched values
-    twoOmega_signal = sum(twoOmega_signal, 2); 
+%     for ii=1:1:length(peak_phase)
+%        twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*peak_phase(ii)); 
+%     end
+%     % sum phase matched values
+%     twoOmega_signal = sum(twoOmega_signal, 2); 
+    
+    
 
     %%
     % fit data
