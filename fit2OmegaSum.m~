@@ -1,0 +1,27 @@
+function [paramout, fval] = fit2OmegaSum(xin, yin, guassian, guess)
+
+    chi2 = @(x) sum( (yin - Spectrum(xin, gaussian, x) ).^2 ); 
+    [paramout, fval] = fminsearch(chi2,guess,optimset('MaxFunEvals', 1E6, 'MaxIter',5E5));
+
+
+    figure; hold on; 
+    scatter(xin, yin); 
+    plot(xin, Spectrum(xin, gaussian, paramout));
+    plot(xin, Spectrum(xin, gaussian, guess)); 
+    hold off; 
+
+
+    function Yout = Spectrum(E, gaussian, p)
+        Yout = 0; 
+        Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
+        % sum the gaussians
+        for n = 1:size(p,1)
+            A
+
+            Yout = Yout + Gauss(E,Amp,E0,wid);
+        end
+
+    end
+
+
+end
