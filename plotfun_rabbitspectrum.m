@@ -76,7 +76,9 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
 %     legend({}, 'FontSize', text_size); 
 
     xlim([min(E(end), E(1)) max(E(end),E(1))]); 
-    linkaxes([ax1,ax2],'x')
+    if strcmp(mode, 'twoOmega')==1
+        linkaxes([ax1,ax2],'x')
+    end
 
     hold off;  
     

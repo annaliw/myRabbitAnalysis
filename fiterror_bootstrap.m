@@ -31,7 +31,9 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     IP_label = ["0", "1", "2", "3", "4", "5"]; 
 %     IP = [13.9, 17.706, 18.077, 19.394]; 
 %     IP_label = ["X", "A", "B", "C"]; 
-    E_vec = [0 20 900]; 
+%     IP = [14 14.665]; 
+%     IP_label = ["14", "14.665"]; 
+    E_vec = [0 25 500]; 
     trials = 5; 
     energy_range_start = 1.5355; 
     energy_range_stop = 2.8258; 
@@ -43,6 +45,7 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     peakflag = 0; % debig setting
     [HistTot_array, stageTimes, freqAxis] = getrawdata(folderName, 1, wavelength);  
     HistTot_array = HistTot_array(:,:,alternate(1):alternate(2):end); % might need to alternate files
+%     HistTot_array = HistTot_array./sum(HistTot_array(:)); % normalize!
 %     % do data padding for better fitting
 %     pad_data = zeros([size(HistTot_array,1)*10-9, size(HistTot_array,2), size(HistTot_array,3)]); % not sure how the sizing works here
 %     for ii=1:1:size(HistTot_array, 2)
@@ -57,7 +60,7 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     % calibrate to Krypton
     calibType = 'Kr'; 
     % calibrate to Kr peaks
-    A = ECalibrate(t0, calibType, 0); % TO DO: hard set t0 into ECalibrate
+    A = ECalibrate(75, calibType, 0); % TO DO: hard set t0 into ECalibrate
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % need to do full analysis on the original file. this will also give
@@ -66,6 +69,7 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     % do energy conversion
     tmp = reshape(HistTot_array, size(HistTot_array,1), []);
     tof = 1:size(tmp,1); 
+    E_vec = [0 25 500];
     %convert the ToF spectrum to energy (linear energy scale)
     [C,E,OM]=Convert_Eng_V2(tof, tmp, [t0, A] , E_vec); % OM will be used in loop
     E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
@@ -93,13 +97,40 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
         % peak_phase = angle(peak_fft(twoOmega_location, :)); 
     end
     peak_phase = angle(peak_phase); 
-%     for ii=1:1:length(peak_phase)
-%        twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*peak_phase(ii)); 
-%     end
-%     % sum phase matched values
-%     twoOmega_signal = sum(twoOmega_signal, 2); 
     
+    for ii=1:1:length(peak_phase)
+       twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*peak_phase(ii)); 
+    end
+    % sum phase matched values
+    twoOmega_signal = sum(twoOmega_signal, 2); 
+  %% correct entire E_SpectraArray matrix
+    peak_phase = unwrap(peak_phase); 
+    omega = 2.998*10^8/(810*10^(-9)); 
+    singlecycle_time = 1/(2*omega); 
+    timedrift = peak_phase/(2*omega); 
+    timedrift = mod(timedrift, singlecycle_time); 
+    dt = (stageTimes(end)-stageTimes(1))/numel(stageTimes); 
     
+    test_HistTot = zeros(size(HistTot_array));
+    % find nearest stageTimes value to timedrift value
+    timeshift = zeros(size(timedrift)); 
+    for ii=1:1:length(timedrift)
+        ind_shift = ceil(timedrift(ii)/dt); 
+        test_HistTot(:,:,ii) = circshift(HistTot_array(:,:,ii), -ind_shift, 2); 
+    end
+    test_HistTot = squeeze(sum(test_HistTot, 3)); 
+    ind_cutoff = ceil(singlecycle_time/dt); 
+    test_HistTot = test_HistTot(:,ind_cutoff:(end-ind_cutoff)); 
+    %%
+    
+    %convert the ToF spectrum to energy (linear energy scale)
+    tof = 1:1:size(test_HistTot,1); 
+    [C,E,OM]=Convert_Eng_V2(tof, test_HistTot, [t0, A] , E_vec); % OM will be used in loop
+    test_ESpectra = reshape(C.', [E_vec(3) size(test_HistTot,2)]); 
+    test_ESpectra = fftshift(fft(test_ESpectra, [], 2), 2); 
+    %%
+    twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
+    test_twoOmega = squeeze(test_ESpectra(:,twoOmega_location));
 
     %%
     % fit data
