@@ -24,18 +24,18 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     
     folderName = '/Users/annaliw/code/2018_07_31-16Scan/'; % debug setting
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
-    alternate = [2 2]; % debug setting
-    t0=51; 
+    alternate = [1 2]; % debug setting
+    t0=0; 
     wavelength=810; 
-%     IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206]; 
-%     IP_label = ["0", "1", "2", "3", "4", "5"]; 
+    IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206]; 
+    IP_label = ["0", "1", "2", "3", "4", "5"]; 
 %     IP = [13.9, 17.706, 18.077, 19.394]; 
 %     IP_label = ["X", "A", "B", "C"]; 
 %     IP = [14 14.665]; 
 %     IP_label = ["14", "14.665"]; 
-    IP = [15.763]; 
-    IP_label = ['Argon']; 
-    E_vec = [0 25 500]; 
+%     IP = [15.763]; 
+%     IP_label = ['Argon']; 
+    E_vec = [0 20 900]; 
     trials = 5; 
     energy_range_start = 1.5355; 
     energy_range_stop = 2.8258; 
@@ -58,14 +58,8 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
 %     end
 %     HistTot_array = pad_data; 
     
-    %%
-    % calibrate to Krypton
-    calibType = 'Ar'; 
-    config.calibEnergy = [(9:1:19)*1240/wavelength]; 
-    config.tofPeaks = [576 601 636 672 719 770 840 934 1082 1339 1968];  % redo with peak finding
-    config.Plot = 1; 
-    % calibrate to Kr peaks
-    A = ECalibrate(t0, calibType, config); % TO DO: hard set t0 into ECalibrate
+    %% load calibration
+    load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
     %%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % need to do full analysis on the original file. this will also give
@@ -74,7 +68,6 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     % do energy conversion
     tmp = reshape(HistTot_array, size(HistTot_array,1), []);
     tof = 1:size(tmp,1); 
-    E_vec = [0 25 500];
     %convert the ToF spectrum to energy (linear energy scale)
     [C,E,OM]=Convert_Eng_V2(tof, tmp, [t0, A] , E_vec); % OM will be used in loop
     E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
@@ -84,24 +77,6 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     E_SpectraArray = fftshift(fft(E_SpectraArray, [], 2), 2); 
     twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
     twoOmega_signal = squeeze(E_SpectraArray(:,twoOmega_location,:));
-    
-    % only restack the 2w data
-    % cut out window of ~6 tof bins
-    % sideband_list = [(12:2:18)*1240/810 - 13.778, (12:2:18)*1240/810 - 17.706];
-    sideband_list = [18*1240/wavelength-IP(1)]; % select 16th harmonic of lowest ionization state 
-    peak_phase = 0; 
-    for i=1:1:length(sideband_list)
-        [~, index] = min(abs(E - sideband_list(i)));
-        window_center = index; 
-        window = 3; 
-        histogram_windows = twoOmega_signal((window_center-window):(window_center+window),:); 
-        % integrate over window
-        peak_phase = peak_phase + squeeze(sum(histogram_windows, 1)); 
-        % % fft wrt IR delay 
-        % peak_fft = fftshift(fft(peak_vol, [], 1), 1); 
-        % peak_phase = angle(peak_fft(twoOmega_location, :)); 
-    end
-    peak_phase = angle(peak_phase); 
     
     for ii=1:1:length(peak_phase)
        twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*peak_phase(ii)); 

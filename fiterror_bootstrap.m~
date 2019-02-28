@@ -62,10 +62,11 @@ function [peak_nn, phase_nn, slope_nn] = fiterror_bootstrap(folderName, alternat
     % calibrate to Krypton
     calibType = 'Ar'; 
     config.calibEnergy = [(9:1:19)*1240/wavelength]; 
-    config.tofPeaks = [576 601 636 672 719 770 840 934 
+    config.tofPeaks = [576 601 636 672 719 770 840 934 1082 1339 1968];  % redo with peak finding
+    config.Plot = 1; 
     % calibrate to Kr peaks
-    A = ECalibrate(t0, calibType, 0); % TO DO: hard set t0 into ECalibrate
-    
+    [wavelength, A] = ECalibrate(t0, calibType, config); % TO DO: hard set t0 into ECalibrate
+    %%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % need to do full analysis on the original file. this will also give
     % structures to reference for size in the loop. 
