@@ -15,6 +15,7 @@ function [paramout, fval] = fitGaussianSum(xin, yin, guess)
         Yout = 0; 
         Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
         % sum the gaussians
+        p = abs(p); 
         for n = 1:size(p,1)
             Amp = p(n,1);
             wid = p(n,3);

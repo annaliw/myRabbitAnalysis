@@ -96,29 +96,34 @@ function A = ECalibrate(t0, calibType, config)
     xdata = A(3)*tof_fitvar.^2 + A(2)*tof_fitvar + A(1); 
     ydata = calibEnergy; 
     
-    [paramout_wavelength, S] = polyfit(xdata, ydata, 1); 
-    [yout, delta] = polyval(paramout_wavelength, xdata, S); 
+    [paramout, S] = polyfit(xdata, ydata, 1); 
+    [yout, delta] = polyval(paramout, xdata, S); 
     
-%     % plot fit results
-%     if plotting==1
-%         figure; hold on; 
-%         ax = gca; ax.FontSize=12; 
-%         scatter(xdata, ydata, 'b'); 
-%         plot(xdata, yout, 'b'); 
-%         plot(xdata,yout+2*delta,'c--',xdata,yout-2*delta,'c--'); 
-%         legend('Data','Linear Fit','95% Prediction Interval'); 
-%         xlabel('xdata'); 
-%         ylabel('energy'); 
-%         hold off; 
-%     end
+    % plot fit results
+    if plotting==1
+        figure; hold on; 
+        ax = gca; ax.FontSize=12; 
+        scatter(xdata, ydata, 'b'); 
+        plot(midpt_x, yout, 'b'); 
+        plot(midpt_x,yout+2*delta,'c--',midpt_x,yout-2*delta,'c--'); 
+        legend('Data','Linear Fit','95% Prediction Interval'); 
+        xlabel('x-midpoint'); 
+        ylabel('\Delta E/\Delta x'); 
+        hold off; 
+    end
     
     %%
 
-    wavelength = 1240/paramout_wavelength(1); 
-    A = fliplr([paramout_wavelength(1)*paramout(1)/2, paramout_wavelength(1)*paramout(2), paramout_wavelength(2)]); 
-    [peaksinorder, order] = sort(tof_peak(:)); 
+    % do energy conversion of Kr spectrum
+    A = fliplr([paramout(1)/2 paramout(2) 0]); 
+%     Eng = 0;
+%     for i = 0:numel(A)-1
+%         Eng = Eng + A(i+1) .* tof_fitvar(:).^i;
+%     end 
     
-    Eng = A(1) + A(2)*tof_fitvar + A(3)*tof_fitvar.^2; 
+    [peaksinorder, order] = sort(tof_peak(:)); 
+    Eng = A(3)*tof_fitvar.^2 + A(2)*tof_fitvar + A(1); 
+    Eng = Eng(:); 
 
     if plotting==1
         figure; hold on; 
