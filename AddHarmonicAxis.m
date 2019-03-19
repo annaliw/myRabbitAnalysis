@@ -1,4 +1,4 @@
-function axl = AddHarmonicAxis(ax1, n, Ip, wavelength)
+function axl = AddHarmonicAxis(ax1, Ip, wavelength)
 
 POS = ax1.Position; %Position of Axis
 del = 0.07*POS(4);
@@ -19,7 +19,7 @@ for i=1:numel(Ip)
     axl(i).XColor = ax1.ColorOrder(i,:);
     axl(i).Color = 'none';
     axl(i).XAxisLocation = 'top';
-    axl(i).XTick = n*(1240/lambda)-Ip(i);
+    axl(i).XTick = ntrue*(1240/lambda)-Ip(i);
     axl(i).XTickLabel = nlbl;
     axl(i).YTick = 0;
     axl(i).YTickLabel = '';

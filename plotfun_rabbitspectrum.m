@@ -25,6 +25,7 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
             twoOmega_signal = data; 
         end
         twoOmega_abs = abs(twoOmega_signal); 
+%         twoOmega_phi = unwrap(angle(twoOmega_signal)); 
         twoOmega_phi = angle(twoOmega_signal); 
         % oneOmega_abs = abs(oneOmega_signal); 
         % oneOmega_phi = angle(oneOmega_signal); 
@@ -52,7 +53,7 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
         ax2.YColor = phi_color; 
         ax2.YLabel.String = 'phase (radians)'; 
         ax2.FontSize = text_size; 
-        line(E, mod(twoOmega_phi,2*pi), ...
+        line(E, twoOmega_phi, ...
             'Parent', ax2, 'Color', phi_color, 'LineWidth', line_weight, ...
             'DisplayName', '2w phase'); 
         % plot(E, unwrap(oneOmega_phi), 'm-', 'DisplayName', '1w phase'); 
@@ -62,7 +63,7 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
         ax1.XLabel.String = 'photoelectron energy (eV)'; 
     end
     
-    axl = AddHarmonicAxis(ax1, n, IP, wavelength);
+    axl = AddHarmonicAxis(ax1, IP, wavelength);
 
     for i = 1:numel(IP)
         axl(i).XLabel.Position = [ -1.9    0.99];

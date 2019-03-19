@@ -1,13 +1,21 @@
 %% load calibration data
 plotting = 1; % debug setting
     
-folderName = '/Users/annaliw/code/2018_07_31-16Scan/'; % debug setting
-alternate = [2 2]; % debug setting
+% folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
+% alternate = [2 2]; % debug setting
+% t0=0; 
+% wavelength=810; 
+% IP = [15.763]; 
+% IP_label = ['Argon']; 
+% n = 11:1:21; 
+% E_vec = [0 20 900]; 
+
+folderName = '/Users/annaliw/code/KrCO2_scan/'; 
+alternate = [1 2]; 
 t0=0; 
 wavelength=810; 
-IP = [15.763]; 
-IP_label = ['Argon']; 
-n = 11:1:21; 
+IP = 14; 
+n= 11:1:19; 
 E_vec = [0 20 900]; 
 
 [HistTot_array, stageTimes, freqAxis] = getrawdata(folderName, 1, wavelength);  
@@ -19,12 +27,13 @@ HistTot_array = HistTot_array./sum(HistTot_array(:)); % normalize!
 figure; plot(sum(sum(HistTot_array,2),3)); 
 
 hw = 1240/wavelength; 
-calibEnergy = n*hw - IP; 
-tof_peak = fliplr([577 603 634 673 716 771 838 936 1079 1335 1962]); 
+% calibEnergy = n*hw - IP; 
+% tof_peak = fliplr([577 603 634 673 716 771 838 936 1079 1335 1962]); 
+calibEnergy = [n*hw - IP]; 
+tof_peak = fliplr([573 604 639 684 735 803 893 1034 1258]);
 
 %% find energy calibration
-calibType = 'Ar'; 
-n = 11:1:21; 
+calibType = 'none'; 
 
 config.calibEnergy = n*1240/wavelength - IP; 
 config.tofPeaks = tof_peak;   % redo with peak finding
@@ -66,6 +75,14 @@ for i=1:1:length(sideband_list)
 end
 peak_phase = angle(peak_phase); 
 
+%%
+for ii=1:1:length(peak_phase)
+   twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*peak_phase(ii)); 
+end
+
+twoOmega_signal = sum(twoOmega_signal, 2); 
+
 %% save values
+calibType = 'Kr'; 
 filename = strcat(folderName, 'calibration/', calibType, '_calibration'); 
 save(filename, 'A', 'peak_phase', 'calibEnergy', 'tof_peak', 'wavelength'); 
