@@ -1,8 +1,8 @@
 %% fit 2w abs data for region
 
 % H2
-% region = [1.45 3.055]; % sideband 12
-region = [4.94 5.85]; % sideband 14
+region = [1.45 3.055]; % sideband 12
+% region = [4.94 5.85]; % sideband 14
 % region = [7.7548 9.1]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18
 
@@ -244,6 +244,10 @@ s2.LineWidth = line_weight;
 
 % text('sideband 12'); 
 
+%% XUV only subtract
+
+sub_signal = mean(mean(tmp1,2),3)-XUV_only./sum(XUV_only(:));
+plotfun_rabbitspectrum(9:1:19, wavelength, E, sub_signal, 'average'); 
 
 
 

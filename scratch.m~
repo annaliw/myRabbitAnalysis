@@ -127,7 +127,7 @@ plot(E(2:end), curve_TCLC_15, 'b', 'LineStyle', '--', 'LineWidth', 2, 'DisplayNa
 plot(E(2:end), curve_TCLC_18, 'b', 'LineStyle', '-.', 'LineWidth', 2, 'DisplayName', 'CLC Serov'); 
 plot(E(2:end), delay, 'k', 'DisplayName', 'WignerDelay'); 
 % xlim([min(measured_energy), max(measured_energy)]); 
-xlim([1.5 3])
+xlim([1.5 10])
 xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
 legend; 
 title('Delays')
@@ -142,7 +142,7 @@ plot(E(2:end), subcurve_TCLC_15, 'b', 'LineStyle', '--', 'LineWidth', 2, 'Displa
 plot(E(2:end), subcurve_TCLC_18, 'b', 'LineStyle', '-.', 'LineWidth', 2, 'DisplayName', 'CLC Serov'); 
 % plot(E(2:end), delay, 'k', 'DisplayName', 'WignerDelay'); 
 % xlim([min(measured_energy), max(measured_energy)]); 
-xlim([1.5 3])
+xlim([1.5 10])
 xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
 legend; 
 title('Wigner delay + CC delay')
@@ -158,16 +158,16 @@ tmp_data = cat(3, ...
 
 theory_list = [subcurve_CCP; subcurve_CCPA; subcurve_CCPAp; ...
                subcurve_TCLC_11; subcurve_TCLC_15; subcurve_TCLC_18]; 
-theory_name = ["CC P"; "CC P+A"; "CC P+Ap"; "CLC Ivanov"; "CLC Pazourek"; "CLC Serov"]; 
+theory_name = ['CC P'; 'CC P+A'; 'CC P+Ap'; 'CLC Ivanov'; 'CLC Pazourek'; 'CLC Serov']; 
 
-newfolder = strcat('/Users/annaliw/Documents/lab/plots/', date, '/');  
+newfolder = '/Users/annaliw/Documents/lab/plots/'+date+'/'; 
 if ~exist(newfolder, 'dir')
    mkdir(newfolder)
 end
 
-for ii=1:size(theory_list,1)
-    fig = plotfun_compareToTheory(tmp_data, 3, [E(2:end); theory_list(ii,:)], theory_name(ii));         
-    saveas(fig, newfolder + regexprep(theory_name(ii),' ','_') + '.png'); 
+for ii=1:numel(theory_list)
+    h = plotfun_compareToTheory(tmp_data, 3, [E(2:end); subcurve_TCLC_18], 'CLC Serov');         
+    saveas(h, newfolder + regexprep(theory_name(ii),' ','_') + '.png'); 
 end
 
 

@@ -8,7 +8,6 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
     yin_abs = yin(1,:); 
     yin_phi = mod(yin(2,:), 2*pi); 
     
-    
 %     figure; hold on; 
 %     yyaxis left
 %     scatter(xin, yin_abs, 'o'); 
@@ -27,8 +26,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
 %     [paramout, fval] = fminsearch(chi2,guess,optimset('MaxFunEvals', 1E6, 'MaxIter',5E5));
 
     % LSQCURVEFIT FIT
-    fun = @(x,xdata) Spectrum(xdata, gaussian, x); 
-    [paramout, fval] = lsqcurvefit(fun, guess, xin, yin); 
+    [paramout, fval] = lsqcurvefit(fun,x0,xdata,ydata)
 
 
 %     figure; hold on; 
@@ -47,8 +45,8 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
     outdx = (xin(end)-xin(1))/outnumpts; 
     xout = xin(1):outdx:xin(end); 
     yout = Spectrum(xout, gaussian, paramout); 
-    yout_abs = yout(1,:); 
-    yout_phi = mod(yout(2,:),2*pi); 
+    yout_abs = abs(yout); 
+    yout_phi = mod(angle(yout),2*pi); 
 
     
     % text and color settings
@@ -149,7 +147,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
         hold off; 
     end
 
-    function yout_mat = Spectrum(E, gaussian, p)
+    function Yout = Spectrum(E, gaussian, p)
         Yout = 0; 
         Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
         if size(p,2) == 2
@@ -184,8 +182,6 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
         else
             error('invalid guess input'); 
         end
-        
-        yout_mat = [abs(Yout); unwrap(angle(Yout))]; 
 
     end
 

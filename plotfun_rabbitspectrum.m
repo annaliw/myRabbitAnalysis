@@ -59,7 +59,7 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
         % plot(E, unwrap(oneOmega_phi), 'm-', 'DisplayName', '1w phase'); 
     else
         ax1 = gca; 
-        line(E, mean(abs(data), 2), 'Color', 'k'); 
+        line(E, data, 'Color', 'k'); 
         ax1.XLabel.String = 'photoelectron energy (eV)'; 
     end
     
