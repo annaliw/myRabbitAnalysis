@@ -16,9 +16,9 @@ function [paramout, fval] = complexfit_section_full(wavelength, xin, yin, paramo
 % 
 %     xin = x(start:stop); 
 %     yin = y(start:stop); 
-    yin_abs = abs(yin)./sum(abs(yin)); 
-    yin_phi = mod(unwrap(angle(yin)),2*pi); 
-    yin = [yin_abs; yin_phi]; 
+%     yin_abs = abs(yin)./sum(abs(yin)); 
+%     yin_phi = mod(unwrap(angle(yin)),2*pi); 
+%     yin = [yin_abs; yin_phi]; 
 
     % find new peak center indices
     % paramout_gauss(:,2) = peaks_guess'; 

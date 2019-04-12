@@ -5,30 +5,21 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
 %     global wavelength; 
     wavelength = 810; 
     
-    yin_abs = yin(1,:); 
-    yin_phi = mod(yin(2,:), 2*pi); 
-    
-    
-%     figure; hold on; 
-%     yyaxis left
-%     scatter(xin, yin_abs, 'o'); 
-%     plot(xin, abs(Spectrum(xin, gaussian, guess)));
-%     yyaxis right
-%     scatter(xin, yin_phi, '+'); 
-%     plot(xin, mod(angle(Spectrum(xin, gaussian, guess)),2*pi)); 
-%     ylim([0 2*pi]); 
-%     hold off; 
 
-%     % FMINSEARCH FIT
+    % FMINSEARCH FIT
+    yin_abs = yin(1,:); 
+    yin_phi = unwrap(yin(2,:)); 
 %     chi2 = @(x) sum((real(yin)-real(Spectrum(xin, gaussian, x))).^2)... 
 %         + sum((imag(yin)-imag(Spectrum(xin, gaussian, x))).^2); 
-%     chi2 = @(x) sum((yin_abs.*exp(1j*yin_phi) - Spectrum(xin, gaussian, x))...
-%         .*conj(yin_abs.*exp(1j*yin_phi) - Spectrum(xin, gaussian, x))); 
-%     [paramout, fval] = fminsearch(chi2,guess,optimset('MaxFunEvals', 1E6, 'MaxIter',5E5));
+    chi2 = @(x) sum((yin_abs.*exp(1j*yin_phi) - Spectrum(xin, gaussian, x))...
+        .*conj(yin_abs.*exp(1j*yin_phi) - Spectrum(xin, gaussian, x))); 
+    [paramout, fval] = fminsearch(chi2,guess,optimset('MaxFunEvals', 1E6, 'MaxIter',5E5));
 
-    % LSQCURVEFIT FIT
-    fun = @(x,xdata) Spectrum(xdata, gaussian, x); 
-    [paramout, fval] = lsqcurvefit(fun, guess, xin, yin); 
+%     % LSQCURVEFIT FIT
+%     yin_abs = yin(1,:); 
+%     yin_phi = unwrap(mod(yin(2,:), 2*pi)); 
+%     fun = @(x,xdata) Spectrum(xdata, gaussian, x); 
+%     [paramout, fval] = lsqcurvefit(fun, guess, xin, yin); 
 
 
 %     figure; hold on; 
@@ -47,8 +38,10 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
     outdx = (xin(end)-xin(1))/outnumpts; 
     xout = xin(1):outdx:xin(end); 
     yout = Spectrum(xout, gaussian, paramout); 
-    yout_abs = yout(1,:); 
-    yout_phi = mod(yout(2,:),2*pi); 
+    yout_abs = abs(yout); 
+    yout_phi = mod(angle(yout), 2*pi); 
+%     yout_abs = yout(1,:); 
+%     yout_phi = mod(yout(2,:),2*pi); 
 
     
     % text and color settings
@@ -109,7 +102,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
         s2.MarkerEdgeColor = phi_color; 
         s2.LineWidth = line_weight; 
         s2.DisplayName = 'phase data'; 
-        l2 = line(xout, yout_phi, 'Parent', ax2, ...
+        l2 = line(xout, unwrap(yout_phi), 'Parent', ax2, ...
             'Color', phi_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
             'DisplayName', 'total phase fit'); 
     %     for i=1:1:(length(paramout(:,1)))
@@ -149,7 +142,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
         hold off; 
     end
 
-    function yout_mat = Spectrum(E, gaussian, p)
+    function Yout = Spectrum(E, gaussian, p)
         Yout = 0; 
         Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
         if size(p,2) == 2
@@ -167,7 +160,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
                 Yout = Yout + Gauss(E,Amp,E0,wid).*Phase(E,a,b,E0);
             end
         elseif size(p,2) == 3
-            Phase = @(x,a,b,c,mu) a .* exp(1j .* (b + c.*(x-mu)) ); 
+            Phase = @(x,a,b,c,mu) exp(1j .* (b + c.*(x-mu)) ); 
             % sum the 2w signal
             for n = 1:size(p,1)
                 Amp = gaussian(n,1); 
@@ -185,7 +178,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
             error('invalid guess input'); 
         end
         
-        yout_mat = [abs(Yout); unwrap(angle(Yout))]; 
+        yout_mat = [abs(Yout); angle(Yout)]; 
 
     end
 

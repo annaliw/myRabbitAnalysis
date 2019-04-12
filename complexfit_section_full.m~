@@ -1,9 +1,9 @@
-function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E, avdata, data, plotting)
+function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E, avdata, data, fitRegion, plotting)
     global IP; 
     global IP_label; 
     %% fit 2w abs data for region
     
-%     region = fitRegion; 
+    region = fitRegion; 
     n = 9:1:19; 
     tolerance = 0.02; 
 
@@ -14,20 +14,20 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     end
 
     signal = avdata'; 
-    xin = E; 
-    yin = signal; 
+    x = E; 
+    y = signal; 
     peaks = zeros(length(IP), length(n)); 
     for i=1:1:length(IP)
         peaks(i,:) = n*(1240/wavelength)-IP(i); 
     end
     peaks = peaks(:).'; 
 
-%     % fit section set-up
-%     start = find(abs(x-region(1))<tolerance, 1, 'last'); 
-%     stop = find(abs(x-region(2))<tolerance, 1, 'first'); 
-% 
-%     xin = x(start:stop); 
-%     yin = y(start:stop); 
+    % fit section set-up
+    start = find(abs(x-region(1))<tolerance, 1, 'last'); 
+    stop = find(abs(x-region(2))<tolerance, 1, 'first'); 
+
+    xin = x(start:stop); 
+    yin = y(start:stop); 
     yin_abs = abs(yin)./sum(abs(yin)); 
     yin_phi = mod(unwrap(angle(yin)),2*pi); 
     yin = yin_abs; 
@@ -56,8 +56,9 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
 
     % IP = IP_full; 
 
-    xin = E; 
-    yin = data.'; 
+    xin = x(start:stop); 
+    y = data; 
+    yin = y(start:stop); 
     yin_abs = abs(yin)./sum(abs(yin)); 
     yin_phi = mod(unwrap(angle(yin)),2*pi); 
 %     yin = yin_abs; 

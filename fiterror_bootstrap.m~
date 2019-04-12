@@ -118,7 +118,7 @@ XUV_only = Counts';
 %% FIRST FIT of original data set (single sideband)
 
 % H2
-region = [1.65 3.007]; % sideband 12
+% region = [1.65 3.007]; % sideband 12
 % region = [4.7 5.83]; % sideband 14
 % region = [7.7548 9.1]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18
@@ -128,15 +128,11 @@ region = [1.65 3.007]; % sideband 12
 % region = [4.3742 5.7677]; 
 % region = [5.8452 7.2387]; 
 % region = [7.4 8.6]; 
-% region = [8.8387 10.1548]; 
+region = [8.8387 10.1548]; 
 % region = [10.2 11]; 
 % region = [11.8 15.5]; 
 
-% fit section set-up
-start = find(abs(E-region(1))<tolerance, 1, 'last'); 
-stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
-
-[paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E(start:stop), abs(twoOmega_signal(start:stop)), twoOmega_signal(start:stop), 1); 
+[paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E, sum(sum(abs(E_SpectraArray),2),3), twoOmega_signal, region, 1); 
 % save as labeled variables
 paramout_original = paramout; 
 fval_original = fval; 
@@ -184,7 +180,7 @@ for nn=1:1:trials
     sample_ES_array(:,nn) = squeeze(sum(sum(sample_ESpectra,2),3)); 
 
     % fit data
-    [paramout, fval] = complexfit_section_bootstrap(wavelength, E(start:stop), sample_twoOmega(start:stop).', paramout_gauss, paramout_original, 1); 
+    [paramout, fval] = complexfit_section_bootstrap(wavelength, E, sample_twoOmega, region, paramout_gauss, 1); 
     paramout_array(:,:,nn) = paramout; 
     fval_array(nn) = fval; 
 
@@ -236,28 +232,28 @@ for nn=1:1:numfiles
     sample_ES_array(:,nn) = squeeze(sum(sum(sample_ESpectra,2),3)); 
 
     % fit data
-    [paramout, fval] = complexfit_section_bootstrap(wavelength, E(start:stop), sample_twoOmega(start:stop)', paramout_gauss, paramout_original, 0); 
+    [paramout, fval] = complexfit_section_bootstrap(wavelength, E(start:stop), sample_twoOmega(start:stop).', paramout_gauss, paramout_original, 0); 
     paramout_array(:,:,nn) = paramout; 
     fval_array(nn) = fval; 
 
 end 
 %% check fit convergence on resampled sets
 
-% paramout_jackknife = paramout_array; 
-% paramout_jackknife_referenced = paramout_jackknife; 
-% paramout_jackknife_referenced(:,2,:) = paramout_jackknife(:,2,:) ...
-%     - repmat(paramout_jackknife(end,2,:), [size(paramout_jackknife, 1), 1]);
+paramout_jackknife = paramout_array; 
+paramout_jackknife_referenced = paramout_jackknife; 
+paramout_jackknife_referenced(:,2,:) = paramout_jackknife(:,2,:) ...
+    - repmat(paramout_jackknife(end,2,:), [size(paramout_jackknife, 1), 1]);
 
-paramout_bootstrap = paramout_array; 
-paramout_bootstrap_referenced = paramout_bootstrap; 
-paramout_bootstrap_referenced(:,2,:) = paramout_bootstrap(:,2,:) ...
-    - repmat(paramout_bootstrap(end,2,:), [size(paramout_bootstrap, 1), 1]);
+% paramout_bootstrap = paramout_fix2wmod; 
+% paramout_bootstrap_referenced = paramout_bootstrap; 
+% paramout_bootstrap_referenced(:,2,:) = paramout_bootstrap(:,2,:) ...
+%     - repmat(paramout_bootstrap(end,2,:), [size(paramout_bootstrap, 1), 1]);
 
-paramout_array = paramout_bootstrap_referenced; 
+paramout_array = paramout_jackknife; 
 
-% tolerance = 0.02; 
-% start = find(abs(E-region(1))<tolerance, 1, 'last'); 
-% stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
+tolerance = 0.02; 
+start = find(abs(E-region(1))<tolerance, 1, 'last'); 
+stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
 
 xin = E(start:stop); 
 
@@ -273,7 +269,7 @@ hold off;
 
 figure; hold on; grid on; 
 for ii=1:size(paramout_array,3)
-    plotphase = unwrap(angle(Spectrum(xin, paramout_gauss, paramout_array(:,:,ii)))); 
+    plotphase = -unwrap(angle(Spectrum(xin, paramout_gauss, paramout_array(:,:,ii)))); 
 %     plotphase = plotphase - plotphase(1); 
     p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
     p.Color(4) = 0.1; 
@@ -281,30 +277,15 @@ end
 paramout_original_referenced = paramout_original; 
 paramout_original_referenced(:,2,:) = paramout_original(:,2,:) ...
     - repmat(paramout_original(end,2,:), [size(paramout_original, 1), 1]);
-plotphase = angle(Spectrum(xin, paramout_gauss, paramout_original_referenced)); 
+plotphase = angle(Spectrum(xin, paramout_gauss, paramout_original)); 
 plotphase(1)
 % plotphase = plotphase - plotphase(1); 
-plot(xin, unwrap(plotphase), 'Color', 'b', 'LineWidth', 2); 
+plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
 title('Fit Phase', 'FontSize', 16); 
 xlabel('Photoelectron Energy (eV)'); ylabel('Phase (referenced to v=6 phase)'); 
 hold off; 
 
 %%
-figure; hold on; grid on; 
-for ii=1:size(paramout_array,3)
-    plotphase = abs(sample_2w_array(start:stop,:,ii)); 
-%     plotphase = plotphase - plotphase(1); 
-    p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
-    p.Color(4) = 0.1; 
-end
-plotphase = abs(twoOmega_signal(start:stop)); 
-plotphase(1)
-% plotphase = plotphase - plotphase(1); 
-plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
-title('Fit Phase', 'FontSize', 16); 
-xlabel('Photoelectron Energy (eV)'); ylabel('2w Amplitude'); 
-hold off; 
-
 figure; hold on; grid on; 
 for ii=1:size(paramout_array,3)
     plotphase = unwrap(angle(sample_2w_array(start:stop,:,ii))); 

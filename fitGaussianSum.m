@@ -3,16 +3,20 @@ function [paramout, fval] = fitGaussianSum(xin, yin, guess, plotting)
 %     % FMINSEARCH FIT
 %     chi2 = @(x) sum( (yin - Spectrum(xin, x) ).^2 ); 
 %     [paramout, fval] = fminsearch(chi2,guess,optimset('MaxFunEvals', 1E6, 'MaxIter',5E5));
+%     
+%     paramout(4,2) = guess(4,2); 
 
     % LSQCURVEFIT FIT
     fun = @(x,xdata) Spectrum(xdata, x); 
     [paramout, fval] = lsqcurvefit(fun, guess, xin, yin); 
+%     paramout(4,2) = guess(4,2); 
 
     if plotting == 1
         figure; hold on; 
         scatter(xin, yin); 
         plot(xin, Spectrum(xin, paramout));
         plot(xin, Spectrum(xin, guess)); 
+        legend('data', 'fit', 'guess'); 
         hold off; 
     end
 
