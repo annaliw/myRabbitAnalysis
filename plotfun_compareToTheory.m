@@ -1,4 +1,4 @@
-function h = plotfun_compareToTheory(data, vref, theory, name)
+function h = plotfun_compareToTheory(data, error, vref, energy, theory, name)
     % data: [x,y] by n array, x = energy in eV
     % vref is which vibrational state to reference
     % theory: [x,y] array, x = energy in eV
@@ -13,19 +13,21 @@ function h = plotfun_compareToTheory(data, vref, theory, name)
     set(h, 'Position', [1         399        1440         399]); 
     
     for ii=1:1:n
-        [val, ind] = min(abs(theory(1,:) - data(1,vref,ii))); 
-        offset = data(2,vref,ii) - theory(2,ind); 
+        [val, ind] = min(abs(energy - data(1,vref,ii))); 
         subplot(1, n, ii); hold on; 
-        %data
-        plot(data(1,:,ii), data(2,:,ii)-offset, 'o', 'MarkerFaceColor', 'k', 'DisplayName', 'data'); 
-        %theory
-        plot(theory(1,:), theory(2,:), 'b', 'LineStyle', '-', 'LineWidth', 2, 'DisplayName', name); 
-        xlim([min(data(1,:,ii))*0.9, max(data(1,:,ii))*1.1]); 
-        xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
-        legend; 
+        for jj=1:1:size(theory, 1)
+            offset = data(2,vref,ii) - theory(jj,ind); 
+            %data
+            errorbar(data(1,:,ii), data(2,:,ii), error(2,:,ii), 'o', 'MarkerFaceColor', 'k', 'HandleVisibility', 'off'); 
+            %theory
+            plot(energy, theory(jj,:)+offset, 'LineWidth', 2, 'DisplayName', name(jj)); 
+            xlim([min(data(1,:,ii))*0.9, max(data(1,:,ii))*1.1]); 
+            ylim([min(data(2,:,ii))*0.8, max(data(2,:,ii))*1.2]); 
+            xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
+        end
         hold off; 
     end
-    
+    legend; 
     hold off; 
     
     

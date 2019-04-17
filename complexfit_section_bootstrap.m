@@ -18,7 +18,7 @@ function [paramout, fval] = complexfit_section_full(wavelength, xin, yin, paramo
 %     yin = y(start:stop); 
     yin_abs = abs(yin)./sum(abs(yin)); 
     yin_phi = mod(unwrap(angle(yin)),2*pi); 
-    yin = [yin_abs; yin_phi]; 
+     
 
     % find new peak center indices
     % paramout_gauss(:,2) = peaks_guess'; 
@@ -29,22 +29,22 @@ function [paramout, fval] = complexfit_section_full(wavelength, xin, yin, paramo
 
     %% fit complex 2w data using gaussians found in above cell
 
-%     % a_guess = abs(twoOmega_signal(peak_ind));
-%     a_guess = ones([1 size(paramout_gauss,1)]); 
-%     % a_guess = ((paramout_gauss(:,1)-abs(twoOmega_signal(peak_ind)))./paramout_gauss(:,1)).'; 
-%     % b_guess = [yin(2, peak_ind), yin(2, peak_ind(end))]; 
-%     b_guess = yin(2, peak_ind); 
-%     c_guess = ones(size(a_guess)).*2; 
-%     guess = [a_guess; b_guess; c_guess]'; 
-    guess = paramout_original; 
+    % fit new gaussian amplitudes
+    yin = yin_abs; 
+    guess = ones([1 size(paramout_gauss,1)]); 
+    [newamp, fval] = fitGaussianAmplitudes(xin, yin, paramout_gauss, guess, 0); 
+    paramout_gauss(:,1) = newamp; 
     
-    % guess(end,3) = -1; 
-%     guess = [a_guess; b_guess].'; 
-
+    
+    
+    yin = [yin_abs; yin_phi];
+    guess = paramout_original; 
     [paramout, fval] = fit2OmegaSum(xin, yin, paramout_gauss, guess, plotting); 
     % paramout(:,2) = mod(paramout(:,2), 2*pi); 
 
     % plotfun_fit(n, 810, xin, yin, fix, paramout, slope, peakflag)
+    
+    paramout = cat(2, paramout_gauss, paramout); 
     
 
 end

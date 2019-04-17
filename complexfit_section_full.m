@@ -29,7 +29,6 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
 %     xin = x(start:stop); 
 %     yin = y(start:stop); 
     yin_abs = abs(yin)./sum(abs(yin)); 
-    yin_phi = mod(unwrap(angle(yin)),2*pi); 
     yin = yin_abs; 
 
     % find peaks and their indices
@@ -41,7 +40,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
         peak_ind(i) = find(abs(xin - peaks_guess(i)) < tolerance, 1);  
     end
     amp_guess = yin(peak_ind); % form amplitude guess
-    sig_guess = ones(size(amp_guess))*0.1; % form width guess
+    sig_guess = ones(size(amp_guess))*0.17; % form width guess
     guess = [amp_guess; peaks_guess; sig_guess].'; % full guess matrix
 
     [paramout_gauss, fval_gauss] = fitGaussianSum(xin, yin, guess, plotting); 
@@ -70,7 +69,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     % a_guess = ((paramout_gauss(:,1)-abs(twoOmega_signal(peak_ind)))./paramout_gauss(:,1)).'; 
     % b_guess = [yin(2, peak_ind), yin(2, peak_ind(end))]; 
     b_guess = yin(2, peak_ind); 
-    c_guess = ones(size(a_guess)).*2; 
+    c_guess = ones(size(a_guess)).*1; 
     guess = [a_guess; b_guess; c_guess]'; 
     % guess(end,3) = -1; 
 %     guess = [a_guess; b_guess].'; 

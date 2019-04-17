@@ -146,7 +146,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
         Yout = 0; 
         Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
         if size(p,2) == 2
-            Phase = @(x,a,b,mu) a .* exp(1j .* b); 
+            Phase = @(x,a,b,mu) exp(1j .* b); 
             % sum the 2w signal
             for n = 1:size(p,1)
                 Amp = gaussian(n,1); 

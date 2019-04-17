@@ -47,21 +47,26 @@ xlabel('photoelectron energy (a.u.)'); ylabel('Coulomb scattering phase');
 
 %% reference RABBITT phase to v=ref_n
 ref_n = 3; 
-nstates = 5; 
+nstates = 6; 
 hw = 1240/wavelength; 
 sblist = [12, 14, 16]; 
 
-measured_phases = [sb12_param(:,2)', sb14_param(1:nstates,2)', sb16_param(1:nstates,2)']; 
-sub_phases = [sb12_param(:,2)'-sb12_param(ref_n,2), sb14_param(1:nstates,2)'-sb14_param(ref_n,2), sb16_param(1:nstates,2)'-sb16_param(ref_n,2)]; 
+measured_phases = [unwrap(sb12_phase(1:nstates,1))', ...
+                   unwrap(sb14_phase(1:nstates,1))', ...
+                   unwrap(sb16_phase(1:nstates,1))']; 
+errors_phase =    [sb12_phase(1:nstates,2)', ...
+                   sb14_phase(1:nstates,2)', ...
+                   sb16_phase(1:nstates,2)']; 
+% sub_phases = [sb12_param(:,2)'-sb12_param(ref_n,2), sb14_param(1:nstates,2)'-sb14_param(ref_n,2), sb16_param(1:nstates,2)'-sb16_param(ref_n,2)]; 
 % measured_phases = [sb12_jackknife_phase(1:nstates)', sb14_jackknife_phase(1:nstates)', sb16_jackknife_phase(1:nstates)']; 
 % sub_phases = [sb12_jackknife_phase(1:nstates)'-sb12_jackknife_phase(ref_n), sb14_jackknife_phase(1:nstates)'-sb14_jackknife_phase(ref_n), sb16_jackknife_phase(1:nstates)'-sb16_jackknife_phase(ref_n)]; 
-measured_energy = [sb12_gauss(:,2)', sb14_gauss(:,2)', sb16_gauss(:,2)']/E_AU; 
+measured_energy = [mean(sb12_param(:,2),3)', mean(sb14_param(:,2),3)', mean(sb16_param(:,2),3)']; 
 
 % cc_phase = sub_phases - sigma_n; 
 
 % figure; plot(sigmaE, sigma_n, 'o-'); 
 % xlabel('photoelectron energy (a.u.)'); ylabel('Coulomb scattering phase'); 
-figure; plot(measured_energy, sub_phases, 'o-'); 
+figure; errorbar(measured_energy, measured_phases, errors_phase, 'o-'); 
 xlabel('photoelectron energy (a.u.)'); ylabel('RABBITT phase');
 % figure; plot(sigmaE, cc_phase, 'o-'); 
 % xlabel('photoelectron energy (a.u.)'); ylabel('Continuum-continuum phase');
@@ -84,9 +89,7 @@ xlabel('photoelectron energy (a.u.)'); ylabel('RABBITT phase');
 % legend('H2 data cc phase', 'CCP', 'CCPA', 'CCPAp'); 
 
 %% subtract CC models and Wigner Delays
-% sigma and CC models should have been calculated with the same energy axis
-
-measured_delays = sub_phases.*wavelength/2/0.3/(2*pi);  
+% sigma and CC models should have been calculated with the same energy axis 
 
 curve_CCP = fliplr(CCP(2:end)).*wavelength/2/0.3/(2*pi); 
 curve_CCPA = fliplr(CCPA(2:end)).*wavelength/2/0.3/(2*pi); 
@@ -150,11 +153,17 @@ hold off;
 
 hold off; 
 %% 
+measured_delays = measured_phases.*wavelength/2/0.3/(2*pi); 
+errors_delay   = errors_phase.*wavelength/2/0.3/(2*pi); 
 
-tmp_data = cat(3, ...
-            [measured_energy(1:6); measured_delays(1:6)-100], ...
-            [measured_energy(7:11), NaN; measured_delays(7:11)-140, NaN], ...
-            [measured_energy(12:16), NaN; measured_delays(12:16)-80, NaN]); 
+tmp_data  = cat(3, ...
+            [measured_energy(1:6); measured_delays(1:6)], ...
+            [measured_energy(7:12); measured_delays(7:12)], ...
+            [measured_energy(13:18); measured_delays(13:18)]); 
+tmp_error = cat(3, ...
+            [measured_energy(1:6); errors_delay(1:6)-100], ...
+            [measured_energy(7:12); errors_delay(7:12)], ...
+            [measured_energy(13:18); errors_delay(13:18)]); 
 
 theory_list = [subcurve_CCP; subcurve_CCPA; subcurve_CCPAp; ...
                subcurve_TCLC_11; subcurve_TCLC_15; subcurve_TCLC_18]; 
@@ -165,10 +174,14 @@ if ~exist(newfolder, 'dir')
    mkdir(newfolder)
 end
 
-for ii=1:size(theory_list,1)
-    fig = plotfun_compareToTheory(tmp_data, 3, [E(2:end); theory_list(ii,:)], theory_name(ii));         
-    saveas(fig, newfolder + regexprep(theory_name(ii),' ','_') + '.png'); 
-end
+% theory_list = theory_list(1); 
+
+% for ii=1:1:size(theory_list,1)
+%     fig = plotfun_compareToTheory(tmp_data, tmp_error, 3, [E(2:end); theory_list(ii,:)], theory_name(ii));         
+%     saveas(fig, newfolder + regexprep(theory_name(ii),' ','_') + '.png'); 
+% end
+
+fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), theory_list, theory_name); 
 
 
 %%
@@ -246,3 +259,41 @@ legend;
 xlim([min(measured_energy), max(measured_energy)]); 
 xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
 hold off; 
+
+%% CO2 scratch
+% load('CO2_20190414.mat')
+
+measured_energy = [mean(X12_param(:,2,:),3), ...
+                   mean(X14_param(:,2,:),3), ...
+                   mean(X16_param(:,2,:),3), ...
+                   mean(X18_param(:,2,:),3), ...
+                   mean(A14_param(:,2,:),3), ...
+                   mean(A16_param(:,2,:),3), ...
+                   mean(A18_param(:,2,:),3), ...
+                   mean(B14_param(:,2,:),3), ...
+                   mean(B16_param(:,2,:),3), ...
+                   mean(B18_param(:,2,:),3)]; 
+measured_phase  = [X12_phase, X14_phase, X16_phase, X18_phase, ...
+                   A14_phase, A16_phase, A18_phase, ...
+                   B14_phase, B16_phase, B18_phase]; 
+measured_error  = [X12_phase_std, X14_phase_std, X16_phase_std, X18_phase_std, ...
+                   A14_phase_std, A16_phase_std, A18_phase_std, ...
+                   B14_phase_std, B16_phase_std, B18_phase_std]; 
+
+measured_phase = unwrap(measured_phase); 
+measured_delay = measured_phase.*wavelength/2/0.3/(2*pi); 
+
+figure; hold on; 
+errorbar(measured_energy(1:4), measured_phase(1:4), measured_error(1:4), '-o', ...
+    'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'k', 'Color', 'k', ...
+    'MarkerSize', 4, 'LineWidth', 2, 'DisplayName', 'X'); 
+errorbar(measured_energy(5:7), measured_phase(5:7), measured_error(5:7), '-o', ...
+    'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r', 'Color', 'r', ...
+    'MarkerSize', 4, 'LineWidth', 2, 'DisplayName', 'A'); 
+errorbar(measured_energy(8:10), measured_phase(8:10), measured_error(8:10), '-o', ...
+    'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b', 'Color', 'b', ...
+    'MarkerSize', 4, 'LineWidth', 2, 'DisplayName', 'B'); 
+legend; 
+xlabel('photoelectron energy (eV)'); ylabel('phase'); 
+hold off; 
+
