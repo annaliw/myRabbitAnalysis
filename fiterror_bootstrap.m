@@ -128,9 +128,9 @@ XUV_only = Counts';
 % region = [4.3742 5.7677]; 
 % region = [5.8452 7.2387]; 
 % region = [7.4 8.7]; 
-region = [8.9 10.08]; 
+% region = [8.9 10.08]; 
 % region = [10.2 11.3]; 
-% region = [11.8 15.5]; 
+region = [11.8 15.5]; 
 
 tolerance = 0.05; 
 % fit section set-up
@@ -140,7 +140,7 @@ stop = find(abs(E-region(2))<tolerance, 1, 'first');
 [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E(start:stop), abs(twoOmega_signal(start:stop)), twoOmega_signal(start:stop), 1); 
 % save as labeled variables
 paramout_original = paramout; 
-fval_original = fval; 
+fval_original = fval
 
 %% CASE RESAMPLING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
