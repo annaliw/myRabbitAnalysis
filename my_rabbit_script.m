@@ -1,6 +1,6 @@
 % load data into arrays, don't do anything else in this cell 
 clear all 
-[HistTot_array, stageTimes, freqAxis] = getrawdata('/Users/annaliw/code/KrCO2_scan/', 1, 810); 
+[HistTot_array, XUV_only, stageTimes, freqAxis] = getrawdata('/Users/annaliw/code/2019_06_18-15Scan/', 1, 810); 
 
 %%
 t0 = 75; 

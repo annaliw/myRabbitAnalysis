@@ -21,23 +21,9 @@ function [paramout, fval] = fitGaussianSum(xin, yin, guess, plotting)
     end
 
 
-%     function Yout = Spectrum(E, p)
-%         Yout = 0; 
-%         Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
-%         % sum the gaussians
-%         p = abs(p); 
-%         for n = 1:size(p,1)
-%             Amp = p(n,1);
-%             wid = p(n,3);
-%             E0 = p(n,2);
-% 
-%             Yout = Yout + Gauss(E,Amp,E0,wid);
-%         end
-% 
-%     end
     function Yout = Spectrum(E, p)
         Yout = 0; 
-        Gauss = @(x,A,mu,sig) A.* 1./(1 + ((mu-x)/(sig/2)).^2); 
+        Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
         % sum the gaussians
         p = abs(p); 
         for n = 1:size(p,1)
@@ -49,6 +35,22 @@ function [paramout, fval] = fitGaussianSum(xin, yin, guess, plotting)
         end
 
     end
+%     function Yout = Spectrum(E, p)
+%         Yout = 0; 
+%         Gauss = @(x,A,mu,sig,alpha) A * alpha/2 * exp(alpha/2 * (2*mu - alpha*sig^2 - 2*x)) ...
+%             .* (1 - erf( (mu + alpha*sig^2 -x)/sqrt(2)/sig )); 
+%         % sum the gaussians
+%         p = abs(p); 
+%         for n = 1:size(p,1)
+%             Amp = p(n,1);
+%             wid = p(n,3);
+%             E0 = p(n,2);
+%             alpha = p(n,4); 
+% 
+%             Yout = Yout + Gauss(2*E0-E,Amp,E0,wid,alpha);
+%         end
+% 
+%     end
 
 
 end

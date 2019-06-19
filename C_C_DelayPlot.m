@@ -9,7 +9,7 @@ l = 1; %Final state angular momentum
 
 %Final Momentum of outgoing electron
 % k = 0:0.001:3; 
-k = [logspace(-2, -1, 1000), logspace(-1, 0, 500)]; 
+k = [logspace(-2, -1, 1000), logspace(-1, 0, 500)] + sqrt(2*w); 
 
 %Final Energy of outgoing electron
 E = k.^2/2 .* E_AU; 
@@ -70,12 +70,13 @@ plot(fliplr(E),unwrap(fliplr(aPPAp)),'LineStyle','-.','LineWidth',2,'DisplayName
 
 
 %hold off
-xlim([2,30])
+xlim([0,30])
 xlabel('Energy (eV)')
 ylabel('Phase (rad)')
 title('Continuum-Continuum Transition Phase')
 h_300.Children.FontSize = 14;
 h_300.Children.LineWidth = 2;
+legend("ePP", "ePPA", "ePPAp", "aPP", "aPPA", "aPPAp")
 
 CCP = unwrap(fliplr(ePP)) - unwrap(fliplr(aPP));
 CCPA = unwrap(fliplr(ePPA)) - unwrap(fliplr(aPPA));
@@ -91,7 +92,7 @@ plot(fliplr(E), CCPA.*(T_L*1000/2/(2*pi)), 'LineStyle','--','LineWidth',2,'Displ
 ax1.ColorOrderIndex = ind1;
 plot(fliplr(E), CCPAp.*(T_L*1000/2/(2*pi)), 'LineStyle','-.','LineWidth',2,'DisplayName','P+A^{\prime}')
 %hold off
-xlim([2,30])
+xlim([0,30])
 xlabel('Energy (eV)')
 ylabel('Delay (as)')
 title('Continuum-Continuum Delays')
@@ -110,7 +111,7 @@ xlabel('Energy (eV)')
 ylabel('Slope of Delay (as/eV)')
 title('Slope of Continuum-Continuum Delays')
 
-xlim([2,10])
+xlim([0,10])
 
 h_301.Children(1).FontSize = 14;
 h_301.Children(1).LineWidth = 2;

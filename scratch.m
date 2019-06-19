@@ -103,13 +103,14 @@ tmpE = E/E_AU;
 tmpl = wavelength/0.0529; 
 tmpw = 2*pi*137/tmpl; 
 ge = 0.5772; 
+alpha = 0; 
 % tmpE = E; 
 % w = 2*pi*0.29979*24.2/(wavelength*0.001)/1000; 
 
 TCLC = -(1./(2*tmpE).^(3/2)).*(log(4*tmpE*tmpl)); 
 TCLC_11 = -(1./(2*tmpE).^(3/2)).*(log(4*tmpE/tmpw) - ge + pi*tmpw./(8*tmpE)); 
 TCLC_15 = -(1./(2*tmpE).^(3/2)).*(log(0.37*2*pi*tmpE/tmpw) - 1); 
-TCLC_18 = -(1./(2*tmpE).^(3/2)).*(log(4*tmpE/tmpw) - ge - 1 + 3*pi*tmpw./(4*(2*tmpE).^(3/2))); 
+TCLC_18 = -(1./(1 + alpha*tmpw/((2*tmpE).^(3/2)))).*(1./(2*tmpE).^(3/2)).*(log(4*tmpE/tmpw) - ge - 1 + 3*pi*tmpw./(4*(2*tmpE).^(3/2))); 
 % TCLC_18 = -(1./(2*tmpE).^(3/2)).*(log(4*tmpE/tmpw) - 1 - ge + 3*pi*tmpw./(2*tmpE).^(3/2)/4); 
 
 curve_TCLC_11 = TCLC_11(2:end)*24.2; 
@@ -131,6 +132,7 @@ plot(E(2:end), curve_TCLC_18, 'b', 'LineStyle', '-.', 'LineWidth', 2, 'DisplayNa
 plot(E(2:end), delay, 'k', 'DisplayName', 'WignerDelay'); 
 % xlim([min(measured_energy), max(measured_energy)]); 
 xlim([1.5 3])
+ylim([curve_TCLC_18(1), 1000])
 xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
 legend; 
 title('Delays')
@@ -146,6 +148,7 @@ plot(E(2:end), subcurve_TCLC_18, 'b', 'LineStyle', '-.', 'LineWidth', 2, 'Displa
 % plot(E(2:end), delay, 'k', 'DisplayName', 'WignerDelay'); 
 % xlim([min(measured_energy), max(measured_energy)]); 
 xlim([1.5 3])
+% ylim([0, 10^4])
 xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
 legend; 
 title('Wigner delay + CC delay')

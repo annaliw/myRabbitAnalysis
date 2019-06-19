@@ -14,20 +14,20 @@ function h = plotfun_compareToTheory(data, error, vref, energy, theory, name)
     
     for ii=1:1:n
         [val, ind] = min(abs(energy - data(1,vref,ii))); 
-        for jj=1:1:size(theory_list, 1)
-            theory = theory_list(jj,:); 
-            offset = data(2,vref,ii) - theory(2,ind); 
-            subplot(1, n, ii); hold on; 
+        subplot(1, n, ii); hold on; 
+        for jj=1:1:size(theory, 1)
+            offset = data(2,vref,ii) - theory(jj,ind); 
             %data
-            errorbar(data(1,:,ii), data(2,:,ii)-offset, error(2,:,ii), 'o', 'MarkerFaceColor', 'k', 'DisplayName', 'data'); 
-        %theory
-        plot(theory(1,:), theory(2,:), 'b', 'LineStyle', '-', 'LineWidth', 2, 'DisplayName', name); 
-        xlim([min(data(1,:,ii))*0.9, max(data(1,:,ii))*1.1]); 
-        xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
-        legend; 
+            errorbar(data(1,:,ii), data(2,:,ii), error(2,:,ii), 'o', 'MarkerFaceColor', 'k', 'HandleVisibility', 'off'); 
+            %theory
+            plot(energy, theory(jj,:)+offset, 'LineWidth', 2, 'DisplayName', name(jj)); 
+            xlim([min(data(1,:,ii))*0.9, max(data(1,:,ii))*1.1]); 
+            ylim([(min(data(2,:,ii))*0.8, max(data(2,:,ii))*1.2]); 
+            xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
+        end
         hold off; 
     end
-    
+    legend; 
     hold off; 
     
     

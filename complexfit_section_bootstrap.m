@@ -16,6 +16,7 @@ function [paramout, fval] = complexfit_section_full(wavelength, xin, yin, paramo
 % 
 %     xin = x(start:stop); 
 %     yin = y(start:stop); 
+    yin = yin.'; 
     yin_abs = abs(yin)./sum(abs(yin)); 
     yin_phi = mod(unwrap(angle(yin)),2*pi); 
      
