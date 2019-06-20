@@ -156,8 +156,11 @@ hold off;
 
 hold off; 
 %% 
-measured_delays = measured_phases.*wavelength/2/0.3/(2*pi); 
-errors_delay   = errors_phase.*wavelength/2/0.3/(2*pi); 
+% measured_delays = unwrap(measured_phases).*wavelength/2/0.3/(2*pi); 
+% errors_delay   = errors_phase.*wavelength/2/0.3/(2*pi); 
+measured_delays = measured_phases./(2*w); 
+errors_delay = errors_phase./(2*w); 
+
 
 tmp_data  = cat(3, ...
             [measured_energy(1:6); measured_delays(1:6)], ...
@@ -263,40 +266,44 @@ xlim([min(measured_energy), max(measured_energy)]);
 xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
 hold off; 
 
-%% CO2 scratch
-% load('CO2_20190414.mat')
+%% test alpha parameter in Serov curve
 
-measured_energy = [mean(X12_param(:,2,:),3), ...
-                   mean(X14_param(:,2,:),3), ...
-                   mean(X16_param(:,2,:),3), ...
-                   mean(X18_param(:,2,:),3), ...
-                   mean(A14_param(:,2,:),3), ...
-                   mean(A16_param(:,2,:),3), ...
-                   mean(A18_param(:,2,:),3), ...
-                   mean(B14_param(:,2,:),3), ...
-                   mean(B16_param(:,2,:),3), ...
-                   mean(B18_param(:,2,:),3)]; 
-measured_phase  = [X12_phase, X14_phase, X16_phase, X18_phase, ...
-                   A14_phase, A16_phase, A18_phase, ...
-                   B14_phase, B16_phase, B18_phase]; 
-measured_error  = [X12_phase_std, X14_phase_std, X16_phase_std, X18_phase_std, ...
-                   A14_phase_std, A16_phase_std, A18_phase_std, ...
-                   B14_phase_std, B16_phase_std, B18_phase_std]; 
-
-measured_phase = unwrap(measured_phase); 
-measured_delay = measured_phase.*wavelength/2/0.3/(2*pi); 
+alpha = 0.9:0.1:1.1; 
+theory_list = zeros([numel(alpha), numel(E(2:end))]); 
+theory_name = string(zeros([1, numel(alpha)])); 
 
 figure; hold on; 
-errorbar(measured_energy(1:4), measured_phase(1:4), measured_error(1:4), '-o', ...
-    'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'k', 'Color', 'k', ...
-    'MarkerSize', 4, 'LineWidth', 2, 'DisplayName', 'X'); 
-errorbar(measured_energy(5:7), measured_phase(5:7), measured_error(5:7), '-o', ...
-    'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r', 'Color', 'r', ...
-    'MarkerSize', 4, 'LineWidth', 2, 'DisplayName', 'A'); 
-errorbar(measured_energy(8:10), measured_phase(8:10), measured_error(8:10), '-o', ...
-    'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b', 'Color', 'b', ...
-    'MarkerSize', 4, 'LineWidth', 2, 'DisplayName', 'B'); 
-legend; 
-xlabel('photoelectron energy (eV)'); ylabel('phase'); 
-hold off; 
+for ii = 1:numel(alpha) 
+    curve = Serov_curve(alpha(ii), E(2:end)); 
+    theory_list(ii,:) = curve*24.2 + delay; 
+    theory_name(ii) = num2str(alpha(ii)); 
+    plot(E(2:end), theory_list(ii,:), 'DisplayName', theory_name(ii)); 
+    legend; 
+end
+plot(E(2:end), subcurve_CCP, 'DisplayName', 'CCP'); 
+
+fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), [theory_list; subcurve_CCP], [theory_name, 'CCP']); 
+
+%% test alpha parameter in Ivanov curve
+
+alpha = 1:0.5:3; 
+theory_list = zeros([numel(alpha), numel(E(2:end))]); 
+theory_name = string(zeros([1, numel(alpha)])); 
+
+figure; hold on; 
+for ii = 1:numel(alpha) 
+    curve = Ivanov_curve(alpha(ii), E(2:end)); 
+    theory_list(ii,:) = curve*24.2 + delay; 
+    theory_name(ii) = num2str(alpha(ii)); 
+    plot(E(2:end), theory_list(ii,:), 'DisplayName', theory_name(ii)); 
+    legend; 
+end
+
+fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), theory_list, theory_name); 
+
+
+
+
+
+
 
