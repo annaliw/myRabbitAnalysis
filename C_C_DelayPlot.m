@@ -9,7 +9,7 @@ l = 1; %Final state angular momentum
 
 %Final Momentum of outgoing electron
 % k = 0:0.001:3; 
-k = [logspace(-2, -1, 1000), logspace(-1, 0, 500)] + sqrt(2*w); 
+k = logspace(-2, 0, 1500) + sqrt(2*w); 
 
 %Final Energy of outgoing electron
 E = k.^2/2 .* E_AU; 

@@ -23,7 +23,7 @@ function h = plotfun_compareToTheory(data, error, vref, energy, theory, name)
             plot(energy, theory(jj,:)+offset, 'LineWidth', 2, 'DisplayName', name(jj)); 
             xlim([min(data(1,:,ii))*0.9, max(data(1,:,ii))*1.1]); 
             range = [mean(data(2,:,ii))-abs(max(error(2,:,ii))*3), ...
-                mean(data(2,:,ii))+abs(max(error(2,:,ii))*3)]
+                mean(data(2,:,ii))+abs(max(error(2,:,ii))*3)]; 
             ylim(range); 
             xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
         end

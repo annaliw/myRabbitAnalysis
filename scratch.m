@@ -1,77 +1,3 @@
-%% plot Coulomb scattering phase
-% first run Jame's C_C_DelayPlot.m
-
-hw = 1240/wavelength; 
-
-% k = sqrt(2*((11:1:21)*hw-IP(1))/27.211); 
-% k = logspace(-1, 0, 1000); 
-% E = k.^2/2; 
-% l = 1; 
-sigma = unwrap(angle(igamma(l + 1 - 1j./k, 0))); 
-delay = 24.2 * diff(sigma)./diff(E/E_AU); 
-
-figure; 
-plot(E, sigma); 
-figure; 
-plot(E(2:end), delay, 'o-'); 
-
-%% get sigma_n
-ref_n = 5; 
-nstates = 6; 
-hw = 1240/wavelength; 
-sblist = [12, 14, 16]; 
-% [sigmaE, sigmak, sigma_n] = coulombScatteringPhase(sblist, 810, IP); 
-% [tmp1, tmp2, sigma_0] = coulombScatteringPhase(sblist, 810, IP(ref_n)); 
-% sigma_sub = sigma_n - reshape(squeeze(repmat(sigma_0, [1, size(IP)]))',size(sigma_n)); 
-enlist = cat(3, ...
-             repmat((sblist-1)*hw, [nstates,1]) - repmat(IP(1:nstates), [numel(sblist),1])', ...
-             repmat((sblist+1)*hw, [nstates,1]) - repmat(IP(1:nstates), [numel(sblist),1])', ...
-             repmat((sblist)*hw,   [nstates,1]) - repmat(IP(1:nstates), [numel(sblist),1])');  
-saveshape = size(enlist); 
-enlist = enlist(:); 
-enind  = zeros([saveshape]); 
-enind = enind(:); 
-for ii=1:numel(enlist)
-    [tmp, enind(ii)] = min(abs(E-enlist(ii)/E_AU)); 
-end
-enind = reshape(enind, saveshape); 
-minusind = enind(:,:,1); minusind = minusind(:); 
-plusind  = enind(:,:,2); plusind  = plusind(:); 
-nind     = enind(:,:,3); nind = nind(:); 
-sigma_n = sigma(plusind) - sigma(minusind); 
-sigmaE = E(nind); 
-
-figure; plot(sigmaE, sigma_n, 'o-'); 
-xlabel('photoelectron energy (a.u.)'); ylabel('Coulomb scattering phase'); 
-
-
-%% reference RABBITT phase to v=ref_n
-ref_n = 3; 
-nstates = 6; 
-hw = 1240/wavelength; 
-sblist = [12, 14, 16]; 
-
-measured_phases = [unwrap(sb12_phase(1:nstates,1))', ...
-                   unwrap(sb14_phase(1:nstates,1))', ...
-                   unwrap(sb16_phase(1:nstates,1))']; 
-errors_phase =    [sb12_phase(1:nstates,2)', ...
-                   sb14_phase(1:nstates,2)', ...
-                   sb16_phase(1:nstates,2)']; 
-% sub_phases = [sb12_param(:,2)'-sb12_param(ref_n,2), sb14_param(1:nstates,2)'-sb14_param(ref_n,2), sb16_param(1:nstates,2)'-sb16_param(ref_n,2)]; 
-% measured_phases = [sb12_jackknife_phase(1:nstates)', sb14_jackknife_phase(1:nstates)', sb16_jackknife_phase(1:nstates)']; 
-% sub_phases = [sb12_jackknife_phase(1:nstates)'-sb12_jackknife_phase(ref_n), sb14_jackknife_phase(1:nstates)'-sb14_jackknife_phase(ref_n), sb16_jackknife_phase(1:nstates)'-sb16_jackknife_phase(ref_n)]; 
-measured_energy = [mean(sb12_param(:,2),3)', mean(sb14_param(:,2),3)', mean(sb16_param(:,2),3)']; 
-
-% cc_phase = sub_phases - sigma_n; 
-
-% figure; plot(sigmaE, sigma_n, 'o-'); 
-% xlabel('photoelectron energy (a.u.)'); ylabel('Coulomb scattering phase'); 
-figure; errorbar(measured_energy, measured_phases, errors_phase, 'o-'); 
-xlabel('photoelectron energy (a.u.)'); ylabel('RABBITT phase');
-% figure; plot(sigmaE, cc_phase, 'o-'); 
-% xlabel('photoelectron energy (a.u.)'); ylabel('Continuum-continuum phase');
-
-
 %% Plot CC phases
 % % first run Jame's C_C_DelayPlot.m
 % cc_time = cc_phase.*(T_L*1000/2/(2*pi)); 
@@ -89,14 +15,18 @@ xlabel('photoelectron energy (a.u.)'); ylabel('RABBITT phase');
 % legend('H2 data cc phase', 'CCP', 'CCPA', 'CCPAp'); 
 
 %% subtract CC models and Wigner Delays
-% sigma and CC models should have been calculated with the same energy axis 
+% first run Jame's C_C_DelayPlot.m (with the correct l, Z values)
 
-curve_CCP = fliplr(CCP(2:end)).*wavelength/2/0.3/(2*pi); 
-curve_CCPA = fliplr(CCPA(2:end)).*wavelength/2/0.3/(2*pi); 
-curve_CCPAp = fliplr(unwrap(CCPAp(2:end))).*wavelength/2/0.3/(2*pi); 
-subcurve_CCP = delay + fliplr(CCP(2:end)).*wavelength/2/0.3/(2*pi); 
-subcurve_CCPA = delay + fliplr(CCPA(2:end)).*wavelength/2/0.3/(2*pi); 
-subcurve_CCPAp = delay + fliplr(unwrap(CCPAp(2:end))).*wavelength/2/0.3/(2*pi); 
+l=0; Z=1; % make sure these match the CCdelay calculations
+[sigma, delay] = coulombScatteringPhase(l, Z, E); 
+
+curve_CCP = fliplr(CCP(2:end)).*(T_L*1000/2/(2*pi)); 
+curve_CCPA = fliplr(CCPA(2:end)).*(T_L*1000/2/(2*pi)); 
+curve_CCPAp = fliplr(unwrap(CCPAp(2:end))).*(T_L*1000/2/(2*pi)); 
+subcurve_CCP = delay + fliplr(CCP(2:end)).*(T_L*1000/2/(2*pi)); 
+subcurve_CCPA = delay + fliplr(CCPA(2:end)).*(T_L*1000/2/(2*pi)); 
+subcurve_CCPAp = delay + fliplr(unwrap(CCPAp(2:end))).*(T_L*1000/2/(2*pi)); 
+
 
 % CLC delay formulas
 tmpE = E/E_AU; 
@@ -107,11 +37,9 @@ alpha = 0;
 % tmpE = E; 
 % w = 2*pi*0.29979*24.2/(wavelength*0.001)/1000; 
 
-TCLC = -(1./(2*tmpE).^(3/2)).*(log(4*tmpE*tmpl)); 
-TCLC_11 = -(1./(2*tmpE).^(3/2)).*(log(4*tmpE/tmpw) - ge + pi*tmpw./(8*tmpE)); 
+TCLC_11 = Ivanov_curve(l, Z, E); 
 TCLC_15 = -(1./(2*tmpE).^(3/2)).*(log(0.37*2*pi*tmpE/tmpw) - 1); 
-TCLC_18 = -(1./(1 + alpha*tmpw/((2*tmpE).^(3/2)))).*(1./(2*tmpE).^(3/2)).*(log(4*tmpE/tmpw) - ge - 1 + 3*pi*tmpw./(4*(2*tmpE).^(3/2))); 
-% TCLC_18 = -(1./(2*tmpE).^(3/2)).*(log(4*tmpE/tmpw) - 1 - ge + 3*pi*tmpw./(2*tmpE).^(3/2)/4); 
+TCLC_18 = Serov_curve(Z, E); 
 
 curve_TCLC_11 = TCLC_11(2:end)*24.2; 
 curve_TCLC_15 = TCLC_15(2:end)*24.2; 
@@ -132,7 +60,7 @@ plot(E(2:end), curve_TCLC_18, 'b', 'LineStyle', '-.', 'LineWidth', 2, 'DisplayNa
 plot(E(2:end), delay, 'k', 'DisplayName', 'WignerDelay'); 
 % xlim([min(measured_energy), max(measured_energy)]); 
 xlim([1.5 3])
-ylim([curve_TCLC_18(1), 1000])
+ylim([-2000, 1000])
 xlabel('photoelectron energy (eV)'); ylabel('time delay (as)'); 
 legend; 
 title('Delays')
@@ -155,11 +83,20 @@ title('Wigner delay + CC delay')
 hold off; 
 
 hold off; 
-%% 
-% measured_delays = unwrap(measured_phases).*wavelength/2/0.3/(2*pi); 
-% errors_delay   = errors_phase.*wavelength/2/0.3/(2*pi); 
-measured_delays = measured_phases./(2*w); 
-errors_delay = errors_phase./(2*w); 
+%% proccess data and plot with theory
+ref_n = 3; 
+nstates = 6; 
+measured_phases = [unwrap(sb12_phase(1:nstates,1))', ...
+                   unwrap(sb14_phase(1:nstates,1))', ...
+                   unwrap(sb16_phase(1:nstates,1))']; 
+errors_phase =    [sb12_phase(1:nstates,2)', ...
+                   sb14_phase(1:nstates,2)', ...
+                   sb16_phase(1:nstates,2)'];
+               
+measured_delays = measured_phases.*(T_L*1000/2/(2*pi)); 
+errors_delay = errors_phase.*(T_L*1000/2/(2*pi)); 
+
+measured_energy = [mean(sb12_param(:,2),3)', mean(sb14_param(:,2),3)', mean(sb16_param(:,2),3)']; 
 
 
 tmp_data  = cat(3, ...
@@ -189,121 +126,10 @@ end
 
 fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), theory_list, theory_name); 
 
-
 %%
-
-figure; hold on; 
-
-subplot(2, 3, 1); hold on; 
-% model
-plot(E(2:end), subcurve_CCP, 'LineWidth', 2, 'DisplayName', 'CCP'); 
-%data
-plot(measured_energy(1:6), measured_delays(1:6)-1, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(7:11), measured_delays(7:11)-5.5, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(12:16), measured_delays(12:16)-6, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-legend; 
-xlim([min(measured_energy), max(measured_energy)]); 
-xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
-hold off; 
-
-subplot(2, 3, 2); hold on; 
-% model
-plot(E(2:end), subcurve_CCPA, 'LineWidth', 2, 'DisplayName', 'CCPA'); 
-%data
-plot(measured_energy(1:6), measured_delays(1:6)-6.8, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(7:11), measured_delays(7:11)-6.65, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(12:16), measured_delays(12:16)-6.45, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-legend; 
-xlim([min(measured_energy), max(measured_energy)]); 
-xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
-hold off; 
-
-subplot(2, 3, 3); hold on; 
-% model
-plot(E(2:end), subcurve_CCPAp, 'LineWidth', 2, 'DisplayName', 'CCPAp');  
-%data
-plot(measured_energy(1:6), measured_delays(1:6)-3.2, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(7:11), measured_delays(7:11)-1.4, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(12:16), measured_delays(12:16)-0.9, 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-legend; 
-xlim([min(measured_energy), max(measured_energy)]); 
-xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
-hold off; 
-
-subplot(2, 3, 4); hold on; 
-% model
-plot(E(2:end), subcurve_TCLC_11, 'LineWidth', 2, 'DisplayName', 'TCLC 11');  
-%data
-plot(measured_energy(1:6), measured_delays(1:6), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(7:11), measured_delays(7:11), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(12:16), measured_delays(12:16), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-legend; 
-xlim([min(measured_energy), max(measured_energy)]); 
-xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
-hold off; 
-
-subplot(2, 3, 5); hold on; 
-% model
-plot(E(2:end), subcurve_TCLC_15, 'LineWidth', 2, 'DisplayName', 'TCLC 15');  
-%data
-plot(measured_energy(1:6), measured_delays(1:6), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(7:11), measured_delays(7:11), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(12:16), measured_delays(12:16), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-legend; 
-xlim([min(measured_energy), max(measured_energy)]); 
-xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
-hold off; 
-
-subplot(2, 3, 6); hold on; 
-% model
-plot(E(2:end), subcurve_TCLC_18, 'LineWidth', 2, 'DisplayName', 'TCLC 18');  
-%data
-plot(measured_energy(1:6), measured_delays(1:6), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(7:11), measured_delays(7:11), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-plot(measured_energy(12:16), measured_delays(12:16), 'o', 'MarkerFaceColor', 'r', 'DisplayName', 'data');
-legend; 
-xlim([min(measured_energy), max(measured_energy)]); 
-xlabel('photoelectron energy (a.u.)'); ylabel('delay (fs)'); 
-hold off; 
-
-%% test alpha parameter in Serov curve
-
-alpha = 0.9:0.1:1.1; 
-theory_list = zeros([numel(alpha), numel(E(2:end))]); 
-theory_name = string(zeros([1, numel(alpha)])); 
-
-figure; hold on; 
-for ii = 1:numel(alpha) 
-    curve = Serov_curve(alpha(ii), E(2:end)); 
-    theory_list(ii,:) = curve*24.2 + delay; 
-    theory_name(ii) = num2str(alpha(ii)); 
-    plot(E(2:end), theory_list(ii,:), 'DisplayName', theory_name(ii)); 
-    legend; 
-end
-plot(E(2:end), subcurve_CCP, 'DisplayName', 'CCP'); 
-
-fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), [theory_list; subcurve_CCP], [theory_name, 'CCP']); 
-
-%% test alpha parameter in Ivanov curve
-
-alpha = 1:0.5:3; 
-theory_list = zeros([numel(alpha), numel(E(2:end))]); 
-theory_name = string(zeros([1, numel(alpha)])); 
-
-figure; hold on; 
-for ii = 1:numel(alpha) 
-    curve = Ivanov_curve(alpha(ii), E(2:end)); 
-    theory_list(ii,:) = curve*24.2 + delay; 
-    theory_name(ii) = num2str(alpha(ii)); 
-    plot(E(2:end), theory_list(ii,:), 'DisplayName', theory_name(ii)); 
-    legend; 
-end
-
-fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), theory_list, theory_name); 
-
-
-
-
-
-
+% plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), [Serov_curve(1,E(2:end))*24.2+delay; Serov_curve(2,E(2:end))*24.2+delay], ["Z=1", "Z=2"]); 
+plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), ...
+    [Ivanov_curve(0, 1,E(2:end))*24.2+delay; Ivanov_curve(0, 2,E(2:end))*24.2+delay; ...
+     Ivanov_curve(1, 1,E(2:end))*24.2+delay; Ivanov_curve(1, 2,E(2:end))*24.2+delay], ...
+     ["l=0, Z=1", "l=0, Z=2", "l=1, Z=1", "l=1, Z=2"]); 
 
