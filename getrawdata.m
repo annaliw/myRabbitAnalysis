@@ -1,4 +1,4 @@
-function [HistTot_array, stageTimes, freqAxis] = getrawdata(folderString, delayscan_start, wavelength)
+function [HistTot_array, XUV_only, stageTimes, freqAxis] = getrawdata(folderString, delayscan_start, wavelength)
 
     % data location
     %     folderString = '/Users/annaliw/code/KrCO2_scan/'; 
@@ -39,6 +39,7 @@ function [HistTot_array, stageTimes, freqAxis] = getrawdata(folderString, delays
     stageTimes_array = (stagePositions_array*2*1e-3)/(2.9979e8) - stageCenter; % full array
     
     % clip out data where XUV and IR are not overlapped
+    XUV_only = HistTot_array(:,end,:); 
     HistTot_array = HistTot_array(:,delayscan_start:(end-1),:); 
     stageTimes = squeeze(stageTimes_array(:,delayscan_start:(end-1),1)); 
     
