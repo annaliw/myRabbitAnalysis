@@ -13,10 +13,12 @@ function h = plotfun_compareToTheory(data, error, vref, energy, theory, name)
     set(h, 'Position', [1         399        1440         399]); 
     
     for ii=1:1:n
-        [val, ind] = min(abs(energy - data(1,vref,ii))); 
+        % get theory range for section
+        [val1, ind1] = min(abs(energy - min(data(1,:,ii)))); 
+        [val2, ind2] = min(abs(energy - max(data(1,:,ii)))); 
         subplot(1, n, ii); hold on; 
         for jj=1:1:size(theory, 1)
-            offset = data(2,vref,ii) - theory(jj,ind); 
+            offset = mean(data(2,:,ii)) - mean(theory(jj,ind1:ind2)); 
             %data
             errorbar(data(1,:,ii), data(2,:,ii), error(2,:,ii), 'o', 'MarkerFaceColor', 'k', 'HandleVisibility', 'off'); 
             %theory

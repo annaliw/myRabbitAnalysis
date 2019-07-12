@@ -1,4 +1,4 @@
-function [paramout, fval] = complexfit_section_full(wavelength, xin, yin, paramout_gauss, paramout_original, plotting)
+function [paramout, fval] = complexfit_section_bootstrap(wavelength, xin, yin, paramout_gauss, paramout_original, plotting)
     global IP; 
     global IP_label; 
     
