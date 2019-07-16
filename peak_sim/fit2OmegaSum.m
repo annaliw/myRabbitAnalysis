@@ -155,11 +155,10 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
                 wid = gaussian(n,3); 
 
                 b = mod(p(n,1),2*pi); 
-                B = p(n,2); 
 
-                Yout = Yout + Gauss(E,Amp,E0,wid).*Phase(E,b,E0) + B;
+                Yout = Yout + Gauss(E,Amp,E0,wid).*Phase(E,b,E0);
             end
-        elseif size(p,3) == 2
+        elseif size(p,2) == 2
             Phase = @(x,b,c,mu) exp(1j .* (b + c.*(x-mu)) ); 
             % sum the 2w signal
 %             clist = [0.17, 0.64, 0.64]; 
@@ -173,9 +172,8 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
                 c = p(n,2); 
 %                 c = clist(n); 
 
-                B = p(1,3); 
 
-                Yout = Yout + Gauss(E,Amp,E0,wid).*Phase(E,b,c,E0) + B;
+                Yout = Yout + Gauss(E,Amp,E0,wid).*Phase(E,b,c,E0);
             end
         else
             error('invalid guess input'); 

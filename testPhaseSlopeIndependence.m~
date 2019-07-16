@@ -164,16 +164,14 @@ fparam = coeffvalues(f);
 bval = -max(abs(fparam(2)), abs(fparam(4))); 
 
 %%
-for nn=1:numel(delta_phase)
-    for mm=1:numel(slopes)
-        x = (delta_x/peak_width)'; 
-        y = trace_array(:,:,nn,mm);
+x = (xlist/peak_width)'; 
+        y = squeeze(param_array(2,4,:));
+        
+        trace_array(:,:,nn,mm) = y; 
 
         [tmp1, tmp2] = min(abs(y-0.99*y(end))); 
         bval = x(tmp2); 
         bval_array(nn,mm) = bval; 
-    end
-end
 
 %% functions
 function Yout = Spectrum(E, gaussian, p)

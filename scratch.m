@@ -83,20 +83,23 @@ title('Wigner delay + CC delay')
 hold off; 
 
 hold off; 
-%% proccess data and plot with theory
+%% proccess data
 ref_n = 3; 
 nstates = 6; 
-measured_phases = [unwrap(sb12_phase(1:nstates,1))', ...
-                   unwrap(sb14_phase(1:nstates,1))', ...
-                   unwrap(sb16_phase(1:nstates,1))']; 
-errors_phase =    [sb12_phase(1:nstates,2)', ...
-                   sb14_phase(1:nstates,2)', ...
-                   sb16_phase(1:nstates,2)'];
+phase_data = cat(3, phase_SB12_slope, phase_SB14_slope, phase_SB16_noslope); 
+mean_data = cat(3, mean(paramout_SB12_slope(:,1:4,:),3), mean(paramout_SB14_slope(:,1:4,:),3), mean(paramout_SB16_noslope,3)); 
+
+measured_phases = [unwrap(phase_data(1:nstates,1,1))', ...
+                   unwrap(phase_data(1:nstates,1,2))', ...
+                   unwrap(phase_data(1:nstates,1,3))']; 
+errors_phase =    [phase_data(1:nstates,2,1)', ...
+                   phase_data(1:nstates,2,2)', ...
+                   phase_data(1:nstates,2,3)'];
                
 measured_delays = measured_phases.*(T_L*1000/2/(2*pi)); 
 errors_delay = errors_phase.*(T_L*1000/2/(2*pi)); 
 
-measured_energy = [mean(sb12_param(:,2),3)', mean(sb14_param(:,2),3)', mean(sb16_param(:,2),3)']; 
+measured_energy = [mean_data(:,2,1)', mean_data(:,2,2)', mean_data(:,2,3)']; 
 
 
 tmp_data  = cat(3, ...
@@ -104,27 +107,28 @@ tmp_data  = cat(3, ...
             [measured_energy(7:12); measured_delays(7:12)], ...
             [measured_energy(13:18); measured_delays(13:18)]); 
 tmp_error = cat(3, ...
-            [measured_energy(1:6); errors_delay(1:6)-100], ...
+            [measured_energy(1:6); errors_delay(1:6)], ...
             [measured_energy(7:12); errors_delay(7:12)], ...
             [measured_energy(13:18); errors_delay(13:18)]); 
-
-theory_list = [subcurve_CCP; subcurve_CCPA; subcurve_CCPAp; ...
-               subcurve_TCLC_11; subcurve_TCLC_15; subcurve_TCLC_18]; 
-theory_name = ["CC P"; "CC P+A"; "CC P+Ap"; "CLC Ivanov"; "CLC Pazourek"; "CLC Serov"]; 
-
-newfolder = strcat('/Users/annaliw/Documents/lab/plots/', date, '/');  
-if ~exist(newfolder, 'dir')
-   mkdir(newfolder)
-end
-
-% theory_list = theory_list(1); 
-
-% for ii=1:1:size(theory_list,1)
-%     fig = plotfun_compareToTheory(tmp_data, tmp_error, 3, [E(2:end); theory_list(ii,:)], theory_name(ii));         
-%     saveas(fig, newfolder + regexprep(theory_name(ii),' ','_') + '.png'); 
+        
+%%
+% theory_list = [subcurve_CCP; subcurve_CCPA; subcurve_CCPAp; ...
+%                subcurve_TCLC_11; subcurve_TCLC_15; subcurve_TCLC_18]; 
+% theory_name = ["CC P"; "CC P+A"; "CC P+Ap"; "CLC Ivanov"; "CLC Pazourek"; "CLC Serov"]; 
+% 
+% newfolder = strcat('/Users/annaliw/Documents/lab/plots/', date, '/');  
+% if ~exist(newfolder, 'dir')
+%    mkdir(newfolder)
 % end
-
-fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), theory_list, theory_name); 
+% 
+% % theory_list = theory_list(1); 
+% 
+% % for ii=1:1:size(theory_list,1)
+% %     fig = plotfun_compareToTheory(tmp_data, tmp_error, 3, [E(2:end); theory_list(ii,:)], theory_name(ii));         
+% %     saveas(fig, newfolder + regexprep(theory_name(ii),' ','_') + '.png'); 
+% % end
+% 
+% fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), theory_list, theory_name); 
 
 %%
 [sigma0, delay0] = coulombScatteringPhase(0, 1, E); 
