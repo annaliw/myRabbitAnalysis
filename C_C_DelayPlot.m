@@ -5,11 +5,11 @@ w = 1239.8 / 810 / E_AU; %Photon Energy
 T_L = 2*pi/w * T_AU; % laser period in fs
 
 Z = 1; %Atomic Charge
-l = 1; %Final state angular momentum
+l = 0; %Final state angular momentum
 
 %Final Momentum of outgoing electron
 % k = 0:0.001:3; 
-k = logspace(-2, 0, 1500) + sqrt(2*w); 
+k = logspace(-2, 0, 1500); 
 
 %Final Energy of outgoing electron
 E = k.^2/2 .* E_AU; 
@@ -27,7 +27,11 @@ ePP = angle( Parg ); %C-C phase for emission in asymptotic approx.
 gkK = 1i*Z .* ((K-k).*(K.^2+k.^2))./(2.*K.^2.*k.^2) .* igamma(1 + 1i*Z.*(1./K-1./k),0);
 ePPA = angle ( Parg + pf .* gkK ./ d); %C-C phase for emission in long-range approximation     
 
+% sigma = angle(igamma(l + 1 - 1i*Z./K, 0)); 
+% sigma = fliplr(unwrap(fliplr(sigma))); 
+% ak = 2*exp(-2*sigma.*K); 
 r0 = 1i*Z/4 .* (1./K.^2 + 1./k.^2);
+% r0 = 1./(K.*ak); 
 igkK = 1i*Z .* ((K-k).*(K.^2+k.^2))./(2.*K.^2.*k.^2) .* igamma(1 + 1i*Z.*(1./K-1./k),r0);
 
 ePPAp = angle ( Parg + pf .* igkK ./ d); %C-C phase for emission in modified long-range approximation
@@ -44,7 +48,11 @@ aPP = angle( Parg ); %C-C phase for absorption in asymptoic approx.
 gkK = 1i*Z .* ((K-k).*(K.^2+k.^2))./(2.*K.^2.*k.^2) .* igamma(1 + 1i*Z.*(1./K-1./k),0);
 aPPA = angle ( Parg + pf .* gkK ./ d);  %C-C phase for absorption in long-range approximation     
 
+% sigma = angle(igamma(l + 1 - 1j*Z./K, 0)); 
+% sigma = fliplr(unwrap(fliplr(sigma))); 
+% ak = 2*exp(-2*sigma.*K); 
 r0 = 1i*Z/4 .* (1./K.^2 + 1./k.^2);
+% r0 = 1./(K.*ak); 
 igkK = 1i*Z .* ((K-k).*(K.^2+k.^2))./(2.*K.^2.*k.^2) .* igamma(1 + 1i*Z.*(1./K-1./k),r0);
 
 aPPAp = angle ( Parg + pf .* igkK ./ d); %C-C phase for emission in modified long-range approximation

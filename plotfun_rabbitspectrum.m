@@ -25,8 +25,8 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
             twoOmega_signal = data; 
         end
         twoOmega_abs = abs(twoOmega_signal); 
-%         twoOmega_phi = unwrap(angle(twoOmega_signal)); 
-        twoOmega_phi = angle(twoOmega_signal); 
+        twoOmega_phi = unwrap(angle(twoOmega_signal)); 
+%         twoOmega_phi = angle(twoOmega_signal); 
         % oneOmega_abs = abs(oneOmega_signal); 
         % oneOmega_phi = angle(oneOmega_signal); 
     

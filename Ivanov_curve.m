@@ -10,8 +10,11 @@ function curve = Ivanov_curve(l, Z, E)
     k = sqrt(2*tmpE); 
  
     [sigma, delay] = coulombScatteringPhase(l, Z, E); 
-    sigma = unwrap(sigma); 
+%     sigma = unwrap(mod(sigma, 2*pi)); 
     a = 2*exp(-2*sigma.*k); 
+%     kmat = repmat(k, [1001, 1]); 
+%     nmat = repmat(0:1000, [numel(k), 1])'; 
+%     a = 2 * exp(2*psi(1+l)) * exp(2*sum((1 - kmat.*(1+l+nmat).*atan((1./kmat)./(1+l+nmat)))./(1+l+nmat), 1)); 
 
     curve = -(1./((2*tmpE).^(3/2)+tmpw*pi/2)).*(log(a.*2.*tmpE/tmpw) - ge + pi*tmpw./(2*a.*2.*tmpE)); 
 end

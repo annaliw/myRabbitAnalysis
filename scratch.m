@@ -130,13 +130,117 @@ tmp_error = cat(3, ...
 % 
 % fig = plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), theory_list, theory_name); 
 
-%%
-[sigma0, delay0] = coulombScatteringPhase(0, 1, E); 
-[sigma1, delay1] = coulombScatteringPhase(1, 1, E); 
+%% compare Ivanov to data
+[sigma0, delay0] = coulombScatteringPhase(0, 2, E); 
+[sigma1, delay1] = coulombScatteringPhase(1, 2, E); 
 % plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), [Serov_curve(1,E(2:end))*24.2+delay; Serov_curve(2,E(2:end))*24.2+delay], ["Z=1", "Z=2"]); 
-plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), 3, E(2:end), ...
-    [Ivanov_curve(0, 1,E(2:end))*24.2+delay0; Ivanov_curve(1,1,E(2:end))*24.2+delay1; ...
-     Ivanov_curve(0, 2,E(2:end))*24.2+delay1; Ivanov_curve(1,1,E(2:end))*24.2+delay0], ...
+plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), E(2:end), ...
+    [Ivanov_curve(0, 2,E(2:end))*24.2+delay0; Ivanov_curve(1,2,E(2:end))*24.2+delay1; ...
+     Ivanov_curve(0, 2,E(2:end))*24.2+delay1; Ivanov_curve(1,2,E(2:end))*24.2+delay0], ...
      ["l=0 Wigner delay, l=0 tIR", "l=1 Wigner delay, l=1 tIR", ...
-      "l=1 Wigner Delay, l=0 tIR", "l=0 Wigner delay, l=1 tIR"]); 
+      "l=1 Wigner Delay, l=0 tIR", "l=0 Wigner delay, l=1 tIR"], 200); 
+  
+%% compare Serov to data
+[sigma01, delay01] = coulombScatteringPhase(0, 1, E); 
+[sigma11, delay11] = coulombScatteringPhase(1, 1, E); 
+[sigma02, delay02] = coulombScatteringPhase(0, 2, E); 
+[sigma12, delay12] = coulombScatteringPhase(1, 2, E); 
+[Serov_1, wignerFactor_1] = Serov_curve(1, E);
+[Serov_2, wignerFactor_2] = Serov_curve(2, E);
+plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), E(2:end), ...
+    [Serov_1(2:end).*24.2+wignerFactor_1(2:end).*delay01; Serov_1(2:end).*24.2+wignerFactor_1(2:end).*delay11; ...
+     Serov_2(2:end).*24.2+wignerFactor_2(2:end).*delay02; Serov_2(2:end).*24.2+wignerFactor_2(2:end).*delay12], ...
+    ["1", "2", "3", "4"], 400); 
+%     [curve(2:end)*24.2+wignerFactor(2:end).*delay01; curve2(2:end)*24.2+wignerFactor2(2:end).*delay01; ...
+%      -1./k(2:end).^3 .* 24.2.*(log(2*k(2:end).^2/tmpw) -1 -ge) + delay01], ...
+%      ["old eqn", "new eqn", ...
+%       "new eqn w->0 check"], 400); 
+%%
+plotfun_compareToTheory(tmp_data(:,2:end,:), tmp_error(:,2:end,:), E(2:end), ...
+    [Ivanov_curve(0, 1,E(2:end))*24.2+delay1; Ivanov_curve(1,1,E(2:end))*24.2+delay0; ...
+     Serov_1(2:end).*24.2+wignerFactor_1(2:end).*delay01; ...
+     subcurve_CCP; subcurve_CCPA; subcurve_CCPAp], ... 
+     ["Ivanov l=1 to l=0", "Ivanov l=0 to l=1", ...
+      "Serov, tW l=0", ...
+      "CCP", "CCPA", "CCPAp"], 500); 
+  
 
+%%
+E_AU = 27.2114; 
+wavelength = 810; 
+tmpE = E/E_AU; 
+tmpl = wavelength/0.0529; 
+tmpw = 2*pi*137/tmpl; 
+ge = 0.5772; 
+
+% k = sqrt(2*tmpE); 
+
+[sig_s, tw_s] = coulombScatteringPhase(0, 1, E); 
+[sig_p, tw_p] = coulombScatteringPhase(1, 1, E); 
+[sig_d, tw_d] = coulombScatteringPhase(2, 1, E); 
+
+a_s = 2*exp(-2*sig_s.*k); 
+a_p = 2*exp(-2*sig_p.*k); 
+a_d = 2*exp(-2*sig_d.*k); 
+curve_s_sig = -(1./((2*tmpE).^(3/2)+tmpw*pi/2)).*(log(a_s.*2.*tmpE/tmpw) - ge + pi*tmpw./(2*a_s.*2.*tmpE)); 
+curve_p_sig = -(1./((2*tmpE).^(3/2)+tmpw*pi/2)).*(log(a_p.*2.*tmpE/tmpw) - ge + pi*tmpw./(2*a_p.*2.*tmpE)); 
+curve_d_sig = -(1./((2*tmpE).^(3/2)+tmpw*pi/2)).*(log(a_d.*2.*tmpE/tmpw) - ge + pi*tmpw./(2*a_d.*2.*tmpE)); 
+
+kmat = repmat(k, [101, 1]); 
+nmat = repmat(0:100, [numel(k), 1])'; 
+l=0; 
+a_s = 2 * exp(2*psi(1+l)) * exp(2*sum((1 - kmat.*(1+l+nmat).*atan((1./kmat)./(1+l+nmat)))./(1+l+nmat), 1)); 
+l=1; 
+a_p = 2 * exp(2*psi(1+l)) * exp(2*sum((1 - kmat.*(1+l+nmat).*atan((1./kmat)./(1+l+nmat)))./(1+l+nmat), 1)); 
+l=2; 
+a_d = 2 * exp(2*psi(1+l)) * exp(2*sum((1 - kmat.*(1+l+nmat).*atan((1./kmat)./(1+l+nmat)))./(1+l+nmat), 1)); 
+
+curve_s_sum = -(1./((2*tmpE).^(3/2)+tmpw*pi/2)).*(log(a_s.*2.*tmpE/tmpw) - ge + pi*tmpw./(2*a_s.*2.*tmpE)); 
+curve_p_sum = -(1./((2*tmpE).^(3/2)+tmpw*pi/2)).*(log(a_p.*2.*tmpE/tmpw) - ge + pi*tmpw./(2*a_p.*2.*tmpE)); 
+curve_d_sum = -(1./((2*tmpE).^(3/2)+tmpw*pi/2)).*(log(a_d.*2.*tmpE/tmpw) - ge + pi*tmpw./(2*a_d.*2.*tmpE)); 
+
+% phi_s_sig = unwrap(mod(curve_s_sig(1)-cumtrapz(tmpE, curve_s_sig), 2*pi)); 
+% phi_d_sig = unwrap(mod(curve_d_sig(1)-cumtrapz(tmpE, curve_d_sig), 2*pi)); 
+% phi_s_sum = unwrap(mod(curve_s_sum(1)-cumtrapz(tmpE, curve_s_sum), 2*pi)); 
+% phi_d_sum = unwrap(mod(curve_d_sum(1)-cumtrapz(tmpE, curve_d_sum), 2*pi)); 
+phi_s_sig = unwrap(mod(cumtrapz(tmpE, curve_s_sig), 2*pi)); 
+phi_p_sig = unwrap(mod(cumtrapz(tmpE, curve_p_sig), 2*pi)); 
+phi_d_sig = unwrap(mod(cumtrapz(tmpE, curve_d_sig), 2*pi)); 
+phi_s_sum = unwrap(mod(cumtrapz(tmpE, curve_s_sum), 2*pi)); 
+phi_p_sum = unwrap(mod(cumtrapz(tmpE, curve_p_sum), 2*pi)); 
+phi_d_sum = unwrap(mod(cumtrapz(tmpE, curve_d_sum), 2*pi)); 
+
+figure; hold on; 
+plot(E, curve_s_sig, 'r-'); 
+plot(E, curve_p_sig, 'b-'); 
+plot(E, curve_d_sig, 'k-'); 
+plot(E, curve_s_sum, 'r--'); 
+plot(E, curve_p_sum, 'b--'); 
+plot(E, curve_d_sum, 'k--'); 
+xlim([1.6 30]); 
+
+figure; hold on; 
+plot(E, phi_s_sig, 'r-'); 
+plot(E, phi_p_sig, 'b-'); 
+plot(E, phi_d_sig, 'k-'); 
+plot(E, phi_s_sum, 'r--'); 
+plot(E, phi_p_sum, 'b--'); 
+plot(E, phi_d_sum, 'k--'); 
+xlim([1.6 30]); 
+
+
+%%
+figure; hold on; 
+plot(E(2:end), phi_s, 'DisplayName', 's-wave clc phase'); 
+plot(E(2:end), phi_d, 'DisplayName', 'd-wave clc phase'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('phase (radians)'); 
+legend
+hold off; 
+
+figure; hold on; 
+plot(E(2:end), phi_s-phi_d, 'DisplayName', 'd-s clc phase difference'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('phase (radians)'); 
+legend
+hold off; 

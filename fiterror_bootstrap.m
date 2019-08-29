@@ -13,8 +13,8 @@ global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"];
 %     IP_label = ["X", "A", "B", "C"]; 
 %     IP = [14 14.665]; 
 %     IP_label = ["14", "14.665"]; 
-%     IP = [15.763]; 
-%     IP_label = ['Argon']; 
+% global IP; IP = [15.763]; 
+% global IP_label; IP_label = ['Argon']; 
 % IP = [9.553, 16.56, 18.318, 21.722]; 
 % IP_label = ['X', 'b', 'A', 'c']; 
 
@@ -66,10 +66,10 @@ twoOmega_signal = squeeze(tmp(:,twoOmega_location,:));
 
 twoOmega_nosum = twoOmega_signal; 
 
-%% drift compensation
+%% drift compensation (do Ar then skip for H2)
 twoOmega_signal = twoOmega_nosum; 
 %     phase_shift = interp1(1:length(peak_phase), peak_phase, 1.5:1:length(peak_phase));
-sideband_list = [16]*1240/wavelength-IP(2); % select 16th harmonic of lowest ionization state 
+sideband_list = [14]*1240/wavelength-IP(4); % select 16th harmonic of lowest ionization state 
 peak_phase = 0; 
 for i=1:1:length(sideband_list)
     [~, index] = min(abs(E - sideband_list(i)));
@@ -85,8 +85,8 @@ end
 peak_phase = angle(peak_phase); 
 
 %% more drift comp
-phase_shift = peak_phase; 
-%     phase_shift = interp1(1:length(peak_phase), peak_phase, 1.5:1:length(peak_phase));
+% phase_shift = peak_phase; % Ar
+phase_shift = interp1(1:length(peak_phase), unwrap(peak_phase), 1.5:1:(length(peak_phase)+0.5), 'spline'); % H2
 for ii=1:1:length(phase_shift)
    twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*phase_shift(ii)); 
 end
@@ -117,9 +117,15 @@ XUV_only = Counts';
 
 %% FIRST FIT of original data set (single sideband)
 
+% Ar
+% region = [2.5 2.8]; % sideband 12
+% region = [5.6 6]; % sideband 14
+% region = [8.5 9]; % sideband 16
+% region = [11.5 11.9]; % sideband 18
+
 % H2
-% region = [1.6 3.1]; % sideband 12
-% region = [4.7 6.1]; % sideband 14
+% region = [1.55 3.05]; % sideband 12
+% region = [4.7 6.15]; % sideband 14
 region = [7.7548 9.18]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18
 
@@ -142,7 +148,8 @@ tolerance = 0.05;
 start = find(abs(E-region(1))<tolerance, 1, 'last'); 
 stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
 
-subtract_floor = 9.7; 
+% subtract_floor = 9.7; 
+subtract_floor = 0; 
 if subtract_floor == 0
     tmp_signal = twoOmega_signal; 
 else
@@ -408,7 +415,7 @@ hold off;
 
 %%
 
-data = paramout_SB16_slope; 
+data = paramout_array; 
 
 bootstrap_phase = mean(data(:,4,:),3);
 bootstrap_slope = mean(data(:,5,:),3); 
@@ -416,8 +423,9 @@ bootstrap_slope = mean(data(:,5,:),3);
 bootstrap_phase_std = sqrt(trials/(trials-1))*std(data(:,4,:),0,3);
 bootstrap_slope_std = sqrt(trials/(trials-1))*std(data(:,5,:),0,3);
 
-phase_SB16_slope = [bootstrap_phase, bootstrap_phase_std]; 
-slope_SB16_slope = [bootstrap_slope, bootstrap_slope_std]; 
+H2_SB12_paramout = data; 
+H2_SB12_phase = bootstrap_phase; 
+H2_SB12_slope = bootstrap_slope; 
 
 
 %% functions
