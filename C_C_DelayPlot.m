@@ -87,19 +87,19 @@ h_300.Children.FontSize = 14;
 h_300.Children.LineWidth = 2;
 legend("ePP", "ePPA", "ePPAp", "aPP", "aPPA", "aPPAp")
 
-CCP = unwrap(fliplr(ePP)) - unwrap(fliplr(aPP));
-CCPA = unwrap(fliplr(ePPA)) - unwrap(fliplr(aPPA));
-CCPAp = unwrap(fliplr(ePPAp)) - unwrap(fliplr(aPPAp));
+CCP = fliplr(unwrap(fliplr(ePP)) - unwrap(fliplr(aPP)));
+CCPA = fliplr(unwrap(fliplr(ePPA)) - unwrap(fliplr(aPPA)));
+CCPAp = fliplr(unwrap(fliplr(ePPAp)) - unwrap(fliplr(aPPAp)));
 
 h_301 = figure(301);
 ax1 = subplot(2,1,1);
-plot(fliplr(E), CCP.*(T_L*1000/2/(2*pi)), 'LineStyle','-','LineWidth',2,'DisplayName','P')
+plot(E, CCP.*(T_L*1000/2/(2*pi)), 'LineStyle','-','LineWidth',2,'DisplayName','P')
 ind1 = ax1.ColorOrderIndex - 1;
 hold on
 ax1.ColorOrderIndex = ind1;
-plot(fliplr(E), CCPA.*(T_L*1000/2/(2*pi)), 'LineStyle','--','LineWidth',2,'DisplayName','P+A')
+plot(E, CCPA.*(T_L*1000/2/(2*pi)), 'LineStyle','--','LineWidth',2,'DisplayName','P+A')
 ax1.ColorOrderIndex = ind1;
-plot(fliplr(E), CCPAp.*(T_L*1000/2/(2*pi)), 'LineStyle','-.','LineWidth',2,'DisplayName','P+A^{\prime}')
+plot(E, CCPAp.*(T_L*1000/2/(2*pi)), 'LineStyle','-.','LineWidth',2,'DisplayName','P+A^{\prime}')
 %hold off
 xlim([0,30])
 xlabel('Energy (eV)')
@@ -108,13 +108,13 @@ title('Continuum-Continuum Delays')
 
 
 ax2 = subplot(2,1,2);
-plot(fliplr(E(1:end-1)), diff(CCP)./diff(E).*(1351/(2*pi)),'LineStyle','-','LineWidth',2)
+plot(E(1:end-1), diff(CCP)./diff(E).*(1351/(2*pi)),'LineStyle','-','LineWidth',2)
 ind2 = ax2.ColorOrderIndex - 1;
 hold on
 ax2.ColorOrderIndex = ind2;
-plot(fliplr(E(1:end-1)), diff(CCPA)./diff(E).*(1351/(2*pi)),'LineStyle','--','LineWidth',2)
+plot(E(1:end-1), diff(CCPA)./diff(E).*(1351/(2*pi)),'LineStyle','--','LineWidth',2)
 ax2.ColorOrderIndex = ind2;
-plot(fliplr(E(1:end-1)), diff(CCPAp)./diff(E).*(1351/(2*pi)),'LineStyle','-.','LineWidth',2)
+plot(E(1:end-1), diff(CCPAp)./diff(E).*(1351/(2*pi)),'LineStyle','-.','LineWidth',2)
 %hold off
 xlabel('Energy (eV)')
 ylabel('Slope of Delay (as/eV)')
@@ -135,9 +135,9 @@ deltaE = 0.5;
 
 Ed = E + deltaE;
 
-CCPd = interp1(fliplr(E),CCP,fliplr(Ed));
-CCPAd = interp1(fliplr(E),CCPA,fliplr(Ed));
-CCPApd = interp1(fliplr(E),CCPAp,fliplr(Ed));
+CCPd = interp1(E,CCP,Ed);
+CCPAd = interp1(E,CCPA,Ed);
+CCPApd = interp1(E,CCPAp,Ed);
 
 dCCP = CCPd - CCP;
 dCCPA = CCPAd - CCPA;
@@ -145,13 +145,13 @@ dCCPAp = CCPApd - CCPAp;
 
 h_302 = figure(302);
 
-plot(fliplr(E),dCCP.*(T_L*1000/2/(2*pi)),'LineStyle','-','LineWidth',2,'DisplayName','P')
+plot(E,dCCP.*(T_L*1000/2/(2*pi)),'LineStyle','-','LineWidth',2,'DisplayName','P')
 ind = h_302.Children.ColorOrderIndex - 1;
 h_302.Children.ColorOrderIndex = ind;
 hold on
-plot(fliplr(E),dCCPA.*(T_L*1000/2/(2*pi)),'LineStyle','--','LineWidth',2,'DisplayName','P+A')
+plot(E,dCCPA.*(T_L*1000/2/(2*pi)),'LineStyle','--','LineWidth',2,'DisplayName','P+A')
 h_302.Children.ColorOrderIndex = ind;
-plot(fliplr(E),dCCPAp.*(T_L*1000/2/(2*pi)),'LineStyle','-.','LineWidth',2,'DisplayName','P+A^{\prime}')
+plot(E,dCCPAp.*(T_L*1000/2/(2*pi)),'LineStyle','-.','LineWidth',2,'DisplayName','P+A^{\prime}')
 hold off
 xlim([2,10])
 xlabel('Energy (eV)')
