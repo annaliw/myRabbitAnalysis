@@ -8,11 +8,12 @@ Z = 1; %Atomic Charge
 l = 0; %Final state angular momentum
 
 %Final Momentum of outgoing electron
-% k = 0:0.001:3; 
-k = logspace(-2, 1, 1500) + 1240/810; 
+k = 0:0.001:3; 
+% k = logspace(-2, 1, 1500); 
 
 %Final Energy of outgoing electron
-E = k.^2/2 .* E_AU; 
+E = k.^2/2 .* E_AU + 1240/810; 
+k = sqrt(2*E/E_AU); 
 
 %Momentum of electron before C-C transition (emission)
 K = sqrt( k.^2 + 2*w );
