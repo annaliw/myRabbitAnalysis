@@ -16,7 +16,7 @@ end
 for i=1:numel(Ip)
     
     axl(i) = axes('Position',POS);
-    axl(i).XColor = ax1.ColorOrder(i,:);
+%     axl(i).XColor = ax1.ColorOrder(i,:);
     axl(i).Color = 'none';
     axl(i).XAxisLocation = 'top';
     axl(i).XTick = ntrue*(1240/lambda)-Ip(i);

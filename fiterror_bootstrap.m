@@ -1,18 +1,18 @@
 %%%% bootstrap method for getting errorbars on fit
 %%%% case resampling 
 
-folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
-%     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
+% folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
+    folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annaliw/code/NOscan/'; 
-alternate = [1 2]; % debug setting
+alternate = [2 2]; % debug setting
 t0=0; 
 wavelength=810; 
-global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206]; 
-global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; 
-%     IP = [13.9000   17.6000   18.0770   19.3760]; 
-%     IP_label = ["X", "A", "B", "C"]; 
-%     IP = [14 14.665]; 
-%     IP_label = ["14", "14.665"]; 
+% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206]; 
+% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; 
+global IP; IP = [13.9000   17.6000   18.0770   19.3760]; 
+global IP_label; IP_label = ["X", "A", "B", "C"]; 
+% global IP; IP = [14 14.665]; 
+% global IP_label; IP_label = ["14", "14.665"]; 
 % global IP; IP = [15.763]; 
 % global IP_label; IP_label = ['Argon']; 
 % IP = [9.553, 16.56, 18.318, 21.722]; 
@@ -22,6 +22,7 @@ global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"];
 HistTot_array = HistTot_array(:,:,alternate(1):alternate(2):end); % might need to alternate files
 % HistTot_array = HistTot_array./sum(HistTot_array(:)); % normalize!
 XUV_only = sum(XUV_only(:,alternate(1):alternate(2):end),2); 
+XUV_only_raw = XUV_only; 
 %     % do data padding for better fitting
 %     pad_data = zeros([size(HistTot_array,1)*10-9, size(HistTot_array,2), size(HistTot_array,3)]); % not sure how the sizing works here
 %     for ii=1:1:size(HistTot_array, 2)
@@ -33,8 +34,8 @@ XUV_only = sum(XUV_only(:,alternate(1):alternate(2):end),2);
 %     HistTot_array = pad_data; 
 
 %% load calibration
-load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
-% load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
+% load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
+load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % need to do full analysis on the original file. this will also give
@@ -69,7 +70,7 @@ twoOmega_nosum = twoOmega_signal;
 %% drift compensation (do Ar then skip for H2)
 twoOmega_signal = twoOmega_nosum; 
 %     phase_shift = interp1(1:length(peak_phase), peak_phase, 1.5:1:length(peak_phase));
-sideband_list = [14]*1240/wavelength-IP(4); % select 16th harmonic of lowest ionization state 
+sideband_list = [14]*1240/wavelength-IP(2); % select 16th harmonic of lowest ionization state 
 peak_phase = 0; 
 for i=1:1:length(sideband_list)
     [~, index] = min(abs(E - sideband_list(i)));
@@ -85,9 +86,9 @@ end
 peak_phase = angle(peak_phase); 
 
 %% more drift comp
-% phase_shift = peak_phase; % Ar
-phase_shift = interp1(1:length(peak_phase), unwrap(peak_phase), 1.5:1:(length(peak_phase)+0.5), 'spline'); % H2
-for ii=1:1:length(phase_shift)
+phase_shift = peak_phase; % Ar
+% phase_shift = interp1(1:length(peak_phase), unwrap(peak_phase), 1.5:1:(length(peak_phase)+0.5), 'spline'); % H2
+for ii=1:1:length(phase_shift)-1
    twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*phase_shift(ii)); 
 end
 
@@ -95,7 +96,8 @@ end
 twoOmega_signal = sum(twoOmega_signal, 2); 
 
 %% convert XUV only data
-tmp = XUV_only; 
+tmp = XUV_only_raw; 
+
 %Convert ToF to Energy using previously calculated Overlap Matrix (OM)
 if (numel(tof) == size(tmp,1))
     Counts = zeros( size(tmp,2), numel(E) );
@@ -126,7 +128,7 @@ XUV_only = Counts';
 % H2
 % region = [1.55 3.05]; % sideband 12
 % region = [4.7 6.15]; % sideband 14
-region = [7.7548 9.18]; % sideband 16
+% region = [7.7548 9.18]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18
 
 % CO2

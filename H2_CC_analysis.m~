@@ -188,15 +188,7 @@ CCP_tmp = (fliplr(unwrap(fliplr(mod(CCP,2*pi))))-2*pi).*(T_L*1000/2/(2*pi));
 CCPA_tmp = (fliplr(unwrap(fliplr(mod(CCPA,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
 CCPAp_tmp = (fliplr(unwrap(fliplr(mod(CCPAp,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
 
-[Serov_CC_plus, ~] = Serov_curve(1, E + 1240/810);
-[Serov_CC_minus, ~] = Serov_curve(1, E - 1240/810);
-Serov_CC = (Serov_CC_plus - Serov_CC_minus)*24.2/4/pi; 
-clear('Serov_CC_plus', 'Serov_CC_minus'); 
-Ivanov_CC_plus = Ivanov_curve(0,1, E + 1240/810);
-Ivanov_CC_minus = Ivanov_curve(0,1, E - 1240/810);
-Ivanov_CC = (Ivanov_CC_plus - Ivanov_CC_minus)*24.2/4/pi; 
-clear('Ivanov_CC_plus', 'Ivanov_CC_minus'); 
-
+[Serov_tmp, ~] = Serov_curve(1, E);
 
 TDSE_H2a = [2.2689, 5.3361, 8.3823; -116.5337, -90.1702, -61.2589]; 
 TDSE_diff = [mean(SB_delay_data(2,2:end,1))-TDSE_H2a(2,1), ...
@@ -226,13 +218,13 @@ errorbar(xdata, -plot_data, plot_error, 'o', 'DisplayName', 'CC measurement');
 plot(E, CCP_tmp, 'Color', [0,0,1], 'DisplayName', 'Atomic phase l=0'); 
 plot(E, CCPA_tmp, 'Color',[0,0.3,1], 'DisplayName', 'Atomic phase l=0 (A)'); 
 plot(E, CCPAp_tmp, 'Color',[0,0.5,1], 'DisplayName', 'Atomic phase l=0 (Ap)'); 
-% plot(E_disc, Ivanov_CC0_disc.*(1/2/(2*pi)), 'b--', 'DisplayName', 'Ivanov CLC'); 
-% plot(E_disc, Serov_CC_disc.*(1/2/(2*pi)), 'b-.', 'DisplayName', 'Serov CLC'); 
+plot(E_disc, Ivanov_CC0_disc.*(1/2/(2*pi)), 'b--', 'DisplayName', 'Ivanov CLC'); 
+plot(E_disc, Serov_CC_disc.*(1/2/(2*pi)), 'b-.', 'DisplayName', 'Serov CLC'); 
 % plot(E, CCP_s_tmp, 'b-', 'DisplayName', 'Atomic phase l=0'); 
-plot(E, Ivanov_CC, 'b--', 'DisplayName', 'Ivanov CLC'); 
-plot(E, Serov_CC, 'b-.', 'DisplayName', 'Serov CLC'); 
+% plot(E, Ivanov_CC0, 'b--', 'DisplayName', 'Ivanov CLC'); 
+% plot(E, Serov_Z1*24.2, 'b-.', 'DisplayName', 'Serov CLC'); 
 legend; 
-xlim([1.6 14]); 
+% xlim([1.5 10]); 
 % ylim([-500 500]); 
 xlabel('electron kinetic energy (eV)'); 
 ylabel('delay (as)'); 
