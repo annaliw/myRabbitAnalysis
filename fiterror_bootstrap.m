@@ -49,6 +49,7 @@ E_vec = [0 20 900];
 %convert the ToF spectrum to energy (linear energy scale)
 [C,E,OM]=Convert_Eng_V2(tof, tmp, [t0, A] , E_vec); % OM will be used in loop
 E_SpectraArray = reshape(C.', [E_vec(3) size(HistTot_array,2) size(HistTot_array,3)]); 
+Ebins = E; % save for later in case E gets overwritten
 
 % Difference signal
 %     E_SpectraArray = E_SpectraArray - mean(E_SpectraArray,2); 
@@ -100,13 +101,13 @@ tmp = XUV_only_raw;
 
 %Convert ToF to Energy using previously calculated Overlap Matrix (OM)
 if (numel(tof) == size(tmp,1))
-    Counts = zeros( size(tmp,2), numel(E) );
+    Counts = zeros( size(tmp,2), numel(Ebins) );
     for ind = 1:size(tmp,2)
         %Counts(ind, :) = OM * [tcounts(2:end,ind);0];
         Counts(ind, :) = OM * circshift(tmp(:,ind),-1);
     end
 elseif (numel(tof) == size(tmp,2))
-    Counts = zeros( size(tmp,1), numel(E) );
+    Counts = zeros( size(tmp,1), numel(Ebins) );
     for ind = 1:size(tmp,1)
         %Counts(ind, :) = OM * [tcounts(ind,2:end)';0];
         Counts(ind, :) = OM * circshift(tmp(ind,:)',-1);

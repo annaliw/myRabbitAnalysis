@@ -140,60 +140,20 @@ Ar_energy = [12 14 16]*1240/810 - 15.763;
 
 Ar_XUV = Ar_delay(:,1) - Ar_Wigner(:,2); 
 
-%%
-% CCP_s_tmp = CCP_s_disc+2*pi; 
-% CCP_d_tmp = CCP_d_disc+2*pi; 
-% CCP_s_tmp = (fliplr(unwrap(fliplr(mod(CCP_s,2*pi))))-2*pi); 
-% CCP_s_tmp = -CCP_s; 
-
-set(groot,'defaultLineLineWidth',2.0)
-figure; hold on; 
-errorbar(squeeze(reshape(SB_phase_data(1,2:end,:), [1 15])), ...
-         squeeze(reshape(SB_phase_data(2,2:end,:), [1 15])), ...
-         squeeze(reshape(SB_phase_error(2, 2:end,:), [1 15])), 'o', ...
-         'DisplayName', 'Measurement');
-% plot(E, CCP_s_tmp, 'k-', 'DisplayName', 'CC phase l=0'); 
-% plot(E_disc, -delay11_disc./(T_L*1000/2/(2*pi)), 'r-', 'DisplayName', 'Coulomb phase l=1'); 
-% plot(E_disc, -delay11_disc./(T_L*1000/2/(2*pi)) + CCP_s_tmp(SB_ind), 'b-', 'DisplayName', 'Atomic phase l=0'); 
-xlim([1.5 10]); 
-legend; 
-xlabel('electron kinetic energy (eV)'); 
-ylabel('phase (radians)'); 
-
-%%
-
-CCP_s_tmp = (fliplr(unwrap(fliplr(mod(CCP_s,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
-
-TDSE_H2a = [2.2689, 5.3361, 8.3823; -116.1756, -91.1418, -62.2917]; 
-TDSE_diff = [mean(SB_delay_data(2,2:end,1))-TDSE_H2a(2,1), ...
-             mean(SB_delay_data(2,2:end,2))-TDSE_H2a(2,2), ...
-             mean(SB_delay_data(2,2:end,3))-TDSE_H2a(2,3)];  
-
-set(groot,'defaultLineLineWidth',2.0)
-figure; hold on; 
-errorbar(squeeze(reshape(SB_delay_data(1,2:end,:), [1 15])), ...
-         squeeze(reshape(SB_delay_data(2,2:end,:), [1 15]))-reshape(repmat(TDSE_diff, [5 1]), [1 15]), ...
-         squeeze(reshape(SB_delay_error(2, 2:end,:), [1 15])), 'o', ...
-         'DisplayName', 'shifted measurement');
-plot(TDSE_H2a(1,:), TDSE_H2a(2,:), 'ko-', 'DisplayName', 'TDSE');
-plot(E_disc, delay11_disc + CCP_s_tmp(SB_ind), 'b-', 'DisplayName', 'Atomic phase l=0'); 
-plot(E_disc, Serov_Z1l1_disc, 'bo-.', 'DisplayName', 'Serov CLC + tW'); 
-legend; 
-xlabel('electron kinetic energy (eV)'); 
-ylabel('delay (as)'); 
-
-%%
+%% *** Argon CC plot ***
 
 CCP_tmp = (fliplr(unwrap(fliplr(mod(CCP,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
 CCPA_tmp = (fliplr(unwrap(fliplr(mod(CCPA,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
 CCPAp_tmp = (fliplr(unwrap(fliplr(mod(CCPAp,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
 
 [Serov_CC_plus, ~] = Serov_curve(1, E + 1240/810);
-[Serov_CC_minus, ~] = Serov_curve(1, E - 1240/810);
+Serov_CC_plus = fliplr(cumtrapz(fliplr(E+1240/810), fliplr(Serov_CC_plus))); 
+[Serov_CC_minus, ~] = Serov_curve(1, E - 1240/810); 
+Serov_CC_minus = fliplr(cumtrapz(fliplr(E-1240/810), fliplr(Serov_CC_minus))); 
 Serov_CC = (Serov_CC_plus - Serov_CC_minus)*24.2/4/pi; 
 clear('Serov_CC_plus', 'Serov_CC_minus'); 
-Ivanov_CC_plus = Ivanov_curve(0,1, E + 1240/810);
-Ivanov_CC_minus = Ivanov_curve(0,1, E - 1240/810);
+Ivanov_CC_plus = fliplr(cumtrapz(fliplr(E+1240/810), fliplr(Ivanov_curve(0,1, E + 1240/810))));
+Ivanov_CC_minus = fliplr(cumtrapz(fliplr(E-1240/810), fliplr(Ivanov_curve(0,1, E - 1240/810))));
 Ivanov_CC = (Ivanov_CC_plus - Ivanov_CC_minus)*24.2/4/pi; 
 clear('Ivanov_CC_plus', 'Ivanov_CC_minus'); 
 
@@ -207,32 +167,142 @@ xdata = squeeze(reshape(SB_delay_data(1,2:end,:), [1 15]));
 phase_data = squeeze(reshape(SB_delay_data(2,2:end,:), [1 15])); 
 phase_error = squeeze(reshape(SB_delay_error(2, 2:end,:), [1 15]));
 
-% plot_data = phase_data - ...
-%             reshape(repmat(Ar_XUV', [5 1]), [1 15]) - ...
-%             reshape(repmat(TDSE_diff, [5 1]), [1 15]); 
 plot_data = phase_data - reshape(repmat(Ar_XUV', [5 1]), [1 15]) - ...
-                reshape(repmat(TDSE_H2a(2,:), [5 1]), [1 15]) + 0.7741.*(T_L*1000/4/pi); % - Ar_SB18_phase(1).*(T_L*1000/2/(2*pi)); 
+                reshape(repmat(TDSE_H2a(2,:), [5 1]), [1 15]) + 0.7741.*(T_L*1000/4/pi); 
 plot_error = sqrt(...
                   reshape(repmat(Ar_phase(:,2)'.^2, [5 1]), [1 15]) + ...
                   phase_error.^2); 
-
-% CCP_shift = CCP_s_tmp(SB_ind(7)) - mean(plot_data(6:10)); 
-% Ivanov_shift = Ivanov_CC0_disc(7) - mean(plot_data(6:10));
-% Serov_shift = Serov_CC_disc(7) - mean(plot_data(6:10));
-
+              
 set(groot,'defaultLineLineWidth',2.0)
 figure; hold on; 
 errorbar(xdata, -plot_data, plot_error, 'o', 'DisplayName', 'CC measurement');
 plot(E, CCP_tmp, 'Color', [0,0,1], 'DisplayName', 'Atomic phase l=0'); 
 plot(E, CCPA_tmp, 'Color',[0,0.3,1], 'DisplayName', 'Atomic phase l=0 (A)'); 
 plot(E, CCPAp_tmp, 'Color',[0,0.5,1], 'DisplayName', 'Atomic phase l=0 (Ap)'); 
-% plot(E_disc, Ivanov_CC0_disc.*(1/2/(2*pi)), 'b--', 'DisplayName', 'Ivanov CLC'); 
-% plot(E_disc, Serov_CC_disc.*(1/2/(2*pi)), 'b-.', 'DisplayName', 'Serov CLC'); 
-% plot(E, CCP_s_tmp, 'b-', 'DisplayName', 'Atomic phase l=0'); 
 plot(E, Ivanov_CC, 'b--', 'DisplayName', 'Ivanov CLC'); 
 plot(E, Serov_CC, 'b-.', 'DisplayName', 'Serov CLC'); 
 legend; 
 xlim([1.6 14]); 
-% ylim([-500 500]); 
+ylim([-800 200]); 
 xlabel('electron kinetic energy (eV)'); 
 ylabel('delay (as)'); 
+
+%% *** compare measurement + CC model to Wigner delay ***
+
+% CCP_tmp = (fliplr(unwrap(fliplr(mod(CCP,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
+% CCPA_tmp = (fliplr(unwrap(fliplr(mod(CCPA,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
+% CCPAp_tmp = (fliplr(unwrap(fliplr(mod(CCPAp,2*pi))))-2*pi).*(T_L*1000/2/(2*pi));
+
+% TDSE_H2a = [2.2689, 5.3361, 8.3823; -116.1756, -91.1418, -62.2917]; 
+% TDSE_diff = [mean(SB_delay_data(2,2:end,1))-TDSE_H2a(2,1), ...
+%              mean(SB_delay_data(2,2:end,2))-TDSE_H2a(2,2), ...
+%              mean(SB_delay_data(2,2:end,3))-TDSE_H2a(2,3)];  
+         
+xdata = squeeze(reshape(SB_delay_data(1,2:end,:), [1 15])); 
+phase_data = squeeze(reshape(SB_delay_data(2,2:end,:), [1 15])); 
+phase_error = squeeze(reshape(SB_delay_error(2, 2:end,:), [1 15]));
+
+% assume Serov and Ivanov CC delays previously calculated in above cell
+tolerance = 0.02; 
+H2ind = xdata; 
+for ii=1:numel(xdata)
+    H2ind(ii) = find(abs(E-xdata(ii))<tolerance, 1); 
+end
+Arind = Ar_energy; 
+for ii=1:numel(Ar_energy)
+    Arind(ii) = find(abs(E-Ar_energy(ii))<tolerance, 1); 
+end
+TDSEind = TDSE_H2a(1,:); 
+for ii=1:numel(TDSEind)
+    TDSEind(ii) = find(abs(E-TDSE_H2a(1,ii))<tolerance, 1); 
+end
+Serov_CCsub_data = Serov_CC(H2ind) - reshape(repmat(Serov_CC(Arind), [5 1]), [1 15]);
+Serov_CCsub_TDSE = Serov_CC(TDSEind); 
+Ivanov_CCsub_data = Ivanov_CC(H2ind)- reshape(repmat(Ivanov_CC(Arind), [5 1]), [1 15]); 
+Ivanov_CCsub_TDSE = Ivanov_CC(TDSEind); 
+
+plot_data = phase_data - reshape(repmat(Ar_XUV', [5 1]), [1 15]) ...
+                + 0.7741.*(T_L*1000/4/pi); 
+plot_error = sqrt(...
+                  reshape(repmat(Ar_phase(:,2)'.^2, [5 1]), [1 15]) + ...
+                  phase_error.^2); 
+
+set(groot,'defaultLineLineWidth',2.0)
+figure; hold on; 
+errorbar(xdata, plot_data - Serov_CCsub_data, plot_error, 'bo', ...
+         'DisplayName', 'data with Serov CC subtraction');
+errorbar(xdata, plot_data - Ivanov_CCsub_data, plot_error, 'co', ...
+         'DisplayName', 'data with Ivanov CC subtraction');
+plot(TDSE_H2a(1,:), TDSE_H2a(2,:) - Serov_CCsub_TDSE, 'bv-', ...
+    'DisplayName', 'TDSE with Serov CC subtraction');
+plot(TDSE_H2a(1,:), TDSE_H2a(2,:) - Ivanov_CCsub_TDSE, 'cv-', ...
+    'DisplayName', 'TDSE with Ivanov CC subtraction');
+plot(E(2:end), delay11, 'k-', 'DisplayName', 'Wigner Delay l=1'); 
+legend;  
+xlim([1.5 10]); 
+ylim([-100 400]); 
+title('H2 photoionization delay calculated with different CC models')
+xlabel('electron kinetic energy (eV)'); 
+ylabel('delay (as)'); 
+
+%% *** compare measurement and TDSE ***
+% can only compare relative phases within vib. peak because of XUV phase
+% uncomment TDSE parts when Vlad is done calculating them
+
+TDSE_H2a = [2.2689, 5.3361, 8.3823; -116.1756, -91.1418, -62.2917]; 
+% TDSE_H2a_vibrelphase = TDSE_H2a; 
+% for ii=1:size(TDSE_H2a_vibrelphase,3)
+%     TDSE_H2a_vibrelphase(2,2:end,ii) = TDSE_H2a(2,2:end,ii) - TDSE_H2a(2,end,ii); 
+% end
+SB_vibrelphase = SB_phase_data; 
+for ii=1:size(SB_delay_data,3)
+    SB_vibrelphase(2,2:end,ii) = SB_phase_data(2,2:end,ii) - SB_phase_data(2,end,ii); 
+end
+
+xdata = squeeze(reshape(SB_vibrelphase(1,2:end,:), [1 15])); 
+phase_data = squeeze(reshape(SB_vibrelphase(2,2:end,:), [1 15])); 
+phase_error = squeeze(reshape(SB_delay_error(2, 2:end,:), [1 15]));
+% xcalc = squeeze(reshape(TDSE_H2_vibrelphase(1,2:end,:), [1 numel(TDSE_H2_vibrephase(1,2:end,:))])); 
+% phase_calc = squeeze(reshape(TDSE_H2_vibrelphase(2,2:end,:), [1 numel(TDSE_H2_vibrelphase(2,2:end,:))])); 
+
+figure; hold on; 
+subplot(2,1,1); 
+% errorbar(xdata, phase_data, phase_error, 'o', 'DisplayName', 'relative phase w/in v-state'); 
+plot(xdata, phase_data, 'o', 'DisplayName', 'measured'); 
+ylabel('phase (radians)'); 
+title('relative phase w/in v-state'); 
+ylim([-0.5 0.5]); 
+legend; 
+% subplot(2,1,2); 
+% plot(xcalc, phase_calc, 'o', 'DisplayName', 'relative phase w/in v-state'); 
+% xlabel('electron kinetic energy (eV)'); 
+% ylabel('phase (radians)'); 
+% ylim([-0.5 0.5]); 
+% legend; 
+
+%% *** RABBITT spectrogram ***
+h1 = plotfun_rabbitspectrum(9:2:19, 810, Ebins, sum(sum(E_SpectraArray,2),3), 'average'); 
+ax1 = gca; 
+h2 = plotfun_rabbitspectrum(10:2:18, 810, Ebins, twoOmega_signal, 'twoOmega'); 
+ax2 = gca; 
+%%
+h3 = figure; hold on; 
+tmp = fft(E_SpectraArray,[],2) .* exp(1j*permute(repmat(peak_phase, [900 1 223]), [1 3 2])); 
+tmp = ifft(fftshift(tmp,2),[],2);
+carpet = abs(sum(tmp, 3));% - median(median(abs(sum(tmp,3)),1),2); 
+% carpet = carpet - repmat(mean(carpet,1),[900 1]);
+% carpet = carpet - repmat(XUV_only./sum(XUV_only), [1 223]); 
+% carpet = carpet - repmat(mean(carpet,2),[1 223]); 
+map = zeros(101 , 3);
+map(1:50,1) = 1; map(1:50,2) = linspace(0,1,50)'; map(1:50,3) = linspace(0,1,50)'; 
+map(51:101,1) = linspace(1,0,51)'; map(51:101,2) = linspace(1,0,51)'; map(51:101,3) = 1; 
+imagesc(Ebins, stageTimes, carpet'); 
+% colormap(map); 
+colorbar; 
+% xlim([1.5 15]); 
+% ylim([-1 5]*10^(-15))
+ax3 = gca; 
+
+%%
+tmp = fft(E_SpectraArray,[],2) .* exp(1j*permute(repmat(peak_phase, [900 1 223]), [1 3 2])); 
+tmp = ifft(fftshift(tmp,2),[],2); 
