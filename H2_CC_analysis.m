@@ -5,32 +5,30 @@
 %% proccess data (first load in data)
 
 nstates = 6; 
-phase_data = cat(3, H2_SB12_phase, H2_SB14_phase, H2_SB16_phase); 
-mean_data = cat(3, mean(H2_SB12_paramout(:,:,:),3), mean(H2_SB14_paramout(:,:,:),3), mean(H2_SB16_paramout(:,:,:),3)); 
-
-% measured_phases = [unwrap(phase_data(1:nstates,1,1))', ...
-%                    unwrap(phase_data(1:nstates,1,2))', ...
-%                    unwrap(phase_data(1:nstates,1,3))']; 
-% errors_phase =    [phase_data(1:nstates,2,1)', ...
-%                    phase_data(1:nstates,2,2)', ...
-%                    phase_data(1:nstates,2,3)'];
+phase_data = flipud(cat(3, H2_SB12_phase, H2_SB14_phase, H2_SB16_phase)); 
+mean_data = flipud(cat(3, mean(H2_SB12_paramout(:,:,:),3), mean(H2_SB14_paramout(:,:,:),3), mean(H2_SB16_paramout(:,:,:),3))); 
 
 SB_phase_data = cat(3, ...
-               [mean_data(1:nstates,2,1)'; unwrap(phase_data(1:nstates,1,1))'], ...
-               [mean_data(1:nstates,2,2)'; unwrap(phase_data(1:nstates,1,2))'], ...
-               [mean_data(1:nstates,2,3)'; unwrap(phase_data(1:nstates,1,3))']); 
+               [mean_data(1:nstates,2,1)'; unwrap(phase_data(1:nstates,1,1))'-2*pi], ...
+               [mean_data(1:nstates,2,2)'; unwrap(phase_data(1:nstates,1,2))'-2*pi], ...
+               [mean_data(1:nstates,2,3)'; unwrap(phase_data(1:nstates,1,3))'-2*pi]); 
 SB_phase_error = cat(3, ...
                [mean_data(1:nstates,2,1)'; phase_data(1:nstates,2,1)'], ...
                [mean_data(1:nstates,2,2)'; phase_data(1:nstates,2,2)'], ...
                [mean_data(1:nstates,2,3)'; phase_data(1:nstates,2,3)']); 
-SB_delay_data = cat(3, ...
-               [mean_data(1:nstates,2,1)'; unwrap(phase_data(1:nstates,1,1))'.*(T_L*1000/2/(2*pi))], ...
-               [mean_data(1:nstates,2,2)'; unwrap(phase_data(1:nstates,1,2))'.*(T_L*1000/2/(2*pi))], ...
-               [mean_data(1:nstates,2,3)'; unwrap(phase_data(1:nstates,1,3))'.*(T_L*1000/2/(2*pi))]); 
+SB_delay_data = SB_phase_data; SB_delay_data(2,:) = SB_delay_data(2,:).*(T_L*1000/2/(2*pi)) + 120; %20191009 data processing accidentally added a 120as phase offset between Ar and H2
 SB_delay_error = cat(3, ...
                [mean_data(1:nstates,2,1)'; phase_data(1:nstates,2,1)'.*(T_L*1000/2/(2*pi))], ...
                [mean_data(1:nstates,2,2)'; phase_data(1:nstates,2,2)'.*(T_L*1000/2/(2*pi))], ...
                [mean_data(1:nstates,2,3)'; phase_data(1:nstates,2,3)'.*(T_L*1000/2/(2*pi))]); 
+           
+Ar_phase = [Ar_SB12_phase; Ar_SB14_phase; Ar_SB16_phase]; 
+Ar_phase(1,1) = Ar_phase(1,1)-2*pi; 
+% Ar_phase(:,1) = unwrap(Ar_phase(:,1)); 
+Ar_delay = Ar_phase.*(T_L*1000/2/(2*pi)); 
+Ar_slope = [Ar_SB12_slope; Ar_SB14_slope; Ar_SB16_slope]; 
+Ar_energy = [12 14 16]*1240/810 - 15.763; 
+
 
 %% make some Coulomb scattering phase arrays           
 [sigma01, delay01] = coulombScatteringPhase(0, 1, E); 
@@ -39,37 +37,6 @@ SB_delay_error = cat(3, ...
 [sigma02, delay02] = coulombScatteringPhase(0, 2, E); 
 [sigma12, delay12] = coulombScatteringPhase(1, 2, E); 
 [sigma22, delay22] = coulombScatteringPhase(2, 2, E); 
-%% create Ivanov CLC plots
-% single Coulomb center, definite l, atomic Hydrogen model
-
-Ivanov_CC0to1 = Ivanov_curve(1, 1, E(2:end))*24.2 + delay01; 
-Ivanov_CC1to0 = Ivanov_curve(0, 1, E(2:end))*24.2 + delay11; 
-Ivanov_CC1to2 = Ivanov_curve(2, 1, E(2:end))*24.2 + delay11; 
-
-Ivanov_CC0 = Ivanov_curve(0, 1, E)*24.2; 
-Ivanov_CC2 = Ivanov_curve(2, 1, E)*24.2; 
-
-% plotfun_compareToTheory(SB_phase_data(:,2:end,:), SB_phase_error(:,2:end,:), E(2:end), ...
-%     [Ivanov_CC0to1; Ivanov_CC1to0; Ivanov_CC1to2], ...
-%      ["Ivanov CC l=0 to 1", "Ivanov CC l=1 to 0", "Ivanov CC l=1 to 2"], ...
-%      200); 
-
-
-%% create Serov CLC plots
-% single Coulomb center, definite l (in tW), Z=2 molecular Hydrogen or Z=1? 
-
-[Serov_Z1, wignerFactor_Z1] = Serov_curve(1, E);
-[Serov_Z2, wignerFactor_Z2] = Serov_curve(2, E);
-
-Serov_Z1l0 = Serov_Z1(2:end).*24.2+wignerFactor_Z1(2:end).*delay01; 
-Serov_Z1l1 = Serov_Z1(2:end).*24.2+wignerFactor_Z1(2:end).*delay11; 
-Serov_Z2l0 = Serov_Z2(2:end).*24.2+wignerFactor_Z2(2:end).*delay01; 
-Serov_Z2l1 = Serov_Z2(2:end).*24.2+wignerFactor_Z2(2:end).*delay11; 
-  
-% plotfun_compareToTheory(SB_phase_data(:,2:end,:), SB_phase_error(:,2:end,:), E(2:end), ...
-%     [Serov_Z1l0; Serov_Z1l1; Serov_Z2l0; Serov_Z2l1], ...
-%      ["Serov Z=1 l=0", "Serov Z=1 l=1", "Serov Z=2 l=0", "Serov Z=2 l=1"], ...
-%      300);   
 
 %% Discretize
 % integrate to convert CLC to CC (and discretize wigner delay)
@@ -125,23 +92,107 @@ CCP_s_disc = reshape(CCP_s_disc, [1 numel(CCP_s_disc)]);
 E_disc = reshape(E_disc, [1 numel(E_disc)]); 
 
 %% Lifted Ar Wigner delays from Mauritsson
-% need to have processed Argon RABBITT data
+% % need to have processed Argon RABBITT data
+% 
+% Ar_Wigner = [...
+% 2.6997245179063363, -45.35276635590114; 
+% 5.785123966942148, -29.13460625059369; 
+% 8.980716253443525, -16.36607906200379]; 
+% 
+% Ar_phase = [Ar_SB12_phase; Ar_SB14_phase; Ar_SB16_phase]; 
+% Ar_phase(:,1) = unwrap(Ar_phase(:,1)); 
+% Ar_delay = Ar_phase.*(T_L*1000/2/(2*pi)); 
+% Ar_slope = [Ar_SB12_slope; Ar_SB14_slope; Ar_SB16_slope]; 
+% Ar_energy = [12 14 16]*1240/810 - 15.763; 
+% 
+% Ar_XUV = Ar_delay(:,1) - Ar_Wigner(:,2); 
 
-Ar_Wigner = [...
-2.6997245179063363, -45.35276635590114; 
-5.785123966942148, -29.13460625059369; 
-8.980716253443525, -16.36607906200379]; 
+%% Import Anatoli's TDSE values for Argon, H2
 
-Ar_phase = [Ar_SB12_phase; Ar_SB14_phase; Ar_SB16_phase]; 
-Ar_phase(:,1) = unwrap(Ar_phase(:,1)); 
-Ar_delay = Ar_phase.*(T_L*1000/2/(2*pi)); 
-Ar_slope = [Ar_SB12_slope; Ar_SB14_slope; Ar_SB16_slope]; 
-Ar_energy = [12 14 16]*1240/810 - 15.763; 
+% import from CSV and convert to table to match H2 calculations
+tmp = csvread('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/ArTDSE_810.csv',0,0); 
+x_Ee = tmp(:,1); 
+t = 2*flipud(tmp(:,2)); 
+n = 12:2:24; 
+ArTDSE_810 = table(x_Ee, n', t); 
 
-Ar_XUV = Ar_delay(:,1) - Ar_Wigner(:,2); 
+% import H2 as tables
+H2TDSE_810_145 = readtable('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/H2-R145.dat');
+H2TDSE_810_150 = readtable('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/H2-R150.dat');
+H2TDSE_810_140 = readtable('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/H2-omega056.dat');
+H2TDSE_785_140 = readtable('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/H2-omega058.dat');
+H2TDSE_760_140 = readtable('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/H2-omega06.dat');
+
+%% *** compare H2TDSE to H2 data ***
+
+xdata = squeeze(reshape(SB_delay_data(1,1:(end-1),:), [1 15])); 
+phase_data = squeeze(reshape(SB_delay_data(2,1:(end-1),:), [1 15])); 
+phase_error = squeeze(reshape(SB_delay_error(2, 1:(end-1),:), [1 15]));
+
+% % use the mean of the measured H2 values
+% xdata = squeeze(reshape(mean(SB_delay_data(1,2:end,:),2), [1 3])); 
+% phase_data = squeeze(reshape(mean(SB_delay_data(2,2:end,:),2), [1 3])); 
+% phase_error = squeeze(reshape(mean(SB_delay_error(2,2:end,:),2), [1 3])); 
+
+% subtract out XUV contribution by referencing to Ar data and adding in
+% provided Ar TDSE values
+plot_data = phase_data ... 
+                - reshape(repmat(Ar_delay(1:3,1), [1 5])', [1 15]) ...  
+                + reshape(repmat(ArTDSE_810.t(1:3), [1 5])', [1 15]); 
+% plot_data = phase_data ... 
+%                 - Ar_delay(1:3,1)' ...  
+%                 + ArTDSE_810.t(1:3)'/2; 
+plot_error = phase_error; 
+
+
+figure; hold on; 
+errorbar(xdata, plot_data, plot_error, 'ko', 'DisplayName', 'H2 measurement'); 
+% plot(xdata, plot_data-60, 'ko'); 
+errorbar(H2TDSE_810_140.x_Ee, H2TDSE_810_140.t, H2TDSE_810_140.err, ...
+    'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+errorbar(H2TDSE_810_145.x_Ee, H2TDSE_810_145.t, H2TDSE_810_145.err, ...
+    'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+errorbar(H2TDSE_810_150.x_Ee, H2TDSE_810_150.t, H2TDSE_810_150.err, ...
+    'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+errorbar(H2TDSE_785_140.Ee, H2TDSE_785_140.t, H2TDSE_785_140.err, ...
+    'gs', 'DisplayName', 'H2 TDSE 785nm, r=1.40'); 
+errorbar(H2TDSE_760_140.Ee, H2TDSE_760_140.t, H2TDSE_760_140.err, ...
+    'bs', 'DisplayName', 'H2 TDSE 760nm, r=1.40'); 
+xlabel('electron kinetic energy (eV)'); 
+ylabel('delay (as)'); 
+legend; 
+hold off; 
+goodplot()
+
+%% *** compare ArTDSE to Ar data ***
+
+xdata = squeeze(reshape(SB_delay_data(1,2:end,:), [1 15])); 
+phase_data = squeeze(reshape(SB_delay_data(2,2:end,:), [1 15])); 
+phase_error = squeeze(reshape(SB_delay_error(2, 2:end,:), [1 15]));
+
+% subtract out XUV contribution by referencing to Ar data and adding in
+% provided Ar TDSE values
+tmp = mean([H2TDSE_810_145.t, H2TDSE_810_140.t, H2TDSE_810_150.t],2); 
+plot_data = Ar_delay(1:3,1) ...  
+                - squeeze(SB_delay_data(2,5,:)) ...
+                + H2TDSE_810_150.t(1:3); 
+
+plot_error = Ar_delay(1:3,2); 
+% plot_data = tmp + reshape(repmat(ArTDSE_810.t(1:3), [1 5])', [1 15]); 
+% xdata = reshape( (repmat(12:2:16, [5 1])'*1240/810 - repmat(IP(2:end), [3 1]))', [1 15]);  
+
+figure; hold on; 
+errorbar(Ar_energy, plot_data, plot_error, 'ko', 'DisplayName', 'Ar measurement'); 
+plot(ArTDSE_810.x_Ee(1:3)-15.763, ArTDSE_810.t(1:3), ...
+    'rv', 'DisplayName', 'Ar TDSE 810nm'); 
+xlabel('electron kinetic energy (eV)'); 
+ylabel('delay (as)'); 
+legend; 
+hold off; 
+goodplot()
 
 %% *** Argon CC plot ***
-
+%% calculate CC delays
 CCP_tmp = (fliplr(unwrap(fliplr(mod(CCP,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
 CCPA_tmp = (fliplr(unwrap(fliplr(mod(CCPA,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
 CCPAp_tmp = (fliplr(unwrap(fliplr(mod(CCPAp,2*pi))))-2*pi).*(T_L*1000/2/(2*pi)); 
@@ -150,32 +201,74 @@ CCPAp_tmp = (fliplr(unwrap(fliplr(mod(CCPAp,2*pi))))-2*pi).*(T_L*1000/2/(2*pi));
 Serov_CC_plus = fliplr(cumtrapz(fliplr(E+1240/810), fliplr(Serov_CC_plus))); 
 [Serov_CC_minus, ~] = Serov_curve(1, E - 1240/810); 
 Serov_CC_minus = fliplr(cumtrapz(fliplr(E-1240/810), fliplr(Serov_CC_minus))); 
-Serov_CC = (Serov_CC_plus - Serov_CC_minus)*24.2/4/pi; 
+Serov_CC = (Serov_CC_plus - Serov_CC_minus)*24.2/(2*1240/810); 
 clear('Serov_CC_plus', 'Serov_CC_minus'); 
 Ivanov_CC_plus = fliplr(cumtrapz(fliplr(E+1240/810), fliplr(Ivanov_curve(0,1, E + 1240/810))));
 Ivanov_CC_minus = fliplr(cumtrapz(fliplr(E-1240/810), fliplr(Ivanov_curve(0,1, E - 1240/810))));
-Ivanov_CC = (Ivanov_CC_plus - Ivanov_CC_minus)*24.2/4/pi; 
+Ivanov_CC = (Ivanov_CC_plus - Ivanov_CC_minus)*24.2/(2*1240/810); 
 clear('Ivanov_CC_plus', 'Ivanov_CC_minus'); 
 
+%% process Argon single photon scattering phases
+% actually double photon :(
+% % Mauritsson Argon single photon values
+% Ar_Wigner = [...
+% 2.6997245179063363, -45.35276635590114; 
+% 5.785123966942148, -29.13460625059369; 
+% 8.980716253443525, -16.36607906200379]; 
+% Ar_XUV = Ar_delay(:,1) - Ar_Wigner(:,2); 
 
-TDSE_H2a = [2.2689, 5.3361, 8.3823; -116.5337, -90.1702, -61.2589]; 
-TDSE_diff = [mean(SB_delay_data(2,2:end,1))-TDSE_H2a(2,1), ...
-             mean(SB_delay_data(2,2:end,2))-TDSE_H2a(2,2), ...
-             mean(SB_delay_data(2,2:end,3))-TDSE_H2a(2,3)];  
-         
-xdata = squeeze(reshape(SB_delay_data(1,2:end,:), [1 15])); 
-phase_data = squeeze(reshape(SB_delay_data(2,2:end,:), [1 15])); 
-phase_error = squeeze(reshape(SB_delay_error(2, 2:end,:), [1 15]));
+% import from CSV and convert to table to match H2 calculations
+% energy is in Rydberg, phase in in units of pi. Needs to be converted. 
+tmp = csvread('/Users/annaliw/Documents/lab/plots/Calculations/Ar_SinglePhoton/Ar_3StoP.csv',0,0); 
+x_Ee = 13.6057*tmp(:,1); 
+phi = pi*tmp(:,2); 
+phi = interp1(x_Ee, phi, E); 
+Ar_3StoP_interp = table(E, phi); 
 
-plot_data = phase_data - reshape(repmat(Ar_XUV', [5 1]), [1 15]) - ...
-                reshape(repmat(TDSE_H2a(2,:), [5 1]), [1 15]) + 0.7741.*(T_L*1000/4/pi); 
-plot_error = sqrt(...
-                  reshape(repmat(Ar_phase(:,2)'.^2, [5 1]), [1 15]) + ...
-                  phase_error.^2); 
+% find correct energy values for each peak
+ArSBind = 9:1:19; 
+ArSBind(:) = 0; 
+for ii=1:numel(ArSBind)
+    n = ii*2+10; 
+    ArSBind(ii) = find(abs(E-n*1240/810+15.736)<0.02, 1); 
+end
+
+% get delta phi and convert to tau
+t = 12:2:16; 
+t(1) = Ar_3StoP_interp.phi(ArSBind(5)) - Ar_3StoP_interp.phi(ArSBind(3)); 
+t(2) = Ar_3StoP_interp.phi(ArSBind(7)) - Ar_3StoP_interp.phi(ArSBind(5)); 
+t(3) = Ar_3StoP_interp.phi(ArSBind(9)) - Ar_3StoP_interp.phi(ArSBind(7)); 
+t = t * (T_L*1000/2/(2*pi)); 
+x_Ee = (12:2:16)*1240/810 - 15.736; 
+Ar_singlephoton = table(x_Ee, t); 
+
+%%
+xdata = reshape(SB_delay_data(1,2:4,:), [1 9]); 
+phase_data = reshape(SB_delay_data(2,2:4,:), [1 9]); 
+phase_error = reshape(SB_delay_error(2,2:4,:), [1 9]); 
+
+% % use the mean of the measured H2 values
+% xdata = squeeze(reshape(mean(SB_delay_data(1,2:end,:),2), [1 3])); 
+% phase_data = squeeze(reshape(mean(SB_delay_data(2,2:end,:),2), [1 3])); 
+% phase_error = squeeze(reshape(mean(SB_delay_error(2,2:end,:),2), [1 3])); 
+
+% prepare H2 values
+tmp = [H2TDSE_810_140.t, H2TDSE_810_145.t, H2TDSE_810_150.t];  
+tmp = reshape(tmp(1:3,:)', [1 9]); 
+% tmp = squeeze(mean(tmp(1:3,:),2)'); 
+
+plot_data = phase_data - reshape(repmat(Ar_delay(:,1)-Ar_singlephoton.t(1:3)', [1 3])', [1 9]) - tmp; % should give Ar CC values
+plot_theory = phase_data - reshape(repmat(ArTDSE_810.t(1:3)-Ar_singlephoton.t(1:3)', [1 3])', [1 9]) - tmp; 
+% plot_data = phase_data - Ar_XUV' - tmp; % should give Ar CC values
+            
+% plot_error = sqrt(...
+%                   reshape(repmat(Ar_phase(:,2)'.^2, [5 1]), [1 15]) + ...
+%                   phase_error.^2); 
               
-set(groot,'defaultLineLineWidth',2.0)
+% set(groot,'defaultLineLineWidth',2.0)
 figure; hold on; 
-errorbar(xdata, -plot_data, plot_error, 'o', 'DisplayName', 'CC measurement');
+plot(xdata, -plot_data-314, 'o', 'DisplayName', 'CC measurement');
+plot(xdata, -plot_theory, 'v', 'DisplayName', 'CC TDSE'); 
 plot(E, CCP_tmp, 'Color', [0,0,1], 'DisplayName', 'Atomic phase l=0'); 
 plot(E, CCPA_tmp, 'Color',[0,0.3,1], 'DisplayName', 'Atomic phase l=0 (A)'); 
 plot(E, CCPAp_tmp, 'Color',[0,0.5,1], 'DisplayName', 'Atomic phase l=0 (Ap)'); 
@@ -186,6 +279,7 @@ xlim([1.6 14]);
 ylim([-800 200]); 
 xlabel('electron kinetic energy (eV)'); 
 ylabel('delay (as)'); 
+goodplot()
 
 %% *** compare measurement + CC model to Wigner delay ***
 

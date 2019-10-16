@@ -1,20 +1,20 @@
 %%%% bootstrap method for getting errorbars on fit
 %%%% case resampling 
 
-% folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
-    folderName = '/Users/annaliw/code/KrCO2_scan/'; 
+folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
+%     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annaliw/code/NOscan/'; 
-alternate = [2 2]; % debug setting
+alternate = [2 2]; 
 t0=0; 
 wavelength=810; 
-% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206]; 
-% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; 
-global IP; IP = [13.9000   17.6000   18.0770   19.3760]; 
-global IP_label; IP_label = ["X", "A", "B", "C"]; 
+% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
+% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
+% global IP; IP = [13.9000   17.6000   18.0770   19.3760]; 
+% global IP_label; IP_label = ["X", "A", "B", "C"]; 
 % global IP; IP = [14 14.665]; 
 % global IP_label; IP_label = ["14", "14.665"]; 
-% global IP; IP = [15.763]; 
-% global IP_label; IP_label = ['Argon']; 
+global IP; IP = [15.763]; 
+global IP_label; IP_label = ['Argon']; % start with 2
 % IP = [9.553, 16.56, 18.318, 21.722]; 
 % IP_label = ['X', 'b', 'A', 'c']; 
 
@@ -34,8 +34,8 @@ XUV_only_raw = XUV_only;
 %     HistTot_array = pad_data; 
 
 %% load calibration
-% load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
-load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
+load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
+% load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % need to do full analysis on the original file. this will also give
@@ -71,12 +71,12 @@ twoOmega_nosum = twoOmega_signal;
 %% drift compensation (do Ar then skip for H2)
 twoOmega_signal = twoOmega_nosum; 
 %     phase_shift = interp1(1:length(peak_phase), peak_phase, 1.5:1:length(peak_phase));
-sideband_list = [14]*1240/wavelength-IP(2); % select 16th harmonic of lowest ionization state 
+sideband_list = [14]*1240/wavelength-IP(1); % select 16th harmonic of lowest ionization state 
 peak_phase = 0; 
 for i=1:1:length(sideband_list)
     [~, index] = min(abs(E - sideband_list(i)));
     window_center = index; 
-    window = 3; 
+    window = 5; 
     histogram_windows = twoOmega_signal((window_center-window):(window_center+window),:); 
     % integrate over window
     peak_phase = peak_phase + squeeze(sum(histogram_windows, 1)); 
@@ -87,9 +87,10 @@ end
 peak_phase = angle(peak_phase); 
 
 %% more drift comp
+twoOmega_signal = twoOmega_nosum; 
 phase_shift = peak_phase; % Ar
-% phase_shift = interp1(1:length(peak_phase), unwrap(peak_phase), 1.5:1:(length(peak_phase)+0.5), 'spline'); % H2
-for ii=1:1:length(phase_shift)-1
+% phase_shift = mod(interp1(1:40, unwrap(peak_phase+pi), 0.5:1:39.5), 2*pi); % H2
+for ii=1:1:length(phase_shift)
    twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*phase_shift(ii)); 
 end
 
@@ -121,7 +122,7 @@ XUV_only = Counts';
 %% FIRST FIT of original data set (single sideband)
 
 % Ar
-% region = [2.5 2.8]; % sideband 12
+region = [2.5 2.8]; % sideband 12
 % region = [5.6 6]; % sideband 14
 % region = [8.5 9]; % sideband 16
 % region = [11.5 11.9]; % sideband 18
@@ -211,10 +212,53 @@ for nn=1:1:trials
 
 end 
 check_if_done = 'done!'
-% figure; plot(E, var(squeeze(sample_ES_array), 0, 2)); 
-% figure; plot(E, std(squeeze(sample_ES_array), 0, 2)); 
-% figure; plot(E, sum(sum(E_SpectraArray./repmat(sum(E_SpectraArray,1), [size(E_SpectraArray,1) 1]),2),3)); 
 
+%% save
+data = H2_SB16_paramout; 
+
+bootstrap_phase = mean(data(:,4,:),3);
+bootstrap_slope = mean(data(:,5,:),3); 
+
+bootstrap_phase_std = sqrt(trials/(trials-1))*std(data(:,4,:),0,3);
+bootstrap_slope_std = sqrt(trials/(trials-1))*std(data(:,5,:),0,3);
+
+% Ar_SB18_paramout = data; 
+% Ar_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
+% Ar_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
+% H2_SB16_paramout = data; 
+H2_SB16_phase = [bootstrap_phase, bootstrap_phase_std]; 
+H2_SB16_slope = [bootstrap_slope, bootstrap_slope_std]; 
+
+%% check fit convergence on resampled sets
+
+xin = E(start:stop); 
+
+figure; hold on; grid on; 
+for ii=1:size(paramout_array,3)
+    p = plot(xin, abs(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))), 'Color', 'c', 'LineWidth', 2); 
+    p.Color(4) = 0.1; 
+end
+plot(xin, abs(Spectrum(xin, paramout_gauss, paramout_original)), 'Color', 'b', 'LineWidth', 2); 
+% scatter(xin, abs(twoOmega_signal(start:stop))/sum(abs(twoOmega_signal(start:stop))), 'b'); 
+title('Fit Amplitude', 'FontSize', 16); 
+xlabel('Photoelectron Energy (eV)'); ylabel('Amplitude'); 
+hold off; 
+
+figure; hold on; grid on; 
+for ii=1:size(paramout_array,3)
+    plotphase = unwrap(mod(angle(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))),2*pi)); 
+%     plotphase = plotphase - plotphase(1); 
+    p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
+    p.Color(4) = 0.1; 
+end
+plotphase = unwrap(mod(angle(Spectrum(xin, paramout_gauss, paramout_original)),2*pi)); 
+plotphase(1)
+% plotphase = plotphase - plotphase(1); 
+plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
+scatter(xin, unwrap(mod(angle(twoOmega_signal(start:stop)),2*pi)), 'b'); 
+title('Fit Phase', 'FontSize', 16); 
+xlabel('Photoelectron Energy (eV)'); ylabel('Phase (referenced to v=6 phase)'); 
+hold off; 
 
 %% JACKKNIFE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -263,174 +307,6 @@ for nn=1:1:numfiles
     fval_array(nn) = fval; 
 
 end 
-%% check fit convergence on resampled sets
-
-% paramout_jackknife = paramout_array; 
-% paramout_jackknife_referenced = paramout_jackknife; 
-% paramout_jackknife_referenced(:,2,:) = paramout_jackknife(:,2,:) ...
-%     - repmat(paramout_jackknife(end,2,:), [size(paramout_jackknife, 1), 1]);
-
-% phaseloc = 5; 
-% paramout_bootstrap = paramout_array; 
-% paramout_bootstrap_referenced = paramout_bootstrap; 
-% paramout_bootstrap_referenced(:,phaseloc,:) = paramout_bootstrap(:,phaseloc,:) ...
-%     - repmat(paramout_bootstrap(end,phaseloc,:), [size(paramout_bootstrap, 1), 1]);
-% 
-% paramout_array = paramout_bootstrap; 
-
-% tolerance = 0.02; 
-% start = find(abs(E-region(1))<tolerance, 1, 'last'); 
-% stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
-
-xin = E(start:stop); 
-
-figure; hold on; grid on; 
-for ii=1:size(paramout_array,3)
-    p = plot(xin, abs(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))), 'Color', 'c', 'LineWidth', 2); 
-    p.Color(4) = 0.1; 
-end
-plot(xin, abs(Spectrum(xin, paramout_gauss, paramout_original)), 'Color', 'b', 'LineWidth', 2); 
-% scatter(xin, abs(twoOmega_signal(start:stop))/sum(abs(twoOmega_signal(start:stop))), 'b'); 
-title('Fit Amplitude', 'FontSize', 16); 
-xlabel('Photoelectron Energy (eV)'); ylabel('Amplitude'); 
-hold off; 
-
-figure; hold on; grid on; 
-for ii=1:size(paramout_array,3)
-    plotphase = unwrap(mod(angle(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))),2*pi)); 
-%     plotphase = plotphase - plotphase(1); 
-    p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
-    p.Color(4) = 0.1; 
-end
-plotphase = unwrap(mod(angle(Spectrum(xin, paramout_gauss, paramout_original)),2*pi)); 
-plotphase(1)
-% plotphase = plotphase - plotphase(1); 
-plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
-scatter(xin, unwrap(mod(angle(twoOmega_signal(start:stop)),2*pi)), 'b'); 
-title('Fit Phase', 'FontSize', 16); 
-xlabel('Photoelectron Energy (eV)'); ylabel('Phase (referenced to v=6 phase)'); 
-hold off; 
-
-%%
-figure; hold on; grid on; 
-for ii=1:size(paramout_array,3)
-    plotphase = abs(sample_2w_array(start:stop,ii)); 
-%     plotphase = plotphase - plotphase(1); 
-    p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
-    p.Color(4) = 0.1; 
-end
-plotphase = abs(twoOmega_signal(start:stop)); 
-plotphase(1)
-% plotphase = plotphase - plotphase(1); 
-plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
-title('Fit Phase', 'FontSize', 16); 
-xlabel('Photoelectron Energy (eV)'); ylabel('2w Amplitude'); 
-hold off; 
-
-figure; hold on; grid on; 
-for ii=1:size(paramout_array,3)
-    plotphase = unwrap(angle(sample_2w_array(start:stop,ii))); 
-%     plotphase = plotphase - plotphase(1); 
-    p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
-    p.Color(4) = 0.1; 
-end
-plotphase = unwrap(angle(twoOmega_signal(start:stop))); 
-plotphase(1)
-% plotphase = plotphase - plotphase(1); 
-plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
-title('Fit Phase', 'FontSize', 16); 
-xlabel('Photoelectron Energy (eV)'); ylabel('Phase (referenced to v=6 phase)'); 
-hold off; 
-
-%% plot jackknife values with error bars
-vstates = (1:1:size(paramout_jackknife_referenced, 1)) - 1; 
-
-jackknife_phase = mean(paramout_jackknife_referenced(:,2,:),3);
-jackknife_slope = mean(paramout_jackknife_referenced(:,3,:),3);
-
-jackknife_phase_std = sqrt(numfiles-1)*std(paramout_jackknife_referenced(:,2,:),0,3);
-jackknife_slope_std = sqrt(numfiles-1)*std(paramout_jackknife_referenced(:,3,:),0,3);
-
-figure; hold on; grid on; 
-errorbar(vstates, jackknife_phase, jackknife_phase_std, '-o', ...
-    'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r', 'Color', 'r', ...
-    'MarkerSize', 8, 'LineWidth', 2); 
-xlim([-0.5 5.5]); 
-xlabel('Vibrational State'); ylabel('Phase (referenced to v=6)'); 
-title('Phase Extracted by Jackknife/Fitting'); 
-hold off; 
-
-figure; hold on; grid on; 
-errorbar(vstates, jackknife_slope, jackknife_slope_std, '-o', ...
-    'MarkerEdgeColor', 'm', 'MarkerFaceColor', 'm', 'Color', 'm', ...
-    'MarkerSize', 8, 'LineWidth', 2); 
-xlim([-0.5 5.5]); 
-xlabel('Vibrational State'); ylabel('Phase Slope'); 
-title('Phase Slope Extracted by Jackknife/Fitting'); 
-hold off; 
-
-%% plot bootstrap values with error bars
-data = paramout_array; 
-
-vstates = (1:1:size(data, 1)) - 1; 
-
-bootstrap_phase = mean(data(:,4,:),3);
-% bootstrap_slope = mean(data(:,5,:),3);
-
-bootstrap_phase_std = sqrt(trials/(trials-1))*std(data(:,4,:),0,3);
-% bootstrap_slope_std = sqrt(trials/(trials-1))*std(data(:,5,:),0,3);
-
-% X18_param = paramout_array(2,:,:); 
-% X18_phase = mean(paramout_array(2,5,:),3); 
-% X18_slope = mean(paramout_array(2,6,:),3);
-% X18_phase_std = sqrt(trials/(trials-1))*std(data(2,5,:),0,3);
-% X18_slope_std = sqrt(trials/(trials-1))*std(data(2,6,:),0,3);
-
-% A18_param = paramout_array(2,:,:); 
-% A18_phase = mean(paramout_array(2,4,:),3); 
-% A18_slope = mean(paramout_array(2,5,:),3);
-% A18_phase_std = sqrt(trials/(trials-1))*std(data(2,4,:),0,3);
-% A18_slope_std = sqrt(trials/(trials-1))*std(data(2,5,:),0,3);
-% 
-% B18_param = paramout_array(3,:,:); 
-% B18_phase = mean(paramout_array(3,4,:),3); 
-% B18_slope = mean(paramout_array(3,5,:),3);
-% B18_phase_std = sqrt(trials/(trials-1))*std(data(3,4,:),0,3);
-% B18_slope_std = sqrt(trials/(trials-1))*std(data(3,5,:),0,3);
-
-figure; hold on; grid on; 
-errorbar(vstates, bootstrap_phase, bootstrap_phase_std, '-o', ...
-    'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r', 'Color', 'r', ...
-    'MarkerSize', 4, 'LineWidth', 2); 
-xlim([-0.5 5.5]); 
-xlabel('Vibrational State'); ylabel('Phase'); 
-title('Phase Extracted by Bootstrap/Fitting'); 
-hold off; 
-
-% figure; hold on; grid on; 
-% errorbar(vstates, bootstrap_slope, bootstrap_slope_std, '-o', ...
-%     'MarkerEdgeColor', 'm', 'MarkerFaceColor', 'm', 'Color', 'm', ...
-%     'MarkerSize', 4, 'LineWidth', 2); 
-% xlim([-0.5 5.5]); 
-% xlabel('Vibrational State'); ylabel('Phase Slope'); 
-% title('Phase Slope Extracted by Bootstrap/Fitting'); 
-% hold off; 
-
-%%
-
-data = paramout_array; 
-
-bootstrap_phase = mean(data(:,4,:),3);
-bootstrap_slope = mean(data(:,5,:),3); 
-
-bootstrap_phase_std = sqrt(trials/(trials-1))*std(data(:,4,:),0,3);
-bootstrap_slope_std = sqrt(trials/(trials-1))*std(data(:,5,:),0,3);
-
-H2_SB12_paramout = data; 
-H2_SB12_phase = bootstrap_phase; 
-H2_SB12_slope = bootstrap_slope; 
-
-
 %% functions
 function Yout = Spectrum(E, gaussian, p)
     Yout = 0; 
