@@ -12,7 +12,7 @@ k = 0:0.001:3;
 % k = logspace(-2, 1, 1500); 
 
 %Final Energy of outgoing electron
-E = k.^2/2 .* E_AU + 1240/810; 
+E = k.^2/2 .* E_AU; 
 k = sqrt(2*E/E_AU); 
 
 %Momentum of electron before C-C transition (emission)
