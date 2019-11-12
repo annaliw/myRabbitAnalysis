@@ -69,7 +69,7 @@ H2TDSE_760_140 = readtable('/Users/annaliw/Documents/lab/plots/Calculations/H2_T
 Ar_theory = ArTDSE_810.t(1:4); 
 
 figure; errorbar(Ar_energy, Ar_delay(:,1)-pi, Ar_delay(:,2), 'ko', 'DisplayName', 'Argon raw measurement');
-hold on; plot(ArTDSE_810.x_Ee(1:4), Ar_theory, 'rv', 'DisplayName', 'Argon TDSE'); 
+hold on; plot(ArTDSE_810.x_Ee(1:4), Ar_theory(2,:), 'rv', 'DisplayName', 'Argon TDSE'); 
 xlabel('electron kinetic energy'); 
 ylabel('delay (as)'); 
 xlim([2 12.5]); 
@@ -77,7 +77,7 @@ legend;
 goodplot(); 
 hold off; 
 
-XUV_delay = Ar_delay(:,1) - pi - Ar_theory; 
+XUV_delay = Ar_delay(:,1) - pi - Ar_theory(2,:)'; 
 figure; errorbar(Ar_energy, XUV_delay, Ar_delay(:,2), 'ko', 'DisplayName', 'XUV delay'); 
 xlabel('electron kinetic energy'); 
 ylabel('delay (as)'); 

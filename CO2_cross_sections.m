@@ -1,19 +1,24 @@
 % fit region
 % region = [1.6 3.3]; 
 % region = [4.5 6.3]; 
-region = [7.6 9.5];
+% region = [7.6 9.5];
 % region = [10.2 12.5]; 
-IP = [13.9000   17.6000   18.0770];
+% IP = [13.9000   17.6000   18.0770];
 
-E = XUV_old_x; 
-XUV_only = XUV_old_y'; 
+% H2 fit regions
+% region = [0.05 1.6]; % harmonic 11
+% region = [3.2 4.8]; % harmonic 13
+region = [6.25 7.7]; % harmonic 15
+
+% E = XUV_old_x; 
+% XUV_only = XUV_old_y'; 
 
 tolerance = 0.05; 
 % fit section set-up
 start = find(abs(E-region(1))<tolerance, 1, 'last'); 
 stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
 
-[paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E(start:stop), abs(XUV_only(start:stop)), XUV_only(start:stop), 1, 0); 
+[paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E(start:stop), abs(XUV_only(start:stop)), XUV_only(start:stop), 1, 1); 
 % save as labeled variables
 paramout_original = paramout; 
 fval_original = fval; 
@@ -22,8 +27,8 @@ fval_original = fval;
 % Gauss = @(x,A,mu,sig) A.* exp( -(x-mu).^2 ./ (2.*sig.^2) );
 Yout = 0; 
 
-set(groot,'defaultLineLineWidth',2.0)
-figure; hold on; 
+% set(groot,'defaultLineLineWidth',2.0)
+figure; hold on;  
 plot(E(start:stop), XUV_only(start:stop)/sum(XUV_only(start:stop)), 'bo', ...
     'DisplayName', 'XUV only data'); 
 for ii = 1:size(paramout_gauss,1)
@@ -37,18 +42,29 @@ for ii = 1:size(paramout_gauss,1)
     Yout = Yout + ytmp;
 end
 plot(E(start:stop), Yout(start:stop), 'b-', 'DisplayName', 'full gaussian fit'); 
-legend; 
+legend('Location', 'northeastoutside'); 
 xlabel('electron kinetic energy (eV)'); 
 ylabel('amplitude'); 
-axl = AddHarmonicAxis(gca, IP, wavelength);
-for i = 1:numel(IP)
-    axl(i).XLabel.Position = [ -1.9    0.99];
-    axl(i).FontSize = 12*0.75; 
-    axl(i).XLabel.String = IP_label(i); 
-end
+% axl = AddHarmonicAxis(gca, IP, wavelength);
+% for i = 1:numel(IP)
+%     axl(i).XLabel.Position = [ -1.9    0.99];
+%     axl(i).FontSize = 12*0.75; 
+%     axl(i).XLabel.String = IP_label(i); 
+% end
 xlim([E(start), E(stop)]);  
-hold off; 
+goodplot();
 
+%%
+
+ycalc = 0; 
+for ii=1:size(paramout_gauss,1)
+    ycalc = ycalc + Gauss(E(start:stop), ...
+        paramout_gauss(ii,1), paramout_gauss(ii,2), paramout_gauss(ii,3)); 
+end
+H15_param = paramout_gauss; 
+H15_xdata = E(start:stop); 
+H15_ydata = XUV_only(start:stop); 
+H15_ycalc = ycalc; 
 %% special fit for H13
 
 % fit region

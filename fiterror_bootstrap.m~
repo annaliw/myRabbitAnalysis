@@ -5,7 +5,7 @@ folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
 % folderName = '/Users/annaliw/code/2018_04_18-18Scan/'; 
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annaliw/code/NOscan/'; 
-alternate = [1 2]; 
+alternate = [2 2]; 
 t0=0; 
 wavelength=810; 
 global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
@@ -145,9 +145,6 @@ XUV_only = Counts';
 
 %% FIRST FIT of original data set (single sideband)
 
-signal = twoOmega_signal; 
-% signal = XUV_only; 
-
 % Ar
 % region = [2.5 2.8]; % sideband 12
 % region = [5.3 6]; % sideband 14
@@ -155,7 +152,7 @@ signal = twoOmega_signal;
 % region = [11 12.3]; % sideband 18
 % region = [2.4 2.9]; % sideband 12
 % region = [5.3 6]; % sideband 14
-% region = [8.5 9.2]; % sideband 16
+region = [8.5 9.2]; % sideband 16
 % region = [11 12.3]; % sideband 18
 
 % H2
@@ -164,7 +161,6 @@ signal = twoOmega_signal;
 % region = [7.7548 9.18]; % sideband 16
 % region = [7.72 9.18]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18
-% region = [0.2 1.8]; % harmonic 11
 
 % CO2
 % region = [2.8 4.1419]; 
@@ -188,10 +184,10 @@ stop = find(abs(E-region(2))<tolerance, 1, 'first');
 % subtract_floor = 9.7; 
 subtract_floor = 0; 
 if subtract_floor == 0
-    tmp_signal = signal; 
+    tmp_signal = twoOmega_signal; 
 else
-    tmp = [abs(signal), angle(signal)]';
-    tmp(1,:) = tmp(1,:) - 0.9*abs(signal(find(abs(E-subtract_floor)<tolerance, 1, 'last'))); 
+    tmp = [abs(twoOmega_signal), angle(twoOmega_signal)]';
+    tmp(1,:) = tmp(1,:) - 0.9*abs(twoOmega_signal(find(abs(E-subtract_floor)<tolerance, 1, 'last'))); 
 %     tmp(1,:) = tmp(1,:) - 0; 
     tmp_signal = tmp(1,:) .* exp(1j*tmp(2,:));
     tmp_signal = tmp_signal.'; 

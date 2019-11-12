@@ -22,22 +22,29 @@ E_vec = [0 20 900];
 HistTot_array = HistTot_array(:,:,alternate(1):alternate(2):end); % might need to alternate files
 HistTot_array = HistTot_array./sum(HistTot_array(:)); % normalize!
 
+figure; plot(sum(sum(HistTot_array,2),3)); 
 %% plot and find peaks
 
-figure; plot(sum(sum(HistTot_array,2),3)); 
-
 hw = 1240/wavelength; 
+% 7-31-19 scan H2/Ar
 % calibEnergy = n*hw - IP; 
 % tof_peak = fliplr([577 603 634 673 716 771 838 936 1079 1335 1962]); 
-calibEnergy = [n*hw - IP]; 
-tof_peak = fliplr([573 604 639 684 735 803 893 1034 1258]);
+% Kr/CO2 scan
+% calibEnergy = [n*hw - IP]; 
+% tof_peak = fliplr([573 604 639 684 735 803 893 1034 1258]);
+% 8-4-18 H2/Ar
+t0=410; 
+n = 12:1:19; 
+calibEnergy = n*hw - IP; 
+tof_peak = [912 808 749 711 684 662 646 631];
 
 %% find energy calibration
 calibType = 'none'; 
 
-config.calibEnergy = n*1240/wavelength - IP; 
+% config.calibEnergy = n*1240/wavelength - IP; 
+config.calibEnergy = calibEnergy; 
 config.tofPeaks = tof_peak;   % redo with peak finding
-config.IPcal = IP; 
+config.IPcal = 15.736; 
 config.Plot = 1; 
 % calibrate to Kr peaks
 A = ECalibrate(t0, n, wavelength, calibType, config); % TO DO: hard set t0 into ECalibrate
