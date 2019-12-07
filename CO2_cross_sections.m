@@ -8,7 +8,14 @@
 % H2 fit regions
 % region = [0.05 1.6]; % harmonic 11
 % region = [3.2 4.8]; % harmonic 13
-region = [6.25 7.7]; % harmonic 15
+% region = [6.25 7.7]; % harmonic 15
+
+% Ar fit regions
+region = [0.95 1.5]; % harmonic 11
+% region = [4.05 4.4]; % harmonic 13
+% region = [6.5 7.8]; % harmonic 15
+% region = [9.7 10.6]; % harmonic 17
+% region = [12.8 13.9]; % harmonic 19
 
 % E = XUV_old_x; 
 % XUV_only = XUV_old_y'; 

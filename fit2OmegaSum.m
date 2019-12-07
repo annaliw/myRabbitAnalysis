@@ -128,7 +128,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
 
 
         % harmonic labels
-        axl = AddHarmonicAxis(ax1, IP, wavelength);
+        axl = AddHarmonicAxis(ax1, IP, IP_label, wavelength, 1);
         for i = 1:numel(IP)
             axl(i).XLabel.Position = [ -1.9    0.99];
             axl(i).FontSize = text_size*0.75; 

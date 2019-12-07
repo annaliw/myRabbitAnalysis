@@ -63,7 +63,7 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
         ax1.XLabel.String = 'photoelectron energy (eV)'; 
     end
     
-    axl = AddHarmonicAxis(ax1, IP, wavelength);
+    axl = AddHarmonicAxis(ax1, IP, IP_label, wavelength, 1);
 
     for i = 1:numel(IP)
         axl(i).XLabel.Position = [ -1.9    0.99];

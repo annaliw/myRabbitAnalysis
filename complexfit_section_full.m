@@ -5,7 +5,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     
 %     region = fitRegion; 
     n = 9:1:19; 
-    tolerance = 0.02; 
+    tolerance = 0.07; 
 
     % form peaks guess
     peaks = zeros(length(IP), length(n)); 

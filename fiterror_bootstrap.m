@@ -1,11 +1,18 @@
 %%%% bootstrap method for getting errorbars on fit
 %%%% case resampling 
 
-folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
+% folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
 % folderName = '/Users/annaliw/code/2018_04_18-18Scan/'; 
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annaliw/code/NOscan/'; 
-alternate = [1 2]; 
+% folderName = '/Users/annaliw/code/2019_11_20-15Scan/'; % H2 2019-11-20
+% has Ar pollution
+% folderName = '/Users/annaliw/code/2019_11_20-13Scan/'; % Ar 2019-11-20
+% folderName = '/Users/annaliw/code/2019_11_21-14Scan/'; % H2 2019-11-21
+% folderName = '/Users/annaliw/code/2019_11_21-12Scan/'; % Ar 2019-11-21
+% folderName = '/Users/annaliw/code/2019_11_22-Argon/'; % Ar 2019-11-22
+folderName = '/Users/annaliw/code/2019_11_22-14Scan/'; % H2 2019-11-22
+alternate = [1 1]; 
 t0=0; 
 wavelength=810; 
 global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
@@ -39,10 +46,12 @@ load(strcat(folderName, 'calibration/Ar_calibration.mat'));
 % load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
 %% OR redo it
 
-t0=410; 
-n = 10:1:19; 
+t0=0; 
+n = 11:1:19; 
 calibEnergy = n*1240/810 - IP; 
-tof_peak = [912 808 749 711 684 662 646 631 620 610];
+% tof_peak = [912 808 749 711 684 662 646 631 620 610];
+% tof_peak = fliplr([596 634 677 732 801 902 1048 1308 1971]); 
+tof_peak = [2031 1354 1078 935 827 754 699 661 622]; 
 calibType = 'none'; 
 
 % config.calibEnergy = n*1240/wavelength - IP; 
@@ -52,6 +61,9 @@ config.IPcal = 15.736;
 config.Plot = 1; 
 % calibrate to Kr peaks
 A = ECalibrate(t0, n, wavelength, calibType, config); % TO DO: hard set t0 into ECalibrate
+calibType = 'Ar'; 
+filename = strcat(folderName, 'calibration/', calibType, '_calibration'); 
+save(filename, 'A', 'calibEnergy', 'tof_peak', 'wavelength'); 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % need to do full analysis on the original file. this will also give
@@ -70,7 +82,7 @@ Ebins = E; % save for later in case E gets overwritten
 % Difference signal
 %     E_SpectraArray = E_SpectraArray - mean(E_SpectraArray,2); 
 % fft data
-
+%% why isn't this working?????
 % normalize on each delay step (dim 2 in array)
 norm = sum(E_SpectraArray,1); 
 E_SpectraArray = E_SpectraArray./repmat(norm, size(E_SpectraArray, 1), 1, 1); 
@@ -159,7 +171,7 @@ signal = twoOmega_signal;
 % region = [11 12.3]; % sideband 18
 
 % H2
-% region = [1.65 3.05]; % sideband 12
+region = [1.55 3.05]; % sideband 12
 % region = [4.7 6.15]; % sideband 14
 % region = [7.7548 9.18]; % sideband 16
 % region = [7.72 9.18]; % sideband 16
