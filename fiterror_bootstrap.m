@@ -14,7 +14,7 @@
 % folderName = '/Users/annaliw/code/2019_11_22-14Scan/'; % H2 2019-11-22
 % folderName = '/Users/annaliw/code/2019_12_13-17Scan/'; % Ar 2019-12-13 with old and new sampling
 % folderName = '/Users/annaliw/code/2019_12_14-16Scan/'; % H2 long long long scan
-folderName = '/Users/annaliw/code/2020_01_09-17Scan/'; 
+folderName = '/Users/annaliw/code/2020_01_15-12Scan/'; 
 
 alternate = [1 1]; 
 t0=0; 
@@ -57,7 +57,7 @@ calibEnergy = n*1240/810 - IP(1);
 % tof_peak = [912 808 749 711 684 662 646 631 620 610];
 % tof_peak = fliplr([596 634 677 732 801 902 1048 1308 1971]); 
 % tof_peak = [1983 1262 1042 895 803 731 681 644 601]; 
-tof_peak = [1866 1284 1030 890 792 726 672 629 592]; 
+tof_peak = [1846 1273 1026 890 791 725 673 630 592]; 
 calibType = 'none'; 
 
 % config.calibEnergy = n*1240/wavelength - IP; 
@@ -96,9 +96,9 @@ norm = sum(E_SpectraArray,1);
 %%
 
 % fft and filter
-tmp = fftshift(fft(E_SpectraArray(:,:,:), [], 2), 2); 
+tmp = fftshift(fft(E_SpectraArray(:,1:121,:), [], 2), 2); 
 % twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
-twoOmega_signal = squeeze(sum(tmp(:,74,:),2)); % + conj(squeeze(mean(tmp(:,94,:),2)));
+twoOmega_signal = squeeze(sum(tmp(:,83,:),2)); % + conj(squeeze(mean(tmp(:,94,:),2)));
 
 twoOmega_nosum = twoOmega_signal; 
 

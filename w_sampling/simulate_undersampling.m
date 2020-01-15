@@ -2,11 +2,14 @@
 dw_1 = 1E-2; 
 wrange_1 = 5; 
 w_1 = -wrange_1:dw_1:wrange_1; 
+slope_2w = 20; 
+env_size = 20; 
 
 bandwidth = 3*dw_1; 
 signal_w_1 =  exp(-(w_1-1).^2/(2*bandwidth.^2))  + exp(-(w_1+1).^2/(2*bandwidth.^2)) ...
-            + exp(-(w_1-2).^2/(2*bandwidth.^2)).*exp(-1j*(w_1-2))  + exp(-(w_1+2).^2/(2*bandwidth.^2)).*exp(1j*(w_1+2)) ...
-            + 50*exp(-w_1.^2/(2*bandwidth.^2)); 
+            + exp(-(w_1-2).^2/(2*bandwidth.^2)).*exp(1j*slope_2w*(w_1-2))  ...
+            + exp(-(w_1+2).^2/(2*bandwidth.^2)).*exp(1j*slope_2w*(w_1+2)) ...
+            + env_size*exp(-w_1.^2/(2*bandwidth.^2)); 
 % signal_w_1 =  exp(-(w_1-1).^2/(2*bandwidth.^2))  + exp(-(w_1+1).^2/(2*bandwidth.^2)) ...
 %             + exp(-(w_1-2).^2/(2*bandwidth.^2))  + exp(-(w_1+2).^2/(2*bandwidth.^2)); 
 
@@ -50,7 +53,7 @@ plot(t_2, real(signal_t_2), 'o');
 xlabel('t'); 
 
 % FT back
-signal_w_2 = fftshift(fft(ifftshift(signal_t_2))); 
+signal_w_2 = fftshift(fft(ifftshift(real(signal_t_2)))); 
 dw_2 =  1/(numel(t_2))/dt_2;
 wrange_2 = 1/dt_2/2;
 w_2 = (-wrange_2+dw_2):dw_2:wrange_2; 
@@ -118,7 +121,7 @@ legend;
 
 %% add noise before resample 
 
-multiplier = 1000/max(abs(signal_t_1)); 
+multiplier = 8E5/max(abs(signal_t_1)); 
 numsim = 1000; 
 % figure; hold on; 
 % plot(t_1, abs(signal_t_1*multiplier)); 
@@ -171,7 +174,7 @@ end
 
 %% make figure to compare
 
-multiplier = 1000/max(abs(signal_t_1)); 
+multiplier = 8E5/sum(abs(signal_t_1)); 
 
 f0 = 1; 
 fs_3 = 2.4*f0; 
@@ -179,6 +182,10 @@ dt_3 = 1/fs_2;
 t_3 = ((-trange_1/2):dt_2:(trange_1/2 - dt_1/2)) + dt_1/2; 
 signal_t_3_full = interp1(t_1, signal_t_1*multiplier, t_3, 'spline'); 
 signal_t_3 = poissrnd(abs(signal_t_3_full)); 
+envelope_t_1 = fftshift(ifft(ifftshift(multiplier*env_size*exp(-w_1.^2/(2*bandwidth.^2))))); 
+envelope_t_3 = interp1(t_1, envelope_t_1, t_3, 'spline'); 
+envelope_t_2 = interp1(t_1, envelope_t_1, t_2, 'spline'); 
+% signal_t_3 = signal_t_3 - envelope_t_3; 
 % FT back
 signal_w_3 = fftshift(fft(ifftshift(signal_t_3))); 
 dw_3 =  1/(numel(t_3))/dt_3;
@@ -198,6 +205,9 @@ xlabel('w');
 goodplot()
 
 subplot(3,1,2); hold on; 
+% plot(t_1, real(signal_t_1*multiplier) - real(envelope_t_1)); 
+% plot(t_2, real(signal_t_2*multiplier) - real(envelope_t_2), 'o'); 
+% plot(t_3, real(signal_t_3 - envelope_t_3), '*'); 
 plot(t_1, real(signal_t_1*multiplier)); 
 plot(t_2, real(signal_t_2*multiplier), 'o'); 
 plot(t_3, real(signal_t_3), '*'); 
@@ -217,6 +227,37 @@ xlabel('w');
 goodplot()
 
 
+%%
+tmp = multiplier; 
+figure; hold on; 
+
+subplot(2,1,1); hold on; 
+% plot(t_1, multiplier*real(signal_t_1)-real(envelope_t_1), 'k-'); 
+% plot(t_1, poissrnd(multiplier*abs(signal_t_1))-real(envelope_t_1), 'b-'); 
+plot(t_1, tmp*abs(signal_t_1), 'k-'); 
+plot(t_1, poissrnd(tmp*abs(signal_t_1)), 'bo'); 
+% plot(t_3, real(signal_t_3), 'ro'); 
+ylabel('amplitude with DC subtraction'); 
+xlabel('t'); 
+goodplot(); 
+
+signal_w_4_a = fftshift(fft(ifftshift( poissrnd(tmp*abs(signal_t_1)) ))); 
+signal_w_4_b = fftshift(fft(ifftshift(tmp*abs(signal_t_1)))); 
+subplot(2,1,2); hold on; 
+yyaxis left; 
+plot(w_1, abs(signal_w_1*tmp)); 
+plot(w_1, abs(signal_w_4_a)); 
+plot(w_1, abs(signal_w_4_b)); 
+% plot(w_3, abs(signal_w_3), 'b.'); 
+ylabel('amplitude with envelope subtraction'); 
+yyaxis right; 
+plot(w_1, angle(signal_w_1*tmp)); 
+plot(w_1, angle(signal_w_4_a)); 
+plot(w_1, angle(signal_w_4_b));
+% plot(w_3, angle(signal_w_3)); 
+ylabel('phase'); 
+xlabel('w'); 
+goodplot(); 
 
 
 
