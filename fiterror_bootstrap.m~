@@ -98,7 +98,7 @@ norm = sum(E_SpectraArray,1);
 % fft and filter
 tmp = fftshift(fft(E_SpectraArray(:,:,:), [], 2), 2); 
 % twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
-twoOmega_signal = tmp(:,76:79,:); % + conj(squeeze(mean(tmp(:,94,:),2)));
+twoOmega_signal = squeeze(sum(tmp(:,79,:),2)); % + conj(squeeze(mean(tmp(:,94,:),2)));
 
 twoOmega_nosum = twoOmega_signal; 
 

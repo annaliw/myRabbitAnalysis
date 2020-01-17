@@ -19,7 +19,7 @@ function trash = plotfun_rabbitspectrum(n, wavelength, E, data, mode)
         
         % plotting inputs
         if ismember(1, checksize)==0
-            oneOmega_signal = data(:,121); 
+%             oneOmega_signal = data(:,121); 
             twoOmega_signal = data(:,130); 
         else
             twoOmega_signal = data; 
