@@ -106,58 +106,105 @@ plot_data = phase_data - reshape(repmat(XUV_delay(1:3), [1 5])', [1 15]);
 plot_error = phase_error; 
 
 
+% figure; hold on; 
+% 
+% subplot(2, 3, [1 2 3]); hold on; 
+% errorbar(xdata, plot_data, plot_error, 'ko', 'DisplayName', 'H2 measurement'); 
+% errorbar(H2TDSE_810_140.x_Ee, H2TDSE_810_140.t, H2TDSE_810_140.err, ...
+%     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+% errorbar(H2TDSE_810_145.x_Ee, H2TDSE_810_145.t, H2TDSE_810_145.err, ...
+%     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+% errorbar(H2TDSE_810_150.x_Ee, H2TDSE_810_150.t, H2TDSE_810_150.err, ...
+%     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+% xlabel('electron kinetic energy (eV)'); 
+% ylabel('delay (as)'); 
+% legend; 
+% goodplot(); 
+% 
+% subplot(2, 3, 4); hold on; 
+% errorbar(xdata(1:5), plot_data(1:5), plot_error(1:5), 'ko', 'DisplayName', 'H2 measurement'); 
+% errorbar(H2TDSE_810_140.x_Ee(1), H2TDSE_810_140.t(1), H2TDSE_810_140.err(1), ...
+%     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+% errorbar(H2TDSE_810_145.x_Ee(1), H2TDSE_810_145.t(1), H2TDSE_810_145.err(1), ...
+%     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+% errorbar(H2TDSE_810_150.x_Ee(1), H2TDSE_810_150.t(1), H2TDSE_810_150.err(1), ...
+%     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+% % xlabel('electron kinetic energy (eV)'); 
+% % ylabel('delay (as)'); 
+% % legend; 
+% goodplot(); 
+% 
+% subplot(2, 3, 5); hold on; 
+% errorbar(xdata(6:10), plot_data(6:10), plot_error(6:10), 'ko', 'DisplayName', 'H2 measurement'); 
+% errorbar(H2TDSE_810_140.x_Ee(2), H2TDSE_810_140.t(2), H2TDSE_810_140.err(2), ...
+%     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+% errorbar(H2TDSE_810_145.x_Ee(2), H2TDSE_810_145.t(2), H2TDSE_810_145.err(2), ...
+%     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+% errorbar(H2TDSE_810_150.x_Ee(2), H2TDSE_810_150.t(2), H2TDSE_810_150.err(2), ...
+%     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+% % xlabel('electron kinetic energy (eV)'); 
+% % ylabel('delay (as)'); 
+% % legend; 
+% goodplot(); 
+% 
+% subplot(2, 3, 6); hold on; 
+% errorbar(xdata(11:15), plot_data(11:15), plot_error(11:15), 'ko', 'DisplayName', 'H2 measurement'); 
+% errorbar(H2TDSE_810_140.x_Ee(3), H2TDSE_810_140.t(3), H2TDSE_810_140.err(3), ...
+%     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+% errorbar(H2TDSE_810_145.x_Ee(3), H2TDSE_810_145.t(3), H2TDSE_810_145.err(3), ...
+%     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+% errorbar(H2TDSE_810_150.x_Ee(3), H2TDSE_810_150.t(3), H2TDSE_810_150.err(3), ...
+%     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+% % xlabel('electron kinetic energy (eV)'); 
+% % ylabel('delay (as)'); 
+% % legend; 
+% goodplot(); 
+
 figure; hold on; 
 
-subplot(2, 3, [1 2 3]); hold on; 
-errorbar(xdata, plot_data, plot_error, 'ko', 'DisplayName', 'H2 measurement'); 
-errorbar(H2TDSE_810_140.x_Ee, H2TDSE_810_140.t, H2TDSE_810_140.err, ...
-    'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
-errorbar(H2TDSE_810_145.x_Ee, H2TDSE_810_145.t, H2TDSE_810_145.err, ...
-    'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
-errorbar(H2TDSE_810_150.x_Ee, H2TDSE_810_150.t, H2TDSE_810_150.err, ...
-    'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-xlabel('electron kinetic energy (eV)'); 
-ylabel('delay (as)'); 
-legend; 
-goodplot(); 
-
-subplot(2, 3, 4); hold on; 
-errorbar(xdata(1:5), plot_data(1:5), plot_error(1:5), 'ko', 'DisplayName', 'H2 measurement'); 
+subplot(1, 3, 1); hold on; 
+v1_offset = plot_data(5) - H2TDSE_810_150.t(1); 
+errorbar(xdata(1:5), plot_data(1:5) - v1_offset, plot_error(1:5), 'ko', 'DisplayName', 'H2 measurement'); 
 errorbar(H2TDSE_810_140.x_Ee(1), H2TDSE_810_140.t(1), H2TDSE_810_140.err(1), ...
     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
 errorbar(H2TDSE_810_145.x_Ee(1), H2TDSE_810_145.t(1), H2TDSE_810_145.err(1), ...
     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
 errorbar(H2TDSE_810_150.x_Ee(1), H2TDSE_810_150.t(1), H2TDSE_810_150.err(1), ...
     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-% xlabel('electron kinetic energy (eV)'); 
-% ylabel('delay (as)'); 
+xlim([1.6 3])
+xlabel('electron kinetic energy (eV)'); 
+ylabel('delay (as)'); 
 % legend; 
 goodplot(); 
 
-subplot(2, 3, 5); hold on; 
-errorbar(xdata(6:10), plot_data(6:10), plot_error(6:10), 'ko', 'DisplayName', 'H2 measurement'); 
+subplot(1, 3, 2); hold on; 
+v1_offset = plot_data(10) - H2TDSE_810_150.t(2); 
+errorbar(xdata(6:10), plot_data(6:10) - v1_offset, plot_error(6:10), 'ko', 'DisplayName', 'H2 measurement'); 
 errorbar(H2TDSE_810_140.x_Ee(2), H2TDSE_810_140.t(2), H2TDSE_810_140.err(2), ...
     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
 errorbar(H2TDSE_810_145.x_Ee(2), H2TDSE_810_145.t(2), H2TDSE_810_145.err(2), ...
     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
 errorbar(H2TDSE_810_150.x_Ee(2), H2TDSE_810_150.t(2), H2TDSE_810_150.err(2), ...
     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-% xlabel('electron kinetic energy (eV)'); 
-% ylabel('delay (as)'); 
+xlabel('electron kinetic energy (eV)'); 
+ylabel('delay (as)'); 
 % legend; 
+xlim([4.5 6.2]); 
 goodplot(); 
 
-subplot(2, 3, 6); hold on; 
-errorbar(xdata(11:15), plot_data(11:15), plot_error(11:15), 'ko', 'DisplayName', 'H2 measurement'); 
+subplot(1, 3, 3); hold on; 
+v1_offset = plot_data(15) - H2TDSE_810_150.t(3); 
+errorbar(xdata(11:15), plot_data(11:15) - v1_offset, plot_error(11:15), 'ko', 'DisplayName', 'H2 measurement'); 
 errorbar(H2TDSE_810_140.x_Ee(3), H2TDSE_810_140.t(3), H2TDSE_810_140.err(3), ...
     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
 errorbar(H2TDSE_810_145.x_Ee(3), H2TDSE_810_145.t(3), H2TDSE_810_145.err(3), ...
     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
 errorbar(H2TDSE_810_150.x_Ee(3), H2TDSE_810_150.t(3), H2TDSE_810_150.err(3), ...
     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-% xlabel('electron kinetic energy (eV)'); 
-% ylabel('delay (as)'); 
-% legend; 
+xlabel('electron kinetic energy (eV)'); 
+ylabel('delay (as)'); 
+legend; 
+xlim([7.5 9.2]); 
 goodplot(); 
 
 %% *** compare ArTDSE to Ar data ***

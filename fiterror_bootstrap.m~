@@ -1,7 +1,7 @@
 %%%% bootstrap method for getting errorbars on fit
 %%%% case resampling 
 
-% folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
+% % folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
 % folderName = '/Users/annaliw/code/2018_04_18-18Scan/'; 
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annaliw/code/NOscan/'; 
@@ -14,19 +14,19 @@
 % folderName = '/Users/annaliw/code/2019_11_22-14Scan/'; % H2 2019-11-22
 % folderName = '/Users/annaliw/code/2019_12_13-17Scan/'; % Ar 2019-12-13 with old and new sampling
 % folderName = '/Users/annaliw/code/2019_12_14-16Scan/'; % H2 long long long scan
-folderName = '/Users/annaliw/code/2020_01_16-14Scan/'; 
+folderName = '/Users/annaliw/code/2020_01_22-19Scan/'; 
 
 alternate = [1 1]; 
 t0=0; 
 wavelength=810; 
-% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
-% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
+global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
+global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
 % global IP; IP = [13.9000   17.6000   18.0770   19.3760]; 
 % global IP_label; IP_label = ["X", "A", "B", "C"]; 
 % global IP; IP = [14 14.665]; 
 % global IP_label; IP_label = ["14", "14.665"]; 
-global IP; IP = [15.763]; 
-global IP_label; IP_label = ['Argon']; % start with 2
+% global IP; IP = [15.763]; 
+% global IP_label; IP_label = ['Argon']; % start with 2
 % IP = [9.553, 16.56, 18.318, 21.722]; 
 % IP_label = ['X', 'b', 'A', 'c']; 
 
@@ -46,28 +46,30 @@ XUV_only_raw = XUV_only;
 %     HistTot_array = pad_data; 
 figure; plot(sum(sum(HistTot_array,2),3)); 
 %% load calibration
-load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
-% load('/Users/annaliw/code/2019_12_13-17Scan/calibration/Ar_calibration.mat'); 
+% load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
+load('/Users/annaliw/code/2020_01_22-16Scan/calibration/Ar_calibration.mat'); 
 % load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
 %% OR redo it
 
 t0=0; 
 n = 11:1:19; 
+% n=[13 15 17 19]; 
 calibEnergy = n*1240/810 - IP(1); 
 % tof_peak = [912 808 749 711 684 662 646 631 620 610];
 % tof_peak = fliplr([596 634 677 732 801 902 1048 1308 1971]); 
 % tof_peak = [1983 1262 1042 895 803 731 681 644 601]; 
-tof_peak = [1839 1273 1030 890 796 730 676 633 596]; 
+tof_peak = [1839 1276 1032 895 798 731 678 633 598]; 
 calibType = 'none'; 
 
 % config.calibEnergy = n*1240/wavelength - IP; 
 config.calibEnergy = calibEnergy; 
 config.tofPeaks = tof_peak;   % redo with peak finding
-config.IPcal = 15.736; 
+% config.IPcal = 15.736; 
+config.IPcal = IP(1); 
 config.Plot = 1; 
 % calibrate to Kr peaks
 A = ECalibrate(t0, n, wavelength, calibType, config); % TO DO: hard set t0 into ECalibrate
-calibType = 'Ar'; 
+calibType = 'H2'; 
 filename = strcat(folderName, 'calibration/', calibType, '_calibration'); 
 save(filename, 'A', 'calibEnergy', 'tof_peak', 'wavelength'); 
 %%
@@ -75,6 +77,7 @@ save(filename, 'A', 'calibEnergy', 'tof_peak', 'wavelength');
 % need to do full analysis on the original file. this will also give
 % structures to reference for size in the loop. 
 
+t0=0; 
 % do energy conversion
 tmp = reshape(HistTot_array, size(HistTot_array,1), []);
 tof = 1:size(tmp,1); 
@@ -94,42 +97,121 @@ norm = sum(E_SpectraArray,1);
 % E_SpectraArray = E_SpectraArray./repmat(norm, size(E_SpectraArray, 1), 1, 1); 
 
 %%
+% % subtract out slope
+% tmp = mean(mean(E_SpectraArray(217:270,:,:),1),3); 
+% p = polyfit(stageTimes, tmp, 1); 
+% 
+% tmp = E_SpectraArray; 
+% pmat = zeros([numel(E), numel(stageTimes)]); 
+% for ii=1:numel(E)
+%     p = polyfit(stageTimes, squeeze(sum(E_SpectraArray(ii,:,:),3)), 1); 
+%     pmat(ii,:) = polyval(p,stageTimes); 
+%     tmp(ii,:,:) = E_SpectraArray(ii,:,:) - repmat(polyval(p,stageTimes), [1 1 size(E_SpectraArray,3)])/size(E_SpectraArray,3); 
+% end
+% tmp = tmp * (stageTimes(2)-stageTimes(1)); 
+% tmp = fftshift(fft(ifftshift(tmp,2),[],2),2); 
 
 % fft and filter
-tmp = fftshift(fft(E_SpectraArray(:,:,:), [], 2), 2); 
+% tmp = fftshift(fft(E_SpectraArray, [], 2), 2); 
+tmp = fftshift(fft(ifftshift(E_SpectraArray - repmat(mean(E_SpectraArray,2),[1 numel(stageTimes)]),2),[],2),2); 
+
+% tmp = fftshift(fft(HistTot_array,[],2),2); 
 % twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
-twoOmega_signal = squeeze(sum(tmp(:,79,:),2)); % + conj(squeeze(mean(tmp(:,94,:),2)));
+twoOmega_signal = squeeze(tmp(:,92,:)); % + conj(squeeze(mean(tmp(:,94,:),2)));
 
 twoOmega_nosum = twoOmega_signal; 
 
 %% drift compensation
 twoOmega_signal = twoOmega_nosum; 
-sideband_list = [16]*1240/wavelength-IP(1); % select 16th harmonic of lowest ionization state 
+sideband_list = [16]*1240/wavelength-IP(3); % select 16th harmonic of lowest ionization state 
+% phase_shift = zeros([1 size(twoOmega_signal,2)]); 
+
+% figure; hold on; 
 peak_phase = 0; 
 for ii=1:1:length(sideband_list)
     [~, index] = min(abs(E - sideband_list(ii)));
     window_center = index; 
-    window = 30; 
+%     window_center = 1301; 
+    window = 5; 
     histogram_windows = twoOmega_signal((window_center-window):(window_center+window),:); 
     % integrate over window
-    peak_phase = peak_phase + squeeze(sum(histogram_windows, 1)); 
-    % % fft wrt IR delay 
-    % peak_fft = fftshift(fft(peak_vol, [], 1), 1); 
-    % peak_phase = angle(peak_fft(twoOmega_location, :)); 
+    peak_phase = peak_phase + squeeze(sum(histogram_windows, 1))./squeeze(sum(sum(E_SpectraArray,1),2))'; 
 end
-peak_phase = angle(peak_phase); 
+peak_amp = abs(peak_phase); 
+peak_phase = angle(peak_phase);
 
 % more drift comp
-twoOmega_signal = twoOmega_nosum; 
-phase_shift = peak_phase;
+% ptmp = polyfit(1:numel(peak_phase), peak_phase, 2); 
+% phase_shift = polyval(ptmp, 1:numel(peak_phase));
+% plot(unwrap(peak_phase), 'o-'); 
+% plot(1:0.1:numel(peak_phase), polyval(ptmp, 1:0.1:numel(peak_phase))); 
+phase_shift = peak_phase; 
+
 for ii=1:1:length(phase_shift)
 % for ii=1:1:60
-   twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(-1j*phase_shift(ii)); 
+   twoOmega_signal(:,ii) = twoOmega_signal(:,ii).*exp(1j*phase_shift(ii)); 
+end
+% sum phase matched values
+twoOmega_signal = squeeze(sum(twoOmega_signal, 2)); 
+
+%% w space stage drift comp
+
+phase_shift = zeros([2 size(tmp,3)]); 
+sideband_list = [12 14 16 18]; 
+
+% for jj=1:size(tmp,3)
+for jj=1:1
+    jj=10; 
+    [~, index] = min(abs(E - (16*1240/wavelength-IP(1))));
+    window_center = index; 
+    window = 20; 
+    wtmp = squeeze(sum(tmp((window_center-window):(window_center+window),:,jj),1)); 
+    
+    % fit line to w space
+    wcenter = find(abs(freqAxis+0.34) < 0.007,1); 
+    window = 2; 
+    p = polyfit(freqAxis((wcenter-window):(wcenter+window)), unwrap(angle(wtmp((wcenter-window):(wcenter+window)))), 1); 
+    phase_shift(1, jj) = p(1); 
+    phase_shift(2, jj) = p(2); 
+%     phase_shift(3, jj) = p(3); 
+    
+    figure; hold on; 
+    yyaxis left; 
+    plot(freqAxis((wcenter-4):(wcenter+4)), abs(wtmp((wcenter-4):(wcenter+4)))); 
+    yyaxis right; 
+    plot(freqAxis((wcenter-4):(wcenter+4)), unwrap(angle(wtmp((wcenter-4):(wcenter+4)))), 'o-'); 
+    plot(freqAxis((wcenter-4):(wcenter+4)), polyval(p, freqAxis((wcenter-4):(wcenter+4)))); 
 end
 
-% sum phase matched values
-twoOmega_signal = sum(twoOmega_signal, 2); 
+% drift comp
+w_signal = zeros([numel(sideband_list) size(tmp,2)]); 
+for ii=numel(sideband_list)
+    [~, index] = min(abs(E - (sideband_list(ii)*1240/wavelength-IP(1))));
+    window_center = index; 
+    window = 20; 
+    wtmp = unwrap(angle(squeeze(sum(tmp((window_center-window):(window_center+window),:,:),1)))); 
+    
+    for jj=1:size(tmp,3)
+        wtmp(:,jj) = wtmp(:,jj) .* exp(-1j * polyval([phase_shift(1,jj), phase_shift(2,jj)], freqAxis')); 
+    end
+    w_signal(ii,:) = squeeze(sum(wtmp,2)); 
+end
 
+%% E integrated drift comp check
+% FT_SB = squeeze(sum(tmp(76:128,:,:),1)); % SB12
+% FT_SB = squeeze(sum(tmp(215:269,:,:),1)); % SB14
+FT_SB = squeeze(sum(tmp(354:417,:,:),1)); % SB16
+peak_phase = angle(FT_SB(92,:)); 
+% figure; hold on; 
+% plot(unwrap(peak_phase), 'o-')
+
+for ii=1:numel(peak_phase)
+    FT_SB(:,ii) = FT_SB(:,ii) .* exp(-1j * peak_phase(ii)); 
+end
+FT_SB = squeeze(sum(FT_SB,2)); 
+IFT_SB = fftshift(ifft(ifft(FT_SB))); 
+figure; hold on; 
+plot(stageTimes, real(IFT_SB)); 
 %% convert XUV only data
 tmp = XUV_only_raw; 
 
@@ -154,7 +236,7 @@ XUV_only = Counts';
 
 %% FIRST FIT of original data set (single sideband)
 
-signal = twoOmega_signal; 
+signal = squeeze(sum(twoOmega_signal,2)); 
 % signal = XUV_only; 
 
 % Ar
@@ -168,9 +250,9 @@ signal = twoOmega_signal;
 % region = [11 12.3]; % sideband 18
 
 % H2
-% region = [1.55 3.05]; % sideband 12
-region = [4.7 6.15]; % sideband 14
-% region = [7.7548 9.18]; % sideband 16
+% region = [1.6 3.15]; % sideband 12
+% region = [4.7 6.15]; % sideband 14
+region = [7.7548 9.18]; % sideband 16
 % region = [7.72 9.18]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18
 % region = [0.2 1.8]; % harmonic 11

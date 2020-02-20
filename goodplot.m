@@ -4,13 +4,13 @@ function goodplot()
 % axis square;
 box on; 
 set(gca,'LineWidth',2);
-set(get(gca, 'Children'), 'MarkerSize', 8); 
-set(get(gca, 'Children'), 'LineWidth', 1.5); 
+set(findall(gcf, 'Type', 'Line'), 'MarkerSize', 8, 'LineWidth', 2); 
 set(gca,'FontSize',16);
 set(gca,'FontWeight','Bold');
 set(get(gca,'xlabel'),'FontSize', 20, 'FontWeight', 'Bold');
 set(get(gca,'ylabel'),'FontSize', 20, 'FontWeight', 'Bold');
 set(get(gca,'title'),'FontSize', 18, 'FontWeight', 'Bold');
+set(findall(gcf,'Type','Text'),'FontSize',20, 'FontWeight', 'Bold'); 
 % box off; 
 
 set(gcf,'color','w');
