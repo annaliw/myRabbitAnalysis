@@ -1,26 +1,18 @@
 %%%% bootstrap method for getting errorbars on fit
 %%%% case resampling 
 
-folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
+folderName = '/Users/annawang/Documents/data/2018_07_31-16Scan/';
 % folderName = '/Users/annaliw/code/2018_04_18-18Scan/'; 
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
-% folderName = '/Users/annaliw/code/NOscan/'; 
-% folderName = '/Users/annaliw/code/2019_11_20-15Scan/'; % H2 2019-11-20
-% has Ar pollution
-% folderName = '/Users/annaliw/code/2019_11_20-13Scan/'; % Ar 2019-11-20
-% folderName = '/Users/annaliw/code/2019_11_21-14Scan/'; % H2 2019-11-21
-% folderName = '/Users/annaliw/code/2019_11_21-12Scan/'; % Ar 2019-11-21
-% folderName = '/Users/annaliw/code/2019_11_22-Argon/'; % Ar 2019-11-22
-% folderName = '/Users/annaliw/code/2019_11_22-14Scan/'; % H2 2019-11-22
-% folderName = '/Users/annaliw/code/2019_12_13-17Scan/'; % Ar 2019-12-13 with old and new sampling
-% folderName = '/Users/annaliw/code/2019_12_14-16Scan/'; % H2 long long long scan
-% folderName = '/Users/annaliw/code/2020_01_22-19Scan/'; 
+% folderName = '/Users/annawang/Documents/data/2019_12_13-23Scan/'; % Argon
+% folderName = '/Users/annawang/Documents/data/2019_12_14-16Scan/'; % H2 long long long scan
+% folderName = '/Users/annawang/Documents/data/2020_03_07-19Scan/'; % H2 
 
-alternate = [1 2]; 
+alternate = [2 2]; 
 t0=0; 
 wavelength=810; 
-global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
-global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
+% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
+% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
 % global IP; IP = [13.9000   17.6000   18.0770   19.3760]; 
 % global IP_label; IP_label = ["X", "A", "B", "C"]; 
 % global IP; IP = [14 14.665]; 
@@ -52,13 +44,11 @@ load(strcat(folderName, 'calibration/Ar_calibration.mat'));
 %% OR redo it
 
 t0=0; 
-n = 11:1:19; 
+n = 11:2:21; 
 % n=[13 15 17 19]; 
 calibEnergy = n*1240/810 - IP(1); 
-% tof_peak = [912 808 749 711 684 662 646 631 620 610];
-% tof_peak = fliplr([596 634 677 732 801 902 1048 1308 1971]); 
-% tof_peak = [1983 1262 1042 895 803 731 681 644 601]; 
-tof_peak = [1839 1276 1032 895 798 731 678 633 598]; 
+% tof_peak = [1874 1291 1044 905 805 739 683 642 602 573 545]; 
+tof_peak = [1874 1044 805 683 602 545]; 
 calibType = 'none'; 
 
 % config.calibEnergy = n*1240/wavelength - IP; 
@@ -69,7 +59,7 @@ config.IPcal = IP(1);
 config.Plot = 1; 
 % calibrate to Kr peaks
 A = ECalibrate(t0, n, wavelength, calibType, config); % TO DO: hard set t0 into ECalibrate
-calibType = 'H2'; 
+calibType = 'Ar'; 
 filename = strcat(folderName, 'calibration/', calibType, '_calibration'); 
 save(filename, 'A', 'calibEnergy', 'tof_peak', 'wavelength'); 
 %%
@@ -112,7 +102,7 @@ norm = sum(E_SpectraArray,1);
 % tmp = fftshift(fft(ifftshift(tmp,2),[],2),2); 
 
 % fft and filter
-% tmp = fftshift(fft(E_SpectraArray, [], 2), 2); 
+% tmp = fftshift(fft(E_SpectraArray(:,1:201,:), [], 2), 2); 
 tmp = fftshift(fft(ifftshift(E_SpectraArray - repmat(mean(E_SpectraArray,2),[1 numel(stageTimes)]),2),[],2),2); 
 
 % tmp = fftshift(fft(HistTot_array,[],2),2); 
@@ -250,8 +240,8 @@ signal = squeeze(sum(twoOmega_signal,2));
 % region = [11 12.3]; % sideband 18
 
 % H2
-% region = [1.6 3.15]; % sideband 12
-region = [4.7 6.15]; % sideband 14
+region = [1.6 3.15]; % sideband 12
+% region = [4.7 6.15]; % sideband 14
 % region = [7.7548 9.18]; % sideband 16
 % region = [7.72 9.18]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18

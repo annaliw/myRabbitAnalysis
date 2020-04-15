@@ -4,10 +4,10 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     %% fit 2w abs data for region
     
 %     region = fitRegion; 
-%     n = 9:1:19; 
-%     tolerance = abs(E(1)-E(2))*2; 
-    n = 0; 
+    n = 9:1:19; 
     tolerance = abs(E(1)-E(2))*2; 
+%     n = 0; 
+%     tolerance = abs(E(1)-E(2))*2; 
     
 
     % form peaks guess
