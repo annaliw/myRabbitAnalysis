@@ -5,7 +5,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     
 %     region = fitRegion; 
     n = 9:1:19; 
-    tolerance = abs(E(1)-E(2))*2; 
+    tolerance = abs(E(1)-E(2)); 
 %     n = 0; 
 %     tolerance = abs(E(1)-E(2))*2; 
     
@@ -44,8 +44,8 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     end
     amp_guess = yin(peak_ind); % form amplitude guess
     sig_guess = ones(size(amp_guess))*0.1; % form width guess
-    % special, remove later:
-    sig_guess(end) = 0.1; 
+%     % special, remove later:
+%     sig_guess(end) = 0.1; 
     alpha_guess = ones(size(amp_guess))*(3); 
 %     guess = [amp_guess; peaks_guess; sig_guess; alpha_guess].'; % full guess matrix
     guess = [amp_guess; peaks_guess; sig_guess].'; 

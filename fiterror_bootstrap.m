@@ -17,8 +17,8 @@ wavelength=810;
 % global IP_label; IP_label = ["X", "A", "B", "C"]; 
 % global IP; IP = [14 14.665]; 
 % global IP_label; IP_label = ["14", "14.665"]; 
-% global IP; IP = [15.763]; 
-% global IP_label; IP_label = ['Argon']; % start with 2
+global IP; IP = [15.763]; 
+global IP_label; IP_label = ['Argon']; % start with 2
 % IP = [9.553, 16.56, 18.318, 21.722]; 
 % IP_label = ['X', 'b', 'A', 'c']; 
 
@@ -43,19 +43,24 @@ load(strcat(folderName, 'calibration/Ar_calibration.mat'));
 % load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
 %% OR redo it
 
-t0=0; 
-n = 11:2:21; 
+t0=51; 
+n = 11:1:21; 
 % n=[13 15 17 19]; 
-calibEnergy = n*1240/810 - IP(1); 
+calibEnergy = n*1240/810 - 15.763; 
 % tof_peak = [1874 1291 1044 905 805 739 683 642 602 573 545]; 
-tof_peak = [1874 1044 805 683 602 545]; 
+tof_peak = [1962 1338 1079 936 838 771 715 673 635 603 576]; 
+% tof_peak = [1962 1079 838 715 635]; 
 calibType = 'none'; 
+
+tof_peak(5)=[]; tof_peak(7)=[]; 
+n(5)=[]; n(7)=[]; 
+calibEnergy(5)=[]; calibEnergy(7)=[]; 
 
 % config.calibEnergy = n*1240/wavelength - IP; 
 config.calibEnergy = calibEnergy; 
 config.tofPeaks = tof_peak;   % redo with peak finding
-% config.IPcal = 15.736; 
-config.IPcal = IP(1); 
+config.IPcal = 15.736; 
+% config.IPcal = IP(1); 
 config.Plot = 1; 
 % calibrate to Kr peaks
 A = ECalibrate(t0, n, wavelength, calibType, config); % TO DO: hard set t0 into ECalibrate
@@ -67,7 +72,6 @@ save(filename, 'A', 'calibEnergy', 'tof_peak', 'wavelength');
 % need to do full analysis on the original file. this will also give
 % structures to reference for size in the loop. 
 
-t0=0; 
 % do energy conversion
 tmp = reshape(HistTot_array, size(HistTot_array,1), []);
 tof = 1:size(tmp,1); 
@@ -113,7 +117,7 @@ twoOmega_nosum = twoOmega_signal;
 
 %% drift compensation
 twoOmega_signal = twoOmega_nosum; 
-sideband_list = [16]*1240/wavelength-IP(3); % select 16th harmonic of lowest ionization state 
+sideband_list = [16]*1240/wavelength-IP(1); % select 16th harmonic of lowest ionization state 
 % phase_shift = zeros([1 size(twoOmega_signal,2)]); 
 
 % figure; hold on; 
@@ -233,14 +237,14 @@ signal = squeeze(sum(twoOmega_signal,2));
 % region = [2.5 2.8]; % sideband 12
 % region = [5.3 6]; % sideband 14
 % region = [8 9.5]; % sideband 16
-% region = [11 12.3]; % sideband 18
+region = [11 12.3]; % sideband 18
 % region = [2.4 2.9]; % sideband 12
 % region = [5.3 6]; % sideband 14
 % region = [8.5 9.2]; % sideband 16
 % region = [11 12.3]; % sideband 18
 
 % H2
-region = [1.6 3.15]; % sideband 12
+% region = [1.6 2.8]; % sideband 12
 % region = [4.7 6.15]; % sideband 14
 % region = [7.7548 9.18]; % sideband 16
 % region = [7.72 9.18]; % sideband 16
@@ -336,12 +340,12 @@ bootstrap_slope = mean(data(:,5,:),3);
 bootstrap_phase_std = sqrt(trials/(trials-1))*std(data(:,4,:),0,3);
 bootstrap_slope_std = sqrt(trials/(trials-1))*std(data(:,5,:),0,3);
 
-% Ar_SB18_paramout = data; 
-% Ar_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
-% Ar_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
-H2_SB12_paramout = data; 
-H2_SB12_phase = [bootstrap_phase, bootstrap_phase_std]; 
-H2_SB12_slope = [bootstrap_slope, bootstrap_slope_std]; 
+Ar_SB18_paramout = data; 
+Ar_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
+Ar_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
+% H2_SB12_paramout = data; 
+% H2_SB12_phase = [bootstrap_phase, bootstrap_phase_std]; 
+% H2_SB12_slope = [bootstrap_slope, bootstrap_slope_std]; 
 
 %% check fit convergence on resampled sets
 

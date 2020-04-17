@@ -1,13 +1,14 @@
 %%%% bootstrap method for getting errorbars on fit
 %%%% case resampling 
 
-% folderName = '/Users/annaliw/code/2018_07_31-16Scan/';
+folderName = '/Users/annawang/Documents/data/2018_07_31-16Scan/';
 % folderName = '/Users/annaliw/code/2018_04_18-18Scan/'; 
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
-folderName = '/Users/annawang/Documents/data/2019_12_13-23Scan/'; % Argon
+% folderName = '/Users/annawang/Documents/data/2019_12_13-23Scan/'; % Argon
 % folderName = '/Users/annawang/Documents/data/2019_12_14-16Scan/'; % H2 long long long scan
+% folderName = '/Users/annawang/Documents/data/2020_03_07-19Scan/'; % H2 
 
-alternate = [1 1]; 
+alternate = [2 2]; 
 t0=0; 
 wavelength=810; 
 % global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
@@ -45,10 +46,15 @@ load(strcat(folderName, 'calibration/Ar_calibration.mat'));
 t0=0; 
 n = 11:1:21; 
 % n=[13 15 17 19]; 
-calibEnergy = n*1240/810 - IP(1); 
+calibEnergy = n*1240/810 - 15.763; 
 % tof_peak = [1874 1291 1044 905 805 739 683 642 602 573 545]; 
-tof_peak = [1874 1044 805 683 602 545]; 
+tof_peak = [1962 1338 1079 936 838 771 715 673 635 603 576]; 
+% tof_peak = [1962 1079 838 715 635]; 
 calibType = 'none'; 
+
+tof_peak(5)=[]; tof_peak(7)=[]; 
+n(5)=[]; n(7)=[]; 
+calibEnergy(5)=[]; calibEnergy(7)=[]; 
 
 % config.calibEnergy = n*1240/wavelength - IP; 
 config.calibEnergy = calibEnergy; 
@@ -101,7 +107,7 @@ norm = sum(E_SpectraArray,1);
 % tmp = fftshift(fft(ifftshift(tmp,2),[],2),2); 
 
 % fft and filter
-% tmp = fftshift(fft(E_SpectraArray, [], 2), 2); 
+% tmp = fftshift(fft(E_SpectraArray(:,1:201,:), [], 2), 2); 
 tmp = fftshift(fft(ifftshift(E_SpectraArray - repmat(mean(E_SpectraArray,2),[1 numel(stageTimes)]),2),[],2),2); 
 
 % tmp = fftshift(fft(HistTot_array,[],2),2); 
@@ -112,7 +118,7 @@ twoOmega_nosum = twoOmega_signal;
 
 %% drift compensation
 twoOmega_signal = twoOmega_nosum; 
-sideband_list = [16]*1240/wavelength-IP(3); % select 16th harmonic of lowest ionization state 
+sideband_list = [16]*1240/wavelength-IP(1); % select 16th harmonic of lowest ionization state 
 % phase_shift = zeros([1 size(twoOmega_signal,2)]); 
 
 % figure; hold on; 
@@ -239,8 +245,8 @@ signal = squeeze(sum(twoOmega_signal,2));
 % region = [11 12.3]; % sideband 18
 
 % H2
-% region = [1.6 3.15]; % sideband 12
-region = [4.7 6.15]; % sideband 14
+region = [1.8 3.15]; % sideband 12
+% region = [4.7 6.15]; % sideband 14
 % region = [7.7548 9.18]; % sideband 16
 % region = [7.72 9.18]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18

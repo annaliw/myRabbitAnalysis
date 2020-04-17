@@ -49,7 +49,7 @@ Ar_energy = [12 14 16 18]*1240/810 - 15.763;
 %% Import Anatoli's TDSE values for Argon, H2
 
 % import from CSV and convert to table to match H2 calculations
-tmp = csvread('/Users/annawang/Documents/plots/Calculations/H2_TDSE/ArTDSE_810.csv',0,0); 
+tmp = csvread('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/ArTDSE_810.csv',0,0); 
 x_Ee = tmp(:,1)-15.736; 
 % t = 2*flipud(tmp(:,2)); 
 t = tmp(:,2); 
@@ -57,11 +57,11 @@ n = 12:2:24;
 ArTDSE_810 = table(x_Ee, n', t); 
 
 % import H2 as tables
-H2TDSE_810_145 = readtable('/Users/annawang/Documents/plots/Calculations/H2_TDSE/H2-R145.dat');
-H2TDSE_810_150 = readtable('/Users/annawang/Documents/plots/Calculations/H2_TDSE/H2-R150.dat');
-H2TDSE_810_140 = readtable('/Users/annawang/Documents/plots/Calculations/H2_TDSE/H2-omega056.dat');
-H2TDSE_785_140 = readtable('/Users/annawang/Documents/plots/Calculations/H2_TDSE/H2-omega058.dat');
-H2TDSE_760_140 = readtable('/Users/annawang/Documents/plots/Calculations/H2_TDSE/H2-omega06.dat');
+H2TDSE_810_145 = readtable('/Users/annaliw/Documents/plots/Calculations/H2_TDSE/H2-R145.dat');
+H2TDSE_810_150 = readtable('/Users/annaliw/Documents/plots/Calculations/H2_TDSE/H2-R150.dat');
+H2TDSE_810_140 = readtable('/Users/annaliw/Documents/plots/Calculations/H2_TDSE/H2-omega056.dat');
+H2TDSE_785_140 = readtable('/Users/annaliw/Documents/plots/Calculations/H2_TDSE/H2-omega058.dat');
+H2TDSE_760_140 = readtable('/Users/annaliw/Documents/lab/plots/Calculations/H2_TDSE/H2-omega06.dat');
 
 %% get and plot XUV phase
 
@@ -261,7 +261,7 @@ clear('Ivanov_CC_plus', 'Ivanov_CC_minus');
 
 % import from CSV and convert to table to match H2 calculations
 % energy is in Rydberg, phase in in units of pi. Needs to be converted. 
-tmp = csvread('/Users/annawang/Documents/lab/plots/Calculations/Ar_SinglePhoton/Ar_3StoP.csv',0,0); 
+tmp = csvread('/Users/annaliw/Documents/lab/plots/Calculations/Ar_SinglePhoton/Ar_3StoP.csv',0,0); 
 x_Ee = 13.6057*tmp(:,1); 
 phi = pi*tmp(:,2); 
 phi = interp1(x_Ee, phi, E, 'spline', 'extrap'); 
