@@ -1,16 +1,17 @@
-function goodplot()
+function goodplot(fontsize)
 % function which produces a nice-looking plot
 % and sets up the page for nice printing
 % axis square;
 box on; 
 set(gca,'LineWidth',2);
-set(findall(gcf, 'Type', 'Line'), 'MarkerSize', 8, 'LineWidth', 2); 
-set(gca,'FontSize',16);
+set(findall(gcf, 'Type', 'Line'), 'MarkerSize', 10, 'LineWidth', 2); 
+set(findall(gcf, 'Type', 'ErrorBar'), 'MarkerSize', 10, 'LineWidth', 2); 
+set(gca,'FontSize',fontsize);
 set(gca,'FontWeight','Bold');
-set(get(gca,'xlabel'),'FontSize', 20, 'FontWeight', 'Bold');
-set(get(gca,'ylabel'),'FontSize', 20, 'FontWeight', 'Bold');
-set(get(gca,'title'),'FontSize', 18, 'FontWeight', 'Bold');
-set(findall(gcf,'Type','Text'),'FontSize',20, 'FontWeight', 'Bold'); 
+set(get(gca,'xlabel'),'FontSize', fontsize, 'FontWeight', 'Bold');
+set(get(gca,'ylabel'),'FontSize', fontsize, 'FontWeight', 'Bold');
+set(get(gca,'title'),'FontSize', fontsize, 'FontWeight', 'Bold');
+set(findall(gcf,'Type','Text'),'FontSize',fontsize, 'FontWeight', 'Bold'); 
 % box off; 
 
 set(gcf,'color','w');

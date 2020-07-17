@@ -4,7 +4,7 @@ function [paramout, fval] = complexfit_section_bootstrap(wavelength, xin, yin, p
     
 %     region = fitRegion; 
     n = 9:1:19; 
-    tolerance = 0.02; 
+    tolerance = abs(xin(1)-xin(2)); 
 
 %     signal = data'; 
 %     x = E; 
@@ -17,15 +17,16 @@ function [paramout, fval] = complexfit_section_bootstrap(wavelength, xin, yin, p
 %     xin = x(start:stop); 
 %     yin = y(start:stop); 
     yin = yin.'; 
-    yin_abs = abs(yin)./sum(abs(yin)); 
+    yin_abs = abs(yin); %./sum(abs(yin)); 
+%     yin_phi = angle(yin); 
     yin_phi = mod(unwrap(angle(yin)),2*pi); 
      
 
     % find new peak center indices
     % paramout_gauss(:,2) = peaks_guess'; 
     peak_ind = 1:1:length(paramout_gauss(:,2)); 
-    for i=1:1:length(peak_ind)
-        peak_ind(i) = find(abs(xin - paramout_gauss(i,2)) < tolerance, 1);  
+    for ii=1:1:length(peak_ind)
+        peak_ind(ii) = find(abs(xin - paramout_gauss(ii,2)) < tolerance, 1);  
     end
 
     %% fit complex 2w data using gaussians found in above cell

@@ -9,7 +9,7 @@ newcolors = [0.83 0.14 0.14
 colororder(newcolors); 
 
 POS = ax1.Position; %Position of Axis
-del = 0.1*POS(4);
+del = 0.05*POS(4);
 
 % n=9:1:19; %Harmonics to plot
 lambda = wavelength; % Fundamental Wavelength

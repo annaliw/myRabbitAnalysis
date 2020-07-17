@@ -6,7 +6,7 @@ T_L = 2*pi/w * T_AU; % laser period in fs
 
 Z = 1; %Atomic Charge
 l = 0; %Final state angular momentum
-
+  
 %Final Momentum of outgoing electron
 k = 0:0.001:3; 
 % k = logspace(-2, 1, 1500); 

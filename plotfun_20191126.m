@@ -20,9 +20,10 @@ plot(E, sum(sum(E_SpectraArray,2),3)./sum(E_SpectraArray(:)), 'k-', ...
 set(gca,'YTickLabel',[]);
 set(gca,'XTickLabel',[]);
 legend('Color', [1 1 1], 'EdgeColor', 'none'); 
-goodplot(); 
+goodplot(30); 
 ax1 = gca; 
 AddHarmonicAxis(ax1, IP, IP_label, 810, 1); 
+xlim([0 15]); 
 
 % pos2 = [0.1 0.3+hoffset 0.8 0.2];
 % subplot('Position',pos2); hold on; 
@@ -42,9 +43,10 @@ plot(E, abs(twoOmega_signal), 'b-', ...
 set(gca,'YTickLabel',[]);
 xlabel('electron kinetic energy (eV)'); 
 legend('Color', [1 1 1], 'EdgeColor', 'none'); 
-goodplot(); 
+goodplot(30); 
 ax3 = gca; 
 AddHarmonicAxis(ax3, IP, IP_label, 810, 0); 
+xlim([0 15]); 
 
 
 

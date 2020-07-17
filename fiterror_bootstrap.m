@@ -1,26 +1,36 @@
 %%%% bootstrap method for getting errorbars on fit
 %%%% case resampling 
 
-folderName = '/Users/annawang/Documents/data/2018_07_31-16Scan/';
-% folderName = '/Users/annaliw/code/2018_04_18-18Scan/'; 
+% folderName = '/Users/annawang/Documents/data/2018_07_31-16Scan/';
+% folderName = '/Users/annawang/Documents/data/2018_04_18-18Scan/'; 
+% folderName = '/Users/annawang/Documents/data/2018_07_27-17Scan/'; 
+folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; 
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annawang/Documents/data/2019_12_13-23Scan/'; % Argon
 % folderName = '/Users/annawang/Documents/data/2019_12_14-16Scan/'; % H2 long long long scan
 % folderName = '/Users/annawang/Documents/data/2020_03_07-19Scan/'; % H2 
 
-alternate = [2 2]; 
-t0=0; 
-wavelength=810; 
-% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
-% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
-% global IP; IP = [13.9000   17.6000   18.0770   19.3760]; 
+% % James' scans: 
+% folderName = '/Users/annawang/Documents/data/2020_03_15-11Scan_Ar/'; % Ar 
+% % folderName = '/Users/annawang/Documents/data/2020_03_15-13Scan_H2/'; % H2 
+% % folderName = '/Users/annawang/Documents/data/2020_03_14-21Scan_H2/'; % H2 
+
+
+alternate = [1 2]; 
+wavelength=820; 
+% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206 16.74];
+% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5", "6"]; % start 1
+% global IP; IP = [13.9000   17.6000   18.0770   19.3760]; % CO2
 % global IP_label; IP_label = ["X", "A", "B", "C"]; 
-% global IP; IP = [14 14.665]; 
-% global IP_label; IP_label = ["14", "14.665"]; 
-global IP; IP = [15.763]; 
-global IP_label; IP_label = ['Argon']; % start with 2
-% IP = [9.553, 16.56, 18.318, 21.722]; 
-% IP_label = ['X', 'b', 'A', 'c']; 
+global IP; IP = fliplr([14 14.665]); % Krypton
+global IP_label; IP_label = fliplr(["14", "14.665"]); 
+% global IP; IP = [15.7596];
+% global IP_label; IP_label = ["Ar 2P 3/2"]; % start with 2
+% global IP; IP = [15.763, 15.763+0.17749];
+% global IP_label; IP_label = ["Ar 2P 3/2", "Ar 2P 1/2"]; % start with 2
+% % IP = [9.553, 16.56, 18.318, 21.722]; % NO
+% global IP; IP = [9.26428, 15.66305, 16.55995, 16.87514, 17.59988, 17.81864, 18.07566, 18.32547, 21.72947, 22.73139]; 
+% global IP_label; IP_label = ["X", "a", "b", "w", "bp", "Ap", "W", "A", "Bc", "BpB"]; 
 
 [HistTot_array, XUV_only, stageTimes, freqAxis] = getrawdata(folderName, 1, wavelength);  
 HistTot_array = HistTot_array(:,:,alternate(1):alternate(2):end); % might need to alternate files
@@ -38,33 +48,35 @@ XUV_only_raw = XUV_only;
 %     HistTot_array = pad_data; 
 figure; plot(sum(sum(HistTot_array,2),3)); 
 %% load calibration
-load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
+load(strcat(folderName, 'calibration/Kr_calibration.mat')); 
 % load('/Users/annaliw/code/2020_01_22-16Scan/calibration/Ar_calibration.mat'); 
 % load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
 %% OR redo it
 
-t0=51; 
-n = 11:1:21; 
-% n=[13 15 17 19]; 
-calibEnergy = n*1240/810 - 15.763; 
+t0=75; 
+wavelength = 810; 
+n = 10:1:20; 
+calibEnergy = repmat(n, [size(IP,2) size(IP,1)])*1240/810 - repmat(IP, [size(n,2), size(n,1)]).'; 
+calibEnergy = calibEnergy(:).'; 
+% calibEnergy = n*1240/810 - IP(3); 
 % tof_peak = [1874 1291 1044 905 805 739 683 642 602 573 545]; 
-tof_peak = [1962 1338 1079 936 838 771 715 673 635 603 576]; 
-% tof_peak = [1962 1079 838 715 635]; 
-calibType = 'none'; 
+tof_peak = [2633 1427 1117 947 839 762 705 657 619 586 558; ...
+            1819 1261 1034 894 803 735 684 639 604 574 548]; 
+tof_peak = tof_peak(:).'; 
+calibType = 'Kr'; 
 
-tof_peak(5)=[]; tof_peak(7)=[]; 
-n(5)=[]; n(7)=[]; 
-calibEnergy(5)=[]; calibEnergy(7)=[]; 
+% tof_peak(5)=[]; tof_peak(7)=[]; 
+% n(5)=[]; n(7)=[]; 
+% calibEnergy(5)=[]; calibEnergy(7)=[]; 
 
 % config.calibEnergy = n*1240/wavelength - IP; 
 config.calibEnergy = calibEnergy; 
 config.tofPeaks = tof_peak;   % redo with peak finding
-config.IPcal = 15.736; 
+config.IPcal = IP; 
 % config.IPcal = IP(1); 
 config.Plot = 1; 
 % calibrate to Kr peaks
 A = ECalibrate(t0, n, wavelength, calibType, config); % TO DO: hard set t0 into ECalibrate
-calibType = 'Ar'; 
 filename = strcat(folderName, 'calibration/', calibType, '_calibration'); 
 save(filename, 'A', 'calibEnergy', 'tof_peak', 'wavelength'); 
 %%
@@ -111,12 +123,13 @@ tmp = fftshift(fft(ifftshift(E_SpectraArray - repmat(mean(E_SpectraArray,2),[1 n
 
 % tmp = fftshift(fft(HistTot_array,[],2),2); 
 % twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
-twoOmega_signal = squeeze(tmp(:,130,:)); % + conj(squeeze(mean(tmp(:,94,:),2)));
+twoOmega_signal = squeeze(sum(tmp(:,157,:),2)); % + conj(squeeze(sum(tmp(:,92:94,:),2)));
 
 twoOmega_nosum = twoOmega_signal; 
 
 %% drift compensation
-twoOmega_signal = twoOmega_nosum; 
+cut = 47; 
+twoOmega_signal = twoOmega_nosum(:,1:cut); 
 sideband_list = [16]*1240/wavelength-IP(1); % select 16th harmonic of lowest ionization state 
 % phase_shift = zeros([1 size(twoOmega_signal,2)]); 
 
@@ -126,10 +139,10 @@ for ii=1:1:length(sideband_list)
     [~, index] = min(abs(E - sideband_list(ii)));
     window_center = index; 
 %     window_center = 1301; 
-    window = 5; 
+    window = 3; 
     histogram_windows = twoOmega_signal((window_center-window):(window_center+window),:); 
     % integrate over window
-    peak_phase = peak_phase + squeeze(sum(histogram_windows, 1))./squeeze(sum(sum(E_SpectraArray,1),2))'; 
+    peak_phase = peak_phase + squeeze(sum(histogram_windows, 1))./squeeze(sum(sum(E_SpectraArray(:,:,1:cut),1),2))'; 
 end
 peak_amp = abs(peak_phase); 
 peak_phase = angle(peak_phase);
@@ -234,18 +247,18 @@ signal = squeeze(sum(twoOmega_signal,2));
 % signal = XUV_only; 
 
 % Ar
-% region = [2.5 2.8]; % sideband 12
-% region = [5.3 6]; % sideband 14
-% region = [8 9.5]; % sideband 16
-region = [11 12.3]; % sideband 18
+% region = [2.44 2.8]; % sideband 12
+% region = [5.4 5.85]; % sideband 14
+% region = [8.2 9.2]; % sideband 16
+region = [11.3 12.4]; % sideband 18
 % region = [2.4 2.9]; % sideband 12
 % region = [5.3 6]; % sideband 14
 % region = [8.5 9.2]; % sideband 16
 % region = [11 12.3]; % sideband 18
 
 % H2
-% region = [1.6 2.8]; % sideband 12
-% region = [4.7 6.15]; % sideband 14
+% region = [1.45 3.1]; % sideband 12
+% region = [4.55 6.15]; % sideband 14
 % region = [7.7548 9.18]; % sideband 16
 % region = [7.72 9.18]; % sideband 16
 % region = [10.8258 12.2]; % sideband 18
@@ -285,48 +298,68 @@ end
 
 [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E(start:stop), abs(tmp_signal(start:stop)), tmp_signal(start:stop), 1, 1); 
 % save as labeled variables
-paramout_original = paramout; 
+paramout_original = paramout;  
 fval_original = fval
 
 %% CASE RESAMPLING (BOOTSTRAP)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% run poly2phase_20200528.m to make sure this works and initialize poly
+% array
 trials = 100; 
 numfiles = size(E_SpectraArray, 3); 
 % array to save fit parameters
-paramout_array = cat(2, zeros([size(paramout_gauss), trials]), zeros([size(paramout_original), trials])); 
+paramout_array = cat(2, zeros([size(paramout_gauss), trials]), zeros([1, 2, trials])); 
 fval_array = zeros([1, trials]); 
 sample_2w_array = zeros([size(twoOmega_signal,1), trials]); 
 sample_ES_array = zeros([size(twoOmega_signal,1), trials]); 
+% yfit_array = zeros([numel(xdata) trials]); 
 
-for nn=1:1:trials
+for nn=1:trials
 %     resample files with replacement
     sample_list = randsample(numfiles, numfiles, true); 
     sample_ESpectra = E_SpectraArray(:,:,sample_list); 
     tmp = fftshift(fft(sample_ESpectra, [], 2), 2); 
-    sample_twoOmega = squeeze(sum(tmp(:,130,:),2));
+    sample_twoOmega = squeeze(sum(tmp(:,131,:),2));
     for mm=1:1:length(phase_shift)
         sample_twoOmega(:,mm) = sample_twoOmega(:,mm).*exp(-1j*phase_shift(sample_list(mm))); 
     end
     sample_twoOmega = sum(sample_twoOmega, 2); 
-    
-    if subtract_floor == 0
-        tmp_signal = sample_twoOmega; 
-    else
-        tmp = [abs(sample_twoOmega), angle(sample_twoOmega)]';
-        tmp(1,:) = tmp(1,:) - 0.9*abs(sample_twoOmega(find(abs(E-subtract_floor)<tolerance, 1, 'last'))); 
-%         tmp(1,:) = tmp(1,:)-0; 
-        tmp_signal = tmp(1,:) .* exp(1j*tmp(2,:));
-        tmp_signal = tmp_signal.'; 
-    end
-    
     sample_2w_array(:,nn) = squeeze(sample_twoOmega); 
     sample_ES_array(:,nn) = squeeze(sum(sum(sample_ESpectra,2),3)); 
 
     % fit data
-    [paramout, fval] = complexfit_section_bootstrap(wavelength, E(start:stop), tmp_signal(start:stop), paramout_gauss, paramout_original, 0); 
+    [paramout, fval] = complexfit_section_bootstrap(wavelength, E(start:stop), sample_twoOmega(start:stop), paramout_gauss, paramout_original, 0); 
     paramout_array(:,:,nn) = paramout; 
     fval_array(nn) = fval; 
+
+%     xdata = E(start:stop); 
+%     ydata = tmp_signal(start:stop)'; 
+%     y_amp = zeros([size(paramout_gauss,1) numel(xdata)]); 
+%     polytmp = zeros([size(paramout_gauss,1) pdeg+1]); % pdeg is defined in poly2phase_20200528.m
+%     for ii=1:size(paramout_gauss,1)
+%     % for ii=1:2
+%         y_amp(ii,:) = paramout_gauss(ii,1) .* exp(-(xdata-paramout_gauss(ii,2)).^2/(2*paramout_gauss(ii,3).^2)); 
+% 
+%         window = 4; 
+%         [cval,center] = min(abs(xdata - paramout_gauss(ii,2))); 
+%         if center-window < 1
+%             ind1 = 1; 
+%         else
+%             ind1 = center-window;
+%         end
+%         if center+window > numel(xdata)
+%             ind2 = numel(xdata); 
+%         else
+%             ind2 = center+window; 
+%         end
+%         polytmp(ii,:) = polyfit(xdata(ind1:ind2)-xdata(center), angle(ydata(ind1:ind2)), pdeg); % pdeg is defined in poly2phase_20200529.m
+%         paramout_array(ii,1:3,nn) = paramout_gauss(ii,:); 
+%         paramout_array(ii,4:end,nn) = polytmp(ii,:); 
+% 
+%         yfit_array(:,nn) = yfit_array(:,nn) + y_amp(ii,:)' .* exp(1j * polyval(polytmp(ii,:), xdata-xdata(center))'); 
+%     end
+    
+%     paramout_array(:,:,nn) = paramout; 
 
 end 
 check_if_done = 'done!'
@@ -347,6 +380,24 @@ Ar_SB18_slope = [bootstrap_slope, bootstrap_slope_std];
 % H2_SB12_phase = [bootstrap_phase, bootstrap_phase_std]; 
 % H2_SB12_slope = [bootstrap_slope, bootstrap_slope_std]; 
 
+% bootstrap_d1 = mean(data(:,end,:),3);
+% bootstrap_d2 = mean(data(:,end-1,:),3); 
+% % bootstrap_d3 = mean(data(:,end-2,:),3); 
+% 
+% bootstrap_d1_std = sqrt(trials/(trials-1))*std(data(:,end,:),0,3);
+% bootstrap_d2_std = sqrt(trials/(trials-1))*std(data(:,end-1,:),0,3);
+% % bootstrap_d3_std = sqrt(trials/(trials-1))*std(data(:,end-2,:),0,3);
+% 
+% Ar_SB12_paramout = data; 
+% Ar_SB12_phase = cat(3, [bootstrap_d1, bootstrap_d1_std], ...
+%                        [bootstrap_d2, bootstrap_d2_std]); 
+% %                        [bootstrap_d3, bootstrap_d3_std]); 
+% % H2_SB14_paramout = data; 
+% % H2_SB14_phase = cat(3, [bootstrap_d1, bootstrap_d1_std], ...
+% %                        [bootstrap_d2, bootstrap_d2_std], ...
+% %                        [bootstrap_d3, bootstrap_d3_std]); 
+
+
 %% check fit convergence on resampled sets
 
 xin = E(start:stop); 
@@ -354,10 +405,12 @@ xin = E(start:stop);
 figure; hold on; grid on; 
 for ii=1:size(paramout_array,3)
     p = plot(xin, abs(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))), 'Color', 'c', 'LineWidth', 2); 
+%     p = plot(xin, abs(yfit_array(:,ii)), 'Color', 'c', 'LineWidth', 2); 
     p.Color(4) = 0.1; 
 end
 plot(xin, abs(Spectrum(xin, paramout_gauss, paramout_original)), 'Color', 'b', 'LineWidth', 2); 
-% scatter(xin, abs(twoOmega_signal(start:stop))/sum(abs(twoOmega_signal(start:stop))), 'b'); 
+% plot(xin, mean(abs(yfit_array),2), 'Color', 'b', 'LineWidth', 2); 
+% scatter(xin, abs(twoOmega_signal(start:stop))/sum(abs(twoOmega_signal(start:stop))), 'bo'); 
 title('Fit Amplitude', 'FontSize', 16); 
 xlabel('Photoelectron Energy (eV)'); ylabel('Amplitude'); 
 hold off; 
@@ -365,15 +418,19 @@ hold off;
 figure; hold on; grid on; 
 for ii=1:size(paramout_array,3)
     plotphase = unwrap(mod(angle(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))),2*pi)); 
+%     plotphase = unwrap(mod(angle(yfit_array(:,ii)),2*pi)); 
 %     plotphase = plotphase - plotphase(1); 
     p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
     p.Color(4) = 0.1; 
+    s = plot(xin, unwrap(mod(angle(sample_2w_array(start:stop,ii)),2*pi)), 'cs');
+    s.Color(4) = 0.1; 
 end
 plotphase = unwrap(mod(angle(Spectrum(xin, paramout_gauss, paramout_original)),2*pi)); 
+% plotphase = unwrap(mod(mean(angle(yfit_array),2),2*pi)); 
 plotphase(1)
 % plotphase = plotphase - plotphase(1); 
 plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
-scatter(xin, unwrap(mod(angle(twoOmega_signal(start:stop)),2*pi)), 'b'); 
+scatter(xin, unwrap(mod(angle(twoOmega_signal(start:stop)),2*pi)), 'bo'); 
 title('Fit Phase', 'FontSize', 16); 
 xlabel('Photoelectron Energy (eV)'); ylabel('Phase (referenced to v=6 phase)'); 
 hold off; 

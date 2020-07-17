@@ -31,7 +31,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
 % 
 %     xin = x(start:stop); 
 %     yin = y(start:stop); 
-    yin_abs = abs(yin)./sum(abs(yin)); 
+    yin_abs = abs(yin); %./sum(abs(yin)); 
     yin = yin_abs; 
 
     % find peaks and their indices
@@ -65,7 +65,8 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
 
     xin = E; 
     yin = data.'; 
-    yin_abs = abs(yin)./sum(abs(yin)); 
+    yin_abs = abs(yin); %./sum(abs(yin)); 
+%     yin_phi = angle(yin); 
     yin_phi = mod(unwrap(angle(yin)),2*pi); 
 %     yin = yin_abs; 
     yin = [yin_abs; yin_phi]; 

@@ -72,6 +72,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
         l1 = line(xout, yout_abs, 'Parent', ax1, ...
             'Color', abs_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
             'DisplayName', 'total amplitude fit'); 
+        goodplot(24)
     %     for i=1:1:(length(paramout(:,1)))
     %         if length(fix) > 1
     %             tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
@@ -95,7 +96,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
             'Color', 'none', 'LineWidth', line_weight*0.5); 
         ax2.XColor = 'none'; 
         ax2.YColor = phi_color; 
-        ax2.YLabel.String = 'phase (radians)'; 
+        ax2.YLabel.String = 'Phase (radians)'; 
         ax2.FontSize = text_size; 
         hold(ax2, 'on'); 
         s2 = scatter(ax2, xin, yin_phi, '+'); 
@@ -105,6 +106,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
         l2 = line(xout, unwrap(yout_phi), 'Parent', ax2, ...
             'Color', phi_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
             'DisplayName', 'total phase fit'); 
+        goodplot(24)
     %     for i=1:1:(length(paramout(:,1)))
     %         if length(fix) > 1
     %             tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
@@ -128,11 +130,12 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
 
 
         % harmonic labels
-        axl = AddHarmonicAxis(ax1, IP, IP_label, wavelength, 1);
+        axl = AddHarmonicAxis(ax2, IP, IP_label, wavelength, 1);
         for i = 1:numel(IP)
-            axl(i).XLabel.Position = [ -1.9    0.99];
+%             axl(i).XLabel.Position = [ -1.9    0.99];
             axl(i).FontSize = text_size*0.75; 
-            axl(i).XLabel.String = IP_label(i); 
+            axl(i).YAxisLocation = 'right'; 
+%             axl(i).XLabel.String = IP_label(i); 
         end
         ax1.XLim = [xout(1), xout(end)]; 
         ax1.YLim = [0, max(yout_abs)*lgnd_pad]; 
