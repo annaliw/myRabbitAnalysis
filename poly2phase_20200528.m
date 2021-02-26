@@ -2,14 +2,14 @@
 
 % Argon regions
 % region = [2.44 2.8]; % sideband 12
-region = [5.4 5.85]; % sideband 14
+% region = [5.4 5.85]; % sideband 14
 % region = [8.2 9.2]; % sideband 16
 % region = [11 12.3]; % sideband 18
 
 % H2 regions
 % region = [1.45 3.1]; % sideband 12
-% region = [4.55 6.15]; % sideband 14
-% region = [7.7548 9.18]; % sideband 16
+% region = [4.5 5.85]; % sideband 14
+region = [7.6 9.18]; % sideband 16
 
 [~,start] = min(abs(E-region(1))); 
 [~,stop]  = min(abs(E-region(2))); 
@@ -63,7 +63,7 @@ end
 
 %%
 % choose polynomial degree before fitting
-pdeg = 1; 
+pdeg = 2; 
 
 % xdata = E(start:stop); 
 % ydata = tmp_signal(start:stop).'; 

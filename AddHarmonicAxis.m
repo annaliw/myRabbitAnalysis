@@ -15,7 +15,8 @@ del = 0.05*POS(4);
 lambda = wavelength; % Fundamental Wavelength
 % lambda = 2*810/1.778; 
 
-ntrue = 9:1:19; 
+% ntrue = 1:1:21;
+ntrue = 2:2:20; 
 %Harmonic Labels
 for i=1:numel(ntrue)
     nlbl{i} = sprintf('%2.0f',ntrue(i));

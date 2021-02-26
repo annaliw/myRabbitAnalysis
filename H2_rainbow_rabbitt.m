@@ -45,8 +45,8 @@ goodplot(24)
 E_AU = 27.2114; 
 T_AU = 1/24.189; 
 w_tmp = E ./ E_AU; 
-ytmp = fun(p,E) .* T_AU; 
-true_phase = fliplr(cumtrapz(fliplr(w_tmp), fliplr(ytmp))); 
+t_interp = fun(p,E) .* T_AU; 
+true_phase = fliplr(cumtrapz(fliplr(w_tmp), fliplr(t_interp))); 
 
 figure; hold on; 
 plot(E, true_phase); 
@@ -64,11 +64,37 @@ goodplot(24)
 %% compare above to data
 
 signal = squeeze(sum(twoOmega_signal,2)); 
-SB=14; 
+SB=12; 
+rV = 0;
+
+if rV == 0
+    Ar_SB12_slope = Ar_0V_SB12_slope; 
+    Ar_SB14_slope = Ar_0V_SB14_slope; 
+    Ar_SB16_slope = Ar_0V_SB16_slope; 
+    Ar_SB18_slope = Ar_0V_SB18_slope; 
+    
+    Ar_SB12_phase = Ar_0V_SB12_phase; 
+    Ar_SB14_phase = Ar_0V_SB14_phase; 
+    Ar_SB16_phase = Ar_0V_SB16_phase; 
+    Ar_SB18_phase = Ar_0V_SB18_phase; 
+elseif rV == 3
+    Ar_SB12_slope = Ar_3V_SB12_slope; 
+    Ar_SB14_slope = Ar_3V_SB14_slope; 
+    Ar_SB16_slope = Ar_3V_SB16_slope; 
+    Ar_SB18_slope = Ar_3V_SB18_slope; 
+    
+    Ar_SB12_phase = Ar_3V_SB12_phase; 
+    Ar_SB14_phase = Ar_3V_SB14_phase; 
+    Ar_SB16_phase = Ar_3V_SB16_phase; 
+    Ar_SB18_phase = Ar_3V_SB18_phase; 
+end
+    
 
 if SB==12
     region = [1.6 2.8]; % sideband 12
     ar_slope = Ar_SB12_slope(1); 
+    ar_phase = Ar_SB12_phase(1); 
+    H2_phase = H2_0V_SB12_phase(1); 
 elseif SB==14
     region = [4.7 6.15]; % sideband 14
     ar_slope = Ar_SB14_slope(1); 
@@ -92,31 +118,33 @@ ydata = signal(start:stop);
 
 figure; hold on; 
 yyaxis left; ylabel('amplitude'); 
-plot(xdata, abs(ydata), 'b'); 
+p = plot(xdata, abs(ydata), 'k'); 
+p.Color(4) = 0.2; 
 
 % look inside specific vibrational states
 for ii=2:numel(IP)
-    v_energy = SB*hw - IP(ii); 
+    v_energy = SB*1240/810 - IP(ii); 
     v_region = v_energy + [-0.14 0.14]; 
     v_start = find(abs(E-v_region(1))<tolerance, 1, 'last'); 
     v_stop = find(abs(E-v_region(2))<tolerance, 1, 'first'); 
     xtheory = E(v_start:v_stop); 
-    ytheory = RABBITT_phase(v_start:v_stop); 
+%     ytheory = RABBITT_phase(v_start:v_stop); 
     ydata = signal(v_start:v_stop); 
 
-    ar_background = ar_slope*xtheory; 
+    ar_background = ar_slope * (xtheory - mean(xtheory)); 
 %     ar_background = 0; 
     
     yyaxis right; ylabel('phase'); 
     tmp = angle(ydata)' - ar_background; 
-    plot(xtheory, tmp, 'cx-'); 
-    plot(xtheory, ytheory - mean(ytheory) + mean(tmp), 'k-'); 
+    plot(xtheory, angle(ydata), 'c*-'); 
+    plot(xtheory, tmp, 'bx-'); 
+%     plot(xtheory, ytheory - mean(ytheory) + mean(tmp), 'k-'); 
 
 end
 
 xlabel('photoelectron energy (eV)'); 
 title(strcat('SB ',num2str(SB))); 
-goodplot()
+goodplot(24)
 
 %% fit lines to different H2 r0 sets separately
 
@@ -144,7 +172,7 @@ ylim([-300 10]);
 xlabel('photoelectron energy (eV)'); 
 ylabel('delay (as)'); 
 legend; 
-goodplot()
+goodplot(22)
 
 
 % integrate

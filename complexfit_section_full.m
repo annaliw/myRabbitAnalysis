@@ -4,7 +4,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     %% fit 2w abs data for region
     
 %     region = fitRegion; 
-    n = 9:1:19; 
+    n = 1:1:19; 
     tolerance = abs(E(1)-E(2)); 
 %     n = 0; 
 %     tolerance = abs(E(1)-E(2))*2; 
@@ -50,7 +50,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
 %     guess = [amp_guess; peaks_guess; sig_guess; alpha_guess].'; % full guess matrix
     guess = [amp_guess; peaks_guess; sig_guess].'; 
 
-    [paramout_gauss, fval_gauss] = fitGaussianSum(xin, yin, guess, plotting); 
+    [paramout_gauss, fval_gauss] = fitGaussianSum(xin, yin, guess, 0); 
     % find new peak center indices
     % paramout_gauss(:,2) = peaks_guess'; 
     peak_ind = 1:1:length(paramout_gauss(:,2)); 

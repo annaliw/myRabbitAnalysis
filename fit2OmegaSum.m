@@ -73,22 +73,11 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
             'Color', abs_color, 'LineStyle', '-', 'LineWidth', line_weight, ...
             'DisplayName', 'total amplitude fit'); 
         goodplot(24)
-    %     for i=1:1:(length(paramout(:,1)))
-    %         if length(fix) > 1
-    %             tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
-    %         else
-    %             if peakflag==1
-    %                 tmp = mydist_fixpeaks(xout, fix(i), paramout(i,:), slope); 
-    %             else
-    %                 tmp = mydist_fixwidth(xout, fix, paramout(i,:), slope); 
-    %             end
-    %         end
-    % %         tmp_abs = abs(tmp(:,1).*exp(1j*tmp(:,2))); 
-    %         tmp_abs = tmp(:,1); 
-    %         line(xout, tmp_abs, 'Parent', ax1, ...
-    %             'Color', abs_color, 'LineStyle', '--', 'LineWidth', line_weight, ...
-    %             'HandleVisibility', 'off'); 
-    %     end
+        for ii=1:size(gaussian,1) 
+            line(xout, abs(Spectrum(xout, gaussian(ii,:), paramout(ii,:))), 'Parent', ax1, ...
+                'Color', abs_color, 'LineStyle', '--', 'LineWidth', line_weight, ...
+                'HandleVisibility', 'off'); 
+        end
 
         % phase axis
         ax2 = axes('Position', ax1_pos, ...
@@ -138,7 +127,7 @@ function [paramout, fval] = fit2OmegaSum(xin, yin, gaussian, guess, plotting)
 %             axl(i).XLabel.String = IP_label(i); 
         end
         ax1.XLim = [xout(1), xout(end)]; 
-        ax1.YLim = [0, max(yout_abs)*lgnd_pad]; 
+%         ax1.YLim = [0, max(yout_abs)*lgnd_pad]; 
         lgnd = legend([s1, l1, s2, l2], 'Location', lgnd_pos); 
         lgnd.FontSize = text_size*0.6; 
 

@@ -3,34 +3,47 @@
 
 % folderName = '/Users/annawang/Documents/data/2018_07_31-16Scan/';
 % folderName = '/Users/annawang/Documents/data/2018_04_18-18Scan/'; 
-% folderName = '/Users/annawang/Documents/data/2018_07_27-17Scan/'; 
-folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; 
+folderName = '/Users/annawang/Documents/data/2018_07_27-17Scan/'; % NO
+% folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; % probably CO2, use Kr for calibration (start 1)
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annawang/Documents/data/2019_12_13-23Scan/'; % Argon
 % folderName = '/Users/annawang/Documents/data/2019_12_14-16Scan/'; % H2 long long long scan
 % folderName = '/Users/annawang/Documents/data/2020_03_07-19Scan/'; % H2 
+% folderName = '/Users/annawang/Documents/data/NOscan'; 
 
 % % James' scans: 
 % folderName = '/Users/annawang/Documents/data/2020_03_15-11Scan_Ar/'; % Ar 
 % % folderName = '/Users/annawang/Documents/data/2020_03_15-13Scan_H2/'; % H2 
 % % folderName = '/Users/annawang/Documents/data/2020_03_14-21Scan_H2/'; % H2 
 
+% folderName = '/Users/annawang/Documents/data/2020_08_25-16Scan/'; % Argon long
+% folderName = '/Users/annawang/Documents/data/2020_08_27-13Scan/'; % H2 short
+% folderName = '/Users/annawang/Documents/data/2020_08_27-15Scan/'; % H2 0V
+% folderName = '/Users/annawang/Documents/data/2020_08_28-15Scan/'; % H2 3V
+% folderName = '/Users/annawang/Documents/data/2020_08_30-15Scan/'; % H2 5V
+% folderName = '/Users/annawang/Documents/data/2020_08_31-18Scan/'; % H2 8.5V
+% folderName = '/Users/annawang/Documents/data/2020_09_01-11Scan/'; % Argon 0V
+% folderName = '/Users/annawang/Documents/data/2020_09_01-12Scan/'; % Argon 3V
+% folderName = '/Users/annawang/Documents/data/2020_09_01-14Scan/'; % Argon 8.5V
 
-alternate = [1 2]; 
-wavelength=820; 
-% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206 16.74];
-% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5", "6"]; % start 1
-% global IP; IP = [13.9000   17.6000   18.0770   19.3760]; % CO2
+
+alternate = [1 1]; 
+wavelength=810; 
+% global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
+% global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
+% global IP; IP = [13.776   17.7   18.0770   19.3760]; % CO2
 % global IP_label; IP_label = ["X", "A", "B", "C"]; 
-global IP; IP = fliplr([14 14.665]); % Krypton
-global IP_label; IP_label = fliplr(["14", "14.665"]); 
+% global IP; IP = fliplr([14 14.665]); % Krypton
+% global IP_label; IP_label = fliplr(["14", "14.665"]); 
 % global IP; IP = [15.7596];
 % global IP_label; IP_label = ["Ar 2P 3/2"]; % start with 2
 % global IP; IP = [15.763, 15.763+0.17749];
 % global IP_label; IP_label = ["Ar 2P 3/2", "Ar 2P 1/2"]; % start with 2
-% % IP = [9.553, 16.56, 18.318, 21.722]; % NO
-% global IP; IP = [9.26428, 15.66305, 16.55995, 16.87514, 17.59988, 17.81864, 18.07566, 18.32547, 21.72947, 22.73139]; 
+% IP = [9.553, 16.56, 18.318, 21.722]; % NO
+% global IP; IP = [9.55, 15.66305, 16.55995, 16.87514, 17.59988, 17.81864, 18.07566, 18.32547, 21.72947, 22.73139]; 
 % global IP_label; IP_label = ["X", "a", "b", "w", "bp", "Ap", "W", "A", "Bc", "BpB"]; 
+global IP; IP = [9.55, 16.55995, 16.87514, 17.59988, 18.32547, 21.72947]; 
+global IP_label; IP_label = ["X", "b", "w", "bp", "A", "Bc"]; 
 
 [HistTot_array, XUV_only, stageTimes, freqAxis] = getrawdata(folderName, 1, wavelength);  
 HistTot_array = HistTot_array(:,:,alternate(1):alternate(2):end); % might need to alternate files
@@ -48,21 +61,23 @@ XUV_only_raw = XUV_only;
 %     HistTot_array = pad_data; 
 figure; plot(sum(sum(HistTot_array,2),3)); 
 %% load calibration
-load(strcat(folderName, 'calibration/Kr_calibration.mat')); 
+% load(strcat(folderName, 'calibration/Ar_calibration.mat')); 
+% load('/Users/annawang/Documents/data/2018_07_27-17Scan/calibration/Kr_calibration.mat'); 
+load('/Users/annawang/Documents/data/2018_07_23-19Scan/calibration/Kr_calibration.mat'); 
 % load('/Users/annaliw/code/2020_01_22-16Scan/calibration/Ar_calibration.mat'); 
 % load('/Users/annaliw/code/KrCO2_scan/calibration/Kr_calibration.mat'); 
 %% OR redo it
 
-t0=75; 
+t0=25; 
 wavelength = 810; 
-n = 10:1:20; 
-calibEnergy = repmat(n, [size(IP,2) size(IP,1)])*1240/810 - repmat(IP, [size(n,2), size(n,1)]).'; 
-calibEnergy = calibEnergy(:).'; 
-% calibEnergy = n*1240/810 - IP(3); 
-% tof_peak = [1874 1291 1044 905 805 739 683 642 602 573 545]; 
-tof_peak = [2633 1427 1117 947 839 762 705 657 619 586 558; ...
-            1819 1261 1034 894 803 735 684 639 604 574 548]; 
-tof_peak = tof_peak(:).'; 
+n = 10:1:21; 
+calibEnergy = repmat(n, [size(IP,2) size(IP,1)])*1240/wavelength - repmat(IP, [size(n,2), size(n,1)]).'; 
+% calibEnergy = calibEnergy(:).'; 
+% calibEnergy = n*1240/wavelength - IP(3); 
+% tof_peak = [2107 1354 1077 929 821 750 695 653 614 581 554]; 
+tof_peak = [2614 1429 1118 947 839 762 705 657 619 585 559 534; ...
+            1828 1261 1034 894 803 736 684 639 604 573 548 525]; 
+% tof_peak = tof_peak(:).'; 
 calibType = 'Kr'; 
 
 % tof_peak(5)=[]; tof_peak(7)=[]; 
@@ -87,7 +102,7 @@ save(filename, 'A', 'calibEnergy', 'tof_peak', 'wavelength');
 % do energy conversion
 tmp = reshape(HistTot_array, size(HistTot_array,1), []);
 tof = 1:size(tmp,1); 
-E_vec = [0 20 900]; 
+E_vec = [0 25 900]; 
 
 %convert the ToF spectrum to energy (linear energy scale)
 [C,E,OM]=Convert_Eng_V2(tof, tmp, [t0, A] , E_vec); % OM will be used in loop
@@ -122,15 +137,15 @@ norm = sum(E_SpectraArray,1);
 tmp = fftshift(fft(ifftshift(E_SpectraArray - repmat(mean(E_SpectraArray,2),[1 numel(stageTimes)]),2),[],2),2); 
 
 % tmp = fftshift(fft(HistTot_array,[],2),2); 
-% twoOmega_location = 130; % MAKE THIS AUTOMATICALLY DETECTED
-twoOmega_signal = squeeze(sum(tmp(:,157,:),2)); % + conj(squeeze(sum(tmp(:,92:94,:),2)));
+% twoOmega_ind = 130; % MAKE THIS AUTOMATICALLY DETECTED
+twoOmega_ind = 156; 
+twoOmega_signal = squeeze(sum(tmp(:,twoOmega_ind,:),2)); % + conj(squeeze(sum(tmp(:,92:94,:),2)));
 
 twoOmega_nosum = twoOmega_signal; 
 
 %% drift compensation
-cut = 47; 
-twoOmega_signal = twoOmega_nosum(:,1:cut); 
-sideband_list = [16]*1240/wavelength-IP(1); % select 16th harmonic of lowest ionization state 
+twoOmega_signal = twoOmega_nosum; 
+sideband_list = [18]*1240/wavelength-IP(1); % select 16th harmonic of lowest ionization state 
 % phase_shift = zeros([1 size(twoOmega_signal,2)]); 
 
 % figure; hold on; 
@@ -139,10 +154,10 @@ for ii=1:1:length(sideband_list)
     [~, index] = min(abs(E - sideband_list(ii)));
     window_center = index; 
 %     window_center = 1301; 
-    window = 3; 
+    window = 2; 
     histogram_windows = twoOmega_signal((window_center-window):(window_center+window),:); 
     % integrate over window
-    peak_phase = peak_phase + squeeze(sum(histogram_windows, 1))./squeeze(sum(sum(E_SpectraArray(:,:,1:cut),1),2))'; 
+    peak_phase = peak_phase + squeeze(sum(histogram_windows, 1)); %./squeeze(sum(sum(E_SpectraArray,1),2))'; 
 end
 peak_amp = abs(peak_phase); 
 peak_phase = angle(peak_phase);
@@ -243,29 +258,34 @@ XUV_only = Counts';
 
 %% FIRST FIT of original data set (single sideband)
 
-signal = squeeze(sum(twoOmega_signal,2)); 
+% signal = squeeze(sum(twoOmega_signal,2)); 
+signal = twoOmega_signal; 
 % signal = XUV_only; 
 
 % Ar
 % region = [2.44 2.8]; % sideband 12
 % region = [5.4 5.85]; % sideband 14
 % region = [8.2 9.2]; % sideband 16
-region = [11.3 12.4]; % sideband 18
-% region = [2.4 2.9]; % sideband 12
-% region = [5.3 6]; % sideband 14
-% region = [8.5 9.2]; % sideband 16
-% region = [11 12.3]; % sideband 18
+% region = [11.3 12.4]; % sideband 18
+
+% region = [2.1 3.1]; % sideband 12
+% region = [5.1 6.5]; % sideband 14
+% region = [8.2 9.4]; % sideband 16
+% region = [10.8 12.5]; % sideband 18
 
 % H2
-% region = [1.45 3.1]; % sideband 12
-% region = [4.55 6.15]; % sideband 14
-% region = [7.7548 9.18]; % sideband 16
-% region = [7.72 9.18]; % sideband 16
-% region = [10.8258 12.2]; % sideband 18
-% region = [0.2 1.8]; % harmonic 11
+% region = [1.5 2.75]; % sideband 12
+% region = [4.5 5.85]; % sideband 14
+% region = [7.65 9]; % sideband 16
+% region = [10.7 11.9]; % sideband 18
+% region = [1.77 3.15]; % SB14 3V
+% region = [4.8 6.3]; % SB16 3V
+% region = [3 4.5] % SB16 5V
+% region = [6.2 7.7]; % SB18 5V
+% region = [3 4.48]; % SB18 8.5V
 
 % CO2
-% region = [2.8 4.1419]; 
+% region = [2.6 4.1419]; 
 % region = [4.3742 5.7677]; 
 % region = [5.8452 7.2387]; 
 % region = [7.4 8.7]; 
@@ -274,29 +294,29 @@ region = [11.3 12.4]; % sideband 18
 % region = [11.8 15.5]; 
 
 % Kr
-% region = [3.4 4.6]; 
-% region = [12.5 14]; 
-% region = [8 9.2]; 
+% region = [3.4 5]; % SB12
+% region = [6.2 7.9]; % SB14
+% region = [9.3 10.8]; % SB16
+% region = [12.5 14.2]; %18
 
-tolerance = 0.05; 
+% region = []
+
+% NO
+% region = [2.6 3.5]; IP = [8*1240/wavelength-3.15 13*1240/wavelength-3.4 13*1240/wavelength-2.85 18*1240/wavelength-2.5]; IP_label = ["other", "other", "X SB8", "other"]; 
+% region = [5.7 6.6]; IP = [10*1240/wavelength-6 15*1240/wavelength-6.4]; IP_label = ["X SB10", "other"]; 
+% region = [8.2 9.5]; IP = [12*1240/wavelength-8.75 17*1240/wavelength-8.5 17*1240/wavelength-9.4]; IP_label = ["X SB12", "other", "other"]; % SB12
+% region = [10.6 12]; IP = [14*1240/wavelength-11.7 19*1240/wavelength-10.85]; IP_label = ["X SB14", "other"];% SB14
+% region = [14.2 15.3]; IP = [16*1240/wavelength-14.9]; IP_label = ["X SB16"];% SB16
+% region = [17.4 19]; IP = [18*1240/wavelength-18.1 23*1240/wavelength-19.5]; IP_label = ["X SB18", "other"];% SB18
+% region = [10.75 12.2]; 
+
+tolerance = abs(E(2)-E(1)); 
 % fit section set-up
 start = find(abs(E-region(1))<tolerance, 1, 'last'); 
 stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
 
-% subtract_floor = 9.7; 
-subtract_floor = 0; 
-if subtract_floor == 0
-    tmp_signal = signal; 
-else
-    tmp = [abs(signal), angle(signal)]';
-    tmp(1,:) = tmp(1,:) - 0.9*abs(signal(find(abs(E-subtract_floor)<tolerance, 1, 'last'))); 
-%     tmp(1,:) = tmp(1,:) - 0; 
-    tmp_signal = tmp(1,:) .* exp(1j*tmp(2,:));
-    tmp_signal = tmp_signal.'; 
-end
 
-
-[paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E(start:stop), abs(tmp_signal(start:stop)), tmp_signal(start:stop), 1, 1); 
+[paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, E(start:stop), abs(signal(start:stop)), signal(start:stop), 1, 1); 
 % save as labeled variables
 paramout_original = paramout;  
 fval_original = fval
@@ -306,9 +326,10 @@ fval_original = fval
 % run poly2phase_20200528.m to make sure this works and initialize poly
 % array
 trials = 100; 
-numfiles = size(E_SpectraArray, 3); 
+% numfiles = size(E_SpectraArray, 3); 
+numfiles = numel(phase_shift); 
 % array to save fit parameters
-paramout_array = cat(2, zeros([size(paramout_gauss), trials]), zeros([1, 2, trials])); 
+paramout_array = cat(2, zeros([size(paramout_gauss), trials]), zeros([size(paramout_gauss,1), 2, trials])); 
 fval_array = zeros([1, trials]); 
 sample_2w_array = zeros([size(twoOmega_signal,1), trials]); 
 sample_ES_array = zeros([size(twoOmega_signal,1), trials]); 
@@ -319,8 +340,8 @@ for nn=1:trials
     sample_list = randsample(numfiles, numfiles, true); 
     sample_ESpectra = E_SpectraArray(:,:,sample_list); 
     tmp = fftshift(fft(sample_ESpectra, [], 2), 2); 
-    sample_twoOmega = squeeze(sum(tmp(:,131,:),2));
-    for mm=1:1:length(phase_shift)
+    sample_twoOmega = squeeze(sum(tmp(:,twoOmega_ind,:),2));
+    for mm=1:1:numfiles
         sample_twoOmega(:,mm) = sample_twoOmega(:,mm).*exp(-1j*phase_shift(sample_list(mm))); 
     end
     sample_twoOmega = sum(sample_twoOmega, 2); 
@@ -367,18 +388,22 @@ check_if_done = 'done!'
 %% save
 data = paramout_array; 
 
-bootstrap_phase = mean(data(:,4,:),3);
+bootstrap_phase = mean(mod(data(:,4,:),2*pi),3);
 bootstrap_slope = mean(data(:,5,:),3); 
 
-bootstrap_phase_std = sqrt(trials/(trials-1))*std(data(:,4,:),0,3);
+bootstrap_phase_std = sqrt(trials/(trials-1))*std(mod(data(:,4,:),2*pi),0,3);
 bootstrap_slope_std = sqrt(trials/(trials-1))*std(data(:,5,:),0,3);
 
-Ar_SB18_paramout = data; 
-Ar_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
-Ar_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
-% H2_SB12_paramout = data; 
-% H2_SB12_phase = [bootstrap_phase, bootstrap_phase_std]; 
-% H2_SB12_slope = [bootstrap_slope, bootstrap_slope_std]; 
+% Ar_SB18_paramout = data; 
+% Ar_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
+% Ar_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
+% H2_SB18_paramout = data; 
+% H2_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
+% H2_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
+Kr_SB18_paramout = data; 
+Kr_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
+Kr_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
+% tmp = [bootstrap_phase, bootstrap_phase_std]; 
 
 % bootstrap_d1 = mean(data(:,end,:),3);
 % bootstrap_d2 = mean(data(:,end-1,:),3); 
@@ -417,12 +442,12 @@ hold off;
 
 figure; hold on; grid on; 
 for ii=1:size(paramout_array,3)
-    plotphase = unwrap(mod(angle(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))),2*pi)); 
+    plotphase = mod(angle(Spectrum(xin, paramout_array(:,1:3,ii),paramout_array(:,4:end,ii))),2*pi); 
 %     plotphase = unwrap(mod(angle(yfit_array(:,ii)),2*pi)); 
 %     plotphase = plotphase - plotphase(1); 
     p = plot(xin, plotphase, 'Color', 'c', 'LineWidth', 2); 
     p.Color(4) = 0.1; 
-    s = plot(xin, unwrap(mod(angle(sample_2w_array(start:stop,ii)),2*pi)), 'cs');
+    s = plot(xin, mod(angle(sample_2w_array(start:stop,ii)),2*pi), 'cs');
     s.Color(4) = 0.1; 
 end
 plotphase = unwrap(mod(angle(Spectrum(xin, paramout_gauss, paramout_original)),2*pi)); 
@@ -430,6 +455,7 @@ plotphase = unwrap(mod(angle(Spectrum(xin, paramout_gauss, paramout_original)),2
 plotphase(1)
 % plotphase = plotphase - plotphase(1); 
 plot(xin, plotphase, 'Color', 'b', 'LineWidth', 2); 
+plot(xin, unwrap(mod(angle(Spectrum(xin, mean(paramout_array(:,1:3,:),3), mean(paramout_array(:,4:end,:),3))),2*pi)), 'b--', 'Linewidth', 2);
 scatter(xin, unwrap(mod(angle(twoOmega_signal(start:stop)),2*pi)), 'bo'); 
 title('Fit Phase', 'FontSize', 16); 
 xlabel('Photoelectron Energy (eV)'); ylabel('Phase (referenced to v=6 phase)'); 
@@ -452,7 +478,7 @@ for nn=1:1:numfiles
     sample_norm = sum(abs(sample_ESpectra),1); 
     sample_ESpectra = sample_ESpectra./repmat(sample_norm, size(sample_ESpectra, 1), 1, 1); 
     tmp = fftshift(fft(sample_ESpectra, [], 2), 2); 
-    sample_twoOmega = squeeze(tmp(:,twoOmega_location,:));
+    sample_twoOmega = squeeze(tmp(:,twoOmega_ind,:));
  
     % restack 2w component
     sideband_list = [12, 14, 16, 18]*1240/wavelength-IP(3); % select 16th harmonic of lowest ionization state 
@@ -466,7 +492,7 @@ for nn=1:1:numfiles
         peak_phase = peak_phase + squeeze(sum(histogram_windows, 1)); 
         % % fft wrt IR delay 
         % peak_fft = fftshift(fft(peak_vol, [], 1), 1); 
-        % peak_phase = angle(peak_fft(twoOmega_location, :)); 
+        % peak_phase = angle(peak_fft(twoOmega_ind, :)); 
     end
     peak_phase = angle(peak_phase); 
     for mm=1:1:(numfiles-1)
