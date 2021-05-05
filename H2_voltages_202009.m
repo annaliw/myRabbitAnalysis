@@ -1,7 +1,7 @@
 %% load data
 
-% folderName_Ar = '/Users/annawang/Documents/data/2020_09_01-11Scan/'; % Argon 0V
-folderName_Ar = '/Users/annawang/Documents/data/2020_09_01-12Scan/'; % Argon 3V
+folderName_Ar = '/Users/annawang/Documents/data/2020_09_01-11Scan/'; % Argon 0V
+% folderName_Ar = '/Users/annawang/Documents/data/2020_09_01-12Scan/'; % Argon 3V
 % folderName_Ar = '/Users/annawang/Documents/data/2020_09_01-14Scan/'; % Argon 8.5V
 
 wavelength = 810; 
@@ -47,9 +47,9 @@ global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206] + 0.05;
 global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
 
 % load H2 file
-folderName_H2 = '/Users/annawang/Documents/data/2020_08_27-15Scan/'; v=0; % H2 0V
+% folderName_H2 = '/Users/annawang/Documents/data/2020_08_27-15Scan/'; v=0; % H2 0V
 % folderName_H2 = '/Users/annawang/Documents/data/2020_08_28-15Scan/'; v=3; % H2 3V
-% folderName_H2 = '/Users/annawang/Documents/data/2020_08_30-15Scan/'; v=5; % H2 5V
+folderName_H2 = '/Users/annawang/Documents/data/2020_08_30-15Scan/'; v=5; % H2 5V
 % folderName_H2 = '/Users/annawang/Documents/data/2020_08_31-18Scan/'; v=8.5; % H2 8.5V
 
 % load correct energy calibration
@@ -96,7 +96,7 @@ peak_phase = 0;
 for ii=1:1:length(sideband_list)
     [~, index] = min(abs(E - sideband_list(ii)));
     window_center = index; 
-    window = 2; 
+    window = 25; 
     histogram_windows = twoOmega_signal((window_center-window):(window_center+window),:); 
     % integrate over window
     peak_phase = peak_phase + squeeze(sum(histogram_windows, 1)); %./squeeze(sum(sum(E_SpectraArray,1),2))'; 
@@ -112,16 +112,26 @@ end
 twoOmega_signal = squeeze(sum(twoOmega_signal, 2)); 
 plotfun_rabbitspectrum(11:1:21, 810, E, twoOmega_signal, 'twoOmega');
 
+region = [4.65 5.85]; % sideband 14
+tolerance = abs(E(2)-E(1)); 
+% fit section set-up
+start = find(abs(E-region(1))<tolerance, 1, 'last'); 
+stop = find(abs(E-region(2))<tolerance, 1, 'first');
+int2w = [int2w sum(abs(twoOmega_signal))]; 
+max14 = [max14 max(abs(twoOmega_signal(start:stop)))]; 
+int14 = [int14 sum(abs(twoOmega_signal(start:stop)))/sum(abs(twoOmega_signal))]; 
+
 %% PHASE EXTRACTION BY FITTING
-signal = squeeze(sum(twoOmega_signal,2)); 
+% signal = squeeze(sum(twoOmega_0V,2)); 
 % signal = twoOmega_0V; 
+signal = twoOmega_signal; 
 
 % region = [1.55 2.8]; % sideband 12
 % region = [4.65 5.85]; % sideband 14
 % region = [7.6 9.15]; % sideband 16
-% region = [10.68 12.27]; % sideband 18
-region = [5.9 7.3]; % SB16 5V; 
-% region = [9 10.5]; % SB18 5V; 
+% region = [10.65 12.2]; % sideband 18
+% region = [5.95 7.25]; % SB16 5V; 
+region = [9.0 10.3]; % SB18 5V; 
 
 % argon
 % region = [2 3]; % SB12
@@ -179,6 +189,7 @@ check_if_done = 'done!'
 %% check fit convergence on resampled sets
 
 xin = E(start:stop); 
+tmp = zeros([1 100]); 
 
 figure; hold on; grid on; 
 for ii=1:size(paramout_array,3)
@@ -202,6 +213,9 @@ for ii=1:size(paramout_array,3)
     p.Color(4) = 0.1; 
     s = plot(xin, unwrap(mod(angle(sample_2w_array(start:stop,ii)),2*pi)), 'cs');
     s.Color(4) = 0.1; 
+    
+    tmp1 = unwrap(mod(angle(sample_2w_array(start:stop,ii)),2*pi)); 
+    tmp(ii) = tmp1(37); 
 end
 
 plotphase = unwrap(mod(angle(Spectrum(xin, paramout_gauss, paramout_original)),2*pi)); 
@@ -218,22 +232,24 @@ hold off;
 
 %% save
 
-bootstrap_phase = mean(paramout_array(:,4,:),3);
-bootstrap_slope = mean(paramout_array(:,5,:),3); 
+% bootstrap_phase = mean(paramout_array(:,4,:),3);
+% bootstrap_slope = mean(paramout_array(:,5,:),3); 
+% 
+% bootstrap_phase_std = sqrt(trials/(trials-1))*std(paramout_array(:,4,:),0,3);
+% bootstrap_slope_std = sqrt(trials/(trials-1))*std(paramout_array(:,5,:),0,3);
 
-bootstrap_phase_std = sqrt(trials/(trials-1))*std(paramout_array(:,4,:),0,3);
-bootstrap_slope_std = sqrt(trials/(trials-1))*std(paramout_array(:,5,:),0,3);
+% H2_5V_SB16_paramout = paramout_array; 
+% H2_5V_SB16_phase = [bootstrap_phase, bootstrap_phase_std]; 
+% H2_5V_SB16_slope = [bootstrap_slope, bootstrap_slope_std]; 
 
-% Ar_3V_SB18_paramout = paramout_array; 
-% Ar_3V_SB18_phase = [bootstrap_phase, bootstrap_phase_std]; 
-% Ar_3V_SB18_slope = [bootstrap_slope, bootstrap_slope_std]; 
-
-H2_5V_SB16_SI = [mean(phase_array,2), sqrt(trials/(trials-1))*std(phase_array,0,2)]; 
+H2_3V_SB18_err = [mean(phase_array,2), sqrt(trials/(trials-1))*std(phase_array,0,2)]; 
+% H2_5V_SB16_peaks = peak_centers; 
 
 %% CASE RESAMPLING (BOOTSTRAP) for SI
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SB = 15; 
-peak_centers = paramout_gauss(:,2); 
+% peak_centers = paramout_gauss(:,2); 
+peak_centers = mean(E(start:stop)); 
 trials = 100; 
 numfiles = numel(phase_shift); 
 fval_array = zeros([1, trials]); 
@@ -257,7 +273,7 @@ for nn=1:trials
     sample_ES_array(:,nn) = squeeze(sum(sum(sample_ESpectra,2),3)); 
 
     % fit data
-    phase_array(:,nn) = spectral_integration(E(start:stop), abs(sample_twoOmega(start:stop)), angle(sample_twoOmega(start:stop)), peak_centers, 3); 
+    phase_array(:,nn) = spectral_integration(E(start:stop), abs(sample_twoOmega(start:stop)), angle(sample_twoOmega(start:stop)), peak_centers, 10); 
 
 end 
 check_if_done = 'done!'
@@ -318,11 +334,16 @@ CCPAp = CCPAp(2:end);
 %%
 nstates = 5; 
 glob_phase = 0; 
-phase_data = flipud(cat(3, H2_0V_SB12_phase, ...
-                           H2_3V_SB14_phase, ...
-                           H2_5V_SB16_phase)); 
-phase_data(:,:,3) = flipud(H2_5V_SB16_SI); 
-phase_data(:,1,3) = phase_data(:,1,3) - (mean(H2_5V_SB16_phase(:,1) - mean(H2_5V_SB16_SI(:,1)))); 
+% phase_data = flipud(cat(3, H2_0V_SB12_phase, ...
+%                            H2_3V_SB14_phase, ...
+%                            H2_5V_SB16_phase)); 
+% phase_data(:,:,3) = flipud(H2_5V_SB16_SI); 
+% phase_data(:,:,2) = flipud(H2_3V_SB14_SI); 
+% phase_data(:,:,1) = flipud(H2_0V_SB12_SI); 
+phase_data = flipud(cat(3, H2_0V_SB12_SI, ...
+                           H2_3V_SB14_SI, ...
+                           H2_5V_SB16_SI)); 
+% phase_data(:,1,3) = phase_data(:,1,3) + (mean(H2_5V_SB16_phase(:,1))+2*pi - mean(H2_5V_SB16_SI(:,1))); 
 
 Ar_phase = [Ar_0V_SB12_phase; ...
             Ar_3V_SB14_phase; ...
@@ -333,22 +354,33 @@ Ar_slope = [Ar_0V_SB12_slope; ...
             Ar_3V_SB16_slope; ...
             Ar_3V_SB18_slope]; 
 
-mean_data = flipud(cat(3, mean(H2_0V_SB12_paramout(:,:,:),3), ...
-                          mean(H2_0V_SB14_paramout(:,:,:),3), ...
-                          mean(H2_0V_SB16_paramout(2:end,:,:),3))); 
+% mean_data = flipud(cat(3, mean(H2_0V_SB12_paramout(1:nstates,:,:),3), ...
+%                           mean(H2_3V_SB14_paramout(1:nstates,:,:),3), ...
+%                           mean(H2_5V_SB16_paramout(1:nstates,:,:),3))); 
+% SB_phase_data = cat(3, ...
+%                [mean_data(1:nstates,2,1)'; unwrap(phase_data(1:nstates,1,1))'], ...
+%                [mean_data(1:nstates,2,2)'; unwrap(phase_data(1:nstates,1,2))'], ...
+%                [mean_data(1:nstates,2,3)'; unwrap(phase_data(1:nstates,1,3))']); 
+% SB_phase_error = cat(3, ...
+%                [mean_data(1:nstates,2,1)'; phase_data(1:nstates,2,1)'], ...
+%                [mean_data(1:nstates,2,2)'; phase_data(1:nstates,2,2)'], ...
+%                [mean_data(1:nstates,2,3)'; phase_data(1:nstates,2,3)']); 
+% SB_delay_data = SB_phase_data; SB_delay_data(2,:) = SB_delay_data(2,:).*(T_L*1000/2/(2*pi)); %20191009 data processing accidentally added a 120as phase offset between Ar and H2
+% SB_delay_error = cat(3, ...
+%                [mean_data(1:nstates,2,1)'; phase_data(1:nstates,2,1)'.*(T_L*1000/2/(2*pi))], ...
+%                [mean_data(1:nstates,2,2)'; phase_data(1:nstates,2,2)'.*(T_L*1000/2/(2*pi))], ...
+%                [mean_data(1:nstates,2,3)'; phase_data(1:nstates,2,3)'.*(T_L*1000/2/(2*pi))]); 
+
 SB_phase_data = cat(3, ...
-               [mean_data(1:nstates,2,1)'; unwrap(phase_data(1:nstates,1,1))'], ...
-               [mean_data(1:nstates,2,2)'; unwrap(phase_data(1:nstates,1,2))'], ...
-               [mean_data(1:nstates,2,3)'; unwrap(phase_data(1:nstates,1,3))']) - pi; 
+               [H2_0V_SB12_peaks'; unwrap(H2_0V_SB12_SI(:,1))'], ...
+               [H2_3V_SB14_peaks'; unwrap(H2_3V_SB14_SI(:,1))'], ...
+               [H2_5V_SB16_peaks'; unwrap(H2_5V_SB16_SI(:,1))']); 
 SB_phase_error = cat(3, ...
-               [mean_data(1:nstates,2,1)'; phase_data(1:nstates,2,1)'], ...
-               [mean_data(1:nstates,2,2)'; phase_data(1:nstates,2,2)'], ...
-               [mean_data(1:nstates,2,3)'; phase_data(1:nstates,2,3)']); 
-SB_delay_data = SB_phase_data; SB_delay_data(2,:) = (SB_delay_data(2,:)+glob_phase).*(T_L*1000/2/(2*pi)); %20191009 data processing accidentally added a 120as phase offset between Ar and H2
-SB_delay_error = cat(3, ...
-               [mean_data(1:nstates,2,1)'; phase_data(1:nstates,2,1)'.*(T_L*1000/2/(2*pi))], ...
-               [mean_data(1:nstates,2,2)'; phase_data(1:nstates,2,2)'.*(T_L*1000/2/(2*pi))], ...
-               [mean_data(1:nstates,2,3)'; phase_data(1:nstates,2,3)'.*(T_L*1000/2/(2*pi))]); 
+               [H2_0V_SB12_peaks'; H2_0V_SB12_SI(:,2)'], ...
+               [H2_3V_SB14_peaks'; H2_3V_SB14_SI(:,2)'], ...
+               [H2_5V_SB16_peaks'; H2_5V_SB16_SI(:,2)']); 
+SB_delay_data = SB_phase_data; SB_delay_data(2,:) = SB_delay_data(2,:).*(T_L*1000/2/(2*pi)); %20191009 data processing accidentally added a 120as phase offset between Ar and H2
+SB_delay_error = SB_phase_error; SB_delay_error(2,:) = SB_delay_error(2,:).*(T_L*1000/2/(2*pi)); 
            
 % Ar_phase(:,1) = Ar_phase(:,1) - pi; 
 % Ar_phase(3:4,1) = Ar_phase(3:4,1)+2*pi; 

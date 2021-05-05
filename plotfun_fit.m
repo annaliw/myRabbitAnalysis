@@ -7,7 +7,7 @@ function trash = plotfun_fit(n, wavelength, xin, yin, fix, paramout, slope, peak
         peakflag = 0; 
     end
     % text and color settings
-    text_size = 12; 
+    text_size = 20; 
     line_weight = 1.5; 
     abs_color = [0 0 0.8]; 
     phi_color = [0 0.7 1]; 
@@ -34,7 +34,7 @@ function trash = plotfun_fit(n, wavelength, xin, yin, fix, paramout, slope, peak
 %     yout_phi = yout(:,2); 
 
     
-    fh = figure('Position', [10 600 560 400]); 
+%     fh = figure('Position', [10 600 560 400]); 
     hold on; 
     % amplitude axis
     ax1 = gca; 
@@ -117,8 +117,8 @@ function trash = plotfun_fit(n, wavelength, xin, yin, fix, paramout, slope, peak
     end
     ax1.XLim = [xout(1), xout(end)]; 
     ax1.YLim = [0, max(yout_abs)*lgnd_pad]; 
-    lgnd = legend([s1, l1, s2, l2], 'Location', lgnd_pos); 
-    lgnd.FontSize = text_size*0.6; 
+    lgnd = legend([s1, l1, s2, l2]) %, 'Location', lgnd_pos); 
+%     lgnd.FontSize = text_size; 
     
     hold off; 
     

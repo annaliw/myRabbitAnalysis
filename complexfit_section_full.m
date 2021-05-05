@@ -4,7 +4,7 @@ function [paramout, paramout_gauss, fval] = complexfit_section_full(wavelength, 
     %% fit 2w abs data for region
     
 %     region = fitRegion; 
-    n = 1:1:19; 
+    n = 1:1:23; 
     tolerance = abs(E(1)-E(2)); 
 %     n = 0; 
 %     tolerance = abs(E(1)-E(2))*2; 

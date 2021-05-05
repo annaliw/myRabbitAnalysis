@@ -139,5 +139,614 @@ ylabel('\Delta_{\nu,\nu+1} (radians)');
 xlim([0 5]); 
 title('SB 14'); 
 goodplot(18)
+
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TRY VECTOR QUANTIFICATION OF THEORY DISCREPANCY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+xdata = reshape(repmat(12:2:16, [5 1])*1240/810 - repmat(fliplr(IP(2:end))', [1 3]), [1 15]); 
+phase_data = squeeze(reshape(SB_delay_data(2,:,:), [1 15])); 
+phase_error = squeeze(reshape(SB_delay_error(2, :,:), [1 15]));
+offset = -mean([H2TDSE_810_140.t(4) H2TDSE_810_145.t(4) H2TDSE_810_150.t(4)]) ...
+    - ((mean(unwrap(H2_0V_SB18_phase(2:5)))+mean(unwrap(H2_3V_SB18_phase(2:5)))+mean(unwrap(H2_5V_SB18_phase(2:5)))+2*pi)/3*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+plot_data = phase_data - reshape(repmat(XUV_delay(1:3), [1 5])', [1 15]) + offset; 
+plot_error = phase_error;  
+plot_data = plot_data ./ (T_L*1000/2/(2*pi)); 
+plot_error = phase_error ./ (T_L*1000/2/(2*pi)); 
+
+% SB12
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(1) H2TDSE_810_145.x_Ee(1) H2TDSE_810_150.x_Ee(1)]; 
+yt = -[H2TDSE_810_140.t(1)    H2TDSE_810_145.t(1)    H2TDSE_810_150.t(1)] ./ (T_L*1000/2/(2*pi)); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = exp(1j*plot_data(1:5)) - exp(1j*yt_int(1:5)); 
+
+figure; hold on; 
+
+subplot(3,3,1); hold on; 
+plot(xdata(1:5), abs(diff), 'bo'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('amplitude'); 
+goodplot(18); 
+subplot(3,3,2); hold on; 
+plot(xdata(1:5), angle(diff) , 'kd'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('phase'); 
+goodplot(18); 
+
+% SB14
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(2) H2TDSE_810_145.x_Ee(2) H2TDSE_810_150.x_Ee(2)]; 
+yt = -[H2TDSE_810_140.t(2)    H2TDSE_810_145.t(2)    H2TDSE_810_150.t(2)] ./ (T_L*1000/2/(2*pi)); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = exp(1j*plot_data(6:10)) - exp(1j*yt_int(6:10)); 
+
+subplot(3,3,4); hold on; 
+plot(xdata(6:10), [abs(diff(1)) -abs(diff(2:end))], 'bo'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('amplitude'); 
+goodplot(18); 
+subplot(3,3,5); hold on; 
+plot(xdata(6:10), [angle(diff(1)) angle(diff(2:end))-pi], 'kd'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('phase'); 
+goodplot(18); 
+
+% SB16
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(3) H2TDSE_810_145.x_Ee(3) H2TDSE_810_150.x_Ee(3)]; 
+yt = -[H2TDSE_810_140.t(3)    H2TDSE_810_145.t(3)    H2TDSE_810_150.t(3)] ./ (T_L*1000/2/(2*pi)); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = exp(1j*plot_data(11:15)) - exp(1j*yt_int(11:15)); 
+
+subplot(3,3,7); hold on; 
+plot(xdata(11:15), abs(diff), 'bo'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('amplitude'); 
+goodplot(18); 
+subplot(3,3,8); hold on; 
+plot(xdata(11:15), angle(diff), 'kd'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('phase'); 
+goodplot(18); 
+
+% add the old plots for sanity check
+ax1 = subplot(3,3,3); hold on; 
+errorbar(xdata(1:5), plot_data(1:5)*(T_L*1000/2/(2*pi)), plot_error(1:5)*(T_L*1000/2/(2*pi)), 'ko', 'DisplayName', 'H2 measurement'); 
+errorbar(H2TDSE_810_140.x_Ee(1), -H2TDSE_810_140.t(1), H2TDSE_810_140.err(1), ...
+    'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+errorbar(H2TDSE_810_145.x_Ee(1), -H2TDSE_810_145.t(1), H2TDSE_810_145.err(1), ...
+    'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+errorbar(H2TDSE_810_150.x_Ee(1), -H2TDSE_810_150.t(1), H2TDSE_810_150.err(1), ...
+    'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+% plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_140, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_145, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_150, 'r--', 'HandleVisibility', 'off'); 
+ylabel('delay (as)'); 
+xlim([1.4 3])
+ylim([100 270]); 
+window = 170; 
+
+text(1.4+1, 100+10, 'Sideband 12', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+box 'on'; 
+ax1.FontSize = ax_font_size; 
+ax1.FontWeight = 'bold'; 
+ax1.LineWidth = 1; 
+ax1.Color = 'none'; 
+ax1.XMinorTick = 'on'; 
+ax1.XAxisLocation = 'bottom'; 
+ax1.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax1.Position; 
+ax1v = axes('Position',POS);
+ax1v.XAxisLocation = 'top'; 
+ax1v.Color = 'none'; 
+ax1v.XTick = xdata(1:5); 
+ax1v.XTickLabel = split(int2str(fliplr(1:5))); 
+% xlabel('\nu'); 
+ax1v.XGrid = 'on'; 
+ax1v.GridAlpha = 0.7; 
+ax1v.YTick = []; 
+ax1v.FontSize = axv_font_size; 
+% ax1v.FontWeight = 'bold'; 
+
+linkaxes([ax1,ax1v],'x'); 
+xlim([1.4 3])
+ylim([100 270]); 
+uistack(ax1, 'top'); 
+
+ax2 = subplot(3, 3, 6); hold on; 
+errorbar(xdata(6:10), plot_data(6:10)*(T_L*1000/2/(2*pi)), plot_error(6:10)*(T_L*1000/2/(2*pi)), 'ko', 'DisplayName', 'H2 measurement'); 
+errorbar(H2TDSE_810_140.x_Ee(2), -H2TDSE_810_140.t(2), H2TDSE_810_140.err(2), ...
+    'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+errorbar(H2TDSE_810_145.x_Ee(2), -H2TDSE_810_145.t(2), H2TDSE_810_145.err(2), ...
+    'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+errorbar(H2TDSE_810_150.x_Ee(2), -H2TDSE_810_150.t(2), H2TDSE_810_150.err(2), ...
+    'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+% plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_140, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_145, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_150, 'r--', 'HandleVisibility', 'off'); 
+% xlabel('electron kinetic energy (eV)'); 
+% ylabel('delay (as)'); 
+% legend; 
+xlim([4.4 6.2]); 
+ylim([120-window 120+window]); 
+
+text(4.4+1, 120-40+10, 'Sideband 14', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+% annotation('textbox',[0.45 0.15 0.5 0.5],'String','Sideband 14','FitBoxToText','on');
+
+box 'on'; 
+ax2.FontSize = ax_font_size; 
+ax2.FontWeight = 'bold'; 
+ax2.LineWidth = 1; 
+ax2.Color = 'none'; 
+ax2.XMinorTick = 'on'; 
+ax2.XAxisLocation = 'bottom'; 
+ax2.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax2.Position; 
+ax2v = axes('Position',POS);
+ax2v.XAxisLocation = 'top'; 
+ax2v.Color = 'none'; 
+ax2v.XTick = xdata(6:10); 
+ax2v.XTickLabel = split(int2str(fliplr(1:5))); 
+% xlabel('\nu'); 
+ax2v.XGrid = 'on'; 
+ax2v.GridAlpha = 0.7; 
+ax2v.YTick = []; 
+ax2v.FontSize = axv_font_size; 
+% ax2.FontWeight = 'bold'; 
+
+linkaxes([ax2,ax2v],'x'); 
+xlim([4.4 6.2]); 
+ylim([120-window 120+window]); 
+uistack(ax2, 'top'); 
+
+
+ax3 = subplot(3, 3, 9); hold on; 
+errorbar(xdata(11:15), plot_data(11:15)*(T_L*1000/2/(2*pi)), plot_error(11:15)*(T_L*1000/2/(2*pi)), 'ko', 'DisplayName', 'H2 measurement'); 
+errorbar(H2TDSE_810_140.x_Ee(3), -H2TDSE_810_140.t(3), H2TDSE_810_140.err(3), ...
+    'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
+errorbar(H2TDSE_810_145.x_Ee(3), -H2TDSE_810_145.t(3), H2TDSE_810_145.err(3), ...
+    'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
+errorbar(H2TDSE_810_150.x_Ee(3), -H2TDSE_810_150.t(3), H2TDSE_810_150.err(3), ...
+    'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
+% plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_140, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_145, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_150, 'r--', 'HandleVisibility', 'off'); 
+% xlabel('electron kinetic energy (eV)'); 
+% ylabel('delay (as)'); 
+% legend; 
+xlim([7.5 9.2]); 
+ylim([55-window 55+window]); 
+
+text(7.5+1, 55-40+10, 'Sideband 16', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+box 'on'; 
+ax3.FontSize = ax_font_size; 
+ax3.FontWeight = 'bold'; 
+ax3.LineWidth = 1; 
+ax3.Color = 'none'; 
+ax3.XMinorTick = 'on'; 
+ax3.XAxisLocation = 'bottom'; 
+ax3.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax3.Position; 
+ax3v = axes('Position',POS);
+ax3v.XAxisLocation = 'top'; 
+ax3v.Color = 'none'; 
+ax3v.XTick = xdata(11:15); 
+ax3v.XTickLabel = split(int2str(fliplr(1:5))); 
+xlabel('\nu'); 
+ax3v.XGrid = 'on'; 
+ax3v.GridAlpha = 0.7; 
+ax3v.YTick = []; 
+ax3v.FontSize = axv_font_size; 
+% ax3.FontWeight = 'bold'; 
+
+linkaxes([ax3,ax3v],'x'); 
+xlim([7.5 9.2]); 
+ylim([55-window 55+window]); 
+uistack(ax3, 'top'); 
+
+% figure; hold on; 
+% for ii=1:numel(diff)
+%     plot([0 abs(diff(ii))*cos(angle(diff(ii)))], [0 abs(diff(ii))*sin(angle(diff(ii)))]); 
+% end
+
+%% M dot delta
+
+% SB12
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(1) H2TDSE_810_145.x_Ee(1) H2TDSE_810_150.x_Ee(1)]; 
+yt = -[H2TDSE_810_140.t(1)    H2TDSE_810_145.t(1)    H2TDSE_810_150.t(1)] ./ (T_L*1000/2/(2*pi)); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = exp(1j*plot_data(1:5)) - exp(1j*yt_int(1:5)); 
+figure; hold on; 
+plot(xdata(1:5), abs(diff) .* cos(angle(diff) - yt_int(1:5) + pi/2), 'bo'); 
+
+% SB14
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(2) H2TDSE_810_145.x_Ee(2) H2TDSE_810_150.x_Ee(2)]; 
+yt = -[H2TDSE_810_140.t(2)    H2TDSE_810_145.t(2)    H2TDSE_810_150.t(2)] ./ (T_L*1000/2/(2*pi)); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = exp(1j*plot_data(6:10)) - exp(1j*yt_int(6:10)); 
+plot(xdata(6:10), abs(diff) .* cos([angle(diff(1)) angle(diff(2:5))-pi] - yt_int(6:10) + pi/2), 'bo'); 
+
+% SB16
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(3) H2TDSE_810_145.x_Ee(3) H2TDSE_810_150.x_Ee(3)]; 
+yt = -[H2TDSE_810_140.t(3)    H2TDSE_810_145.t(3)    H2TDSE_810_150.t(3)] ./ (T_L*1000/2/(2*pi)); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = exp(1j*plot_data(11:15)) - exp(1j*yt_int(11:15)); 
+plot(xdata(11:15), abs(diff) .* cos(angle(diff) - yt_int(11:15)), 'bo'); 
+
+xlabel('photoelectron energy (eV)'); 
+ylabel('Dot Product'); 
+goodplot(18); 
+
+%% plain subraction of exp and theory
+%% subtract exp and theory plot
+
+vx = reshape(repmat(12:2:16, [5 1])*1240/810 - repmat(fliplr(IP(2:end))', [1 3]), [1 15]); 
+xdata = reshape(mean_data(:,2,:), [1 15]); xdata(11:15) = xdata(11:15)+1.5; %+0.2286; 
+phase_data = squeeze(reshape(SB_delay_data(2,:,:), [1 15])); 
+phase_error = squeeze(reshape(SB_delay_error(2, :,:), [1 15]));
+
+offset = -mean([H2TDSE_810_140.t(4) H2TDSE_810_145.t(4) H2TDSE_810_150.t(4)]) ...
+    - ((mean(unwrap(H2_0V_SB18_phase(2:5)))+mean(unwrap(H2_3V_SB18_phase(2:5)))+mean(unwrap(H2_5V_SB18_phase(2:5)))+2*pi)/3*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+
+plot_data = phase_data - reshape(repmat(XUV_delay(1:3), [1 5])', [1 15])+offset; plot_data = plot_data/(T_L*1000/4/pi); 
+plot_error = phase_error; plot_error = plot_error/(T_L*1000/4/pi); 
+
+diff = []; 
+
+figure; hold on; 
+plotpos = [0, 0, 6, 15]; 
+set(gcf, 'units', 'inch', 'position', plotpos);
+% set(gcf,'PaperUnits','inches','PaperPosition',plotpos/5); 
+
+% SB12
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(1) H2TDSE_810_145.x_Ee(1) H2TDSE_810_150.x_Ee(1)]; 
+yt = -[H2TDSE_810_140.t(1)    H2TDSE_810_145.t(1)    H2TDSE_810_150.t(1)] / (T_L*1000/4/pi);
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = [diff plot_data(1:5)-yt_int(1:5)]; 
+
+ax1 = subplot(3, 1, 1); hold on; 
+plot(xdata(1:5), diff, 'ko'); 
+xlim([1.4 3])
+ylim([-pi/8 0]); 
+window = pi/16; 
+
+text(1.4+1, -pi/16+window-pi/32, 'Sideband 12', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+box 'on'; 
+ax1.FontSize = ax_font_size; 
+ax1.FontWeight = 'bold'; 
+ax1.LineWidth = 1; 
+ax1.Color = 'none'; 
+ax1.XMinorTick = 'on'; 
+ax1.XAxisLocation = 'bottom'; 
+ax1.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax1.Position; 
+ax1v = axes('Position',get(ax1,'Position'));
+ax1v.XAxisLocation = 'top'; 
+ax1v.Color = 'none'; 
+ax1v.XTick = vx(1:5); 
+ax1v.XTickLabel = split(int2str(fliplr(1:5))); 
+xlabel('\nu'); 
+ax1v.XGrid = 'on'; 
+ax1v.GridAlpha = 0.7; 
+ax1v.YTick = []; 
+ax1v.FontSize = axv_font_size; 
+% ax1v.FontWeight = 'bold'; 
+
+linkaxes([ax1,ax1v],'x'); 
+xlim([1.4 3])
+uistack(ax1, 'top'); 
+
+
+% SB14
+ax2 = subplot(3, 1, 2); hold on; 
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(2) H2TDSE_810_145.x_Ee(2) H2TDSE_810_150.x_Ee(2)]; 
+yt = -[H2TDSE_810_140.t(2)    H2TDSE_810_145.t(2)    H2TDSE_810_150.t(2)] / (T_L*1000/4/pi); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = [diff plot_data(6:10)-yt_int(6:10)]; 
+plot(xdata(6:10), diff(6:10), 'ko'); 
+ylabel('\theta^{\prime}-\theta (radians)');
+% ylabel('delay (as)'); 
+% legend; 
+xlim([4.4 6.2]); 
+ylim([0-window 0+window]); 
+
+text(4.4+1, 0+window-pi/32, 'Sideband 14', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+% annotation('textbox',[0.45 0.15 0.5 0.5],'String','Sideband 14','FitBoxToText','on');
+
+box 'on'; 
+ax2.FontSize = ax_font_size; 
+ax2.FontWeight = 'bold'; 
+ax2.LineWidth = 1; 
+ax2.Color = 'none'; 
+ax2.XMinorTick = 'on'; 
+ax2.XAxisLocation = 'bottom'; 
+ax2.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax2.Position; 
+ax2v = axes('Position',POS);
+ax2v.XAxisLocation = 'top'; 
+ax2v.Color = 'none'; 
+ax2v.XTick = vx(6:10); 
+ax2v.XTickLabel = split(int2str(fliplr(1:5))); 
+% xlabel('\nu'); 
+ax2v.XGrid = 'on'; 
+ax2v.GridAlpha = 0.7; 
+ax2v.YTick = []; 
+ax2v.FontSize = axv_font_size; 
+% ax2.FontWeight = 'bold'; 
+
+linkaxes([ax2,ax2v],'x'); 
+xlim([4.4 6.2]); 
+uistack(ax2, 'top'); 
+
+% SB16
+ax3 = subplot(3, 1, 3); hold on; 
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(3) H2TDSE_810_145.x_Ee(3) H2TDSE_810_150.x_Ee(3)]; 
+yt = -[H2TDSE_810_140.t(3)    H2TDSE_810_145.t(3)    H2TDSE_810_150.t(3)] / (T_L*1000/4/pi); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = [diff plot_data(11:15)-yt_int(11:15)]; 
+plot(xdata(11:15), diff(11:15), 'ko'); 
+xlabel('photoelectron energy (eV)'); 
+% ylabel('delay (as)'); 
+% legend; 
+xlim([7.7 9.2]); 
+ylim([0-window 0+window]); 
+
+text(7.7+1, 0+window-pi/32, 'Sideband 16', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+box 'on'; 
+ax3.FontSize = ax_font_size; 
+ax3.FontWeight = 'bold'; 
+ax3.LineWidth = 1; 
+ax3.Color = 'none'; 
+ax3.XMinorTick = 'on'; 
+ax3.XAxisLocation = 'bottom'; 
+ax3.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax3.Position; 
+ax3v = axes('Position',POS);
+ax3v.XAxisLocation = 'top'; 
+ax3v.Color = 'none'; 
+ax3v.XTick = vx(11:15); 
+ax3v.XTickLabel = split(int2str(fliplr(1:5))); 
+ax3v.XGrid = 'on'; 
+ax3v.GridAlpha = 0.7; 
+ax3v.YTick = []; 
+ax3v.FontSize = axv_font_size; 
+% ax3.FontWeight = 'bold'; 
+
+linkaxes([ax3,ax3v],'x'); 
+xlim([7.5 9.2]); 
+ylim([-15-window 15+window]); 
+uistack(ax3, 'top'); 
+
+% make large markers and lines
+set(findall(gcf, 'Type', 'Line'), 'MarkerSize', 10, 'LineWidth', 2); 
+set(findall(gcf, 'Type', 'ErrorBar'), 'MarkerSize', 10, 'LineWidth', 2); 
+set(gcf,'color','w');
+set(gcf,'PaperUnits','inches');
+set(gcf,'PaperSize', [6 8]);
+set(gcf,'PaperPosition',[0.5 0.5 7 7]);
+set(gcf,'PaperPositionMode','Manual');
+
+% save
+set(gcf, 'units', 'inch', 'position', plotpos);
+set(gcf,'PaperUnits','inches','PaperPosition',plotpos)
+saveas(gcf,'/Users/annawang/Box/writing/H2/paper/figures/thetasub.png')
+
+%% M dot d = M^2 sin^2(theta/2)
+
+vx = reshape(repmat(12:2:16, [5 1])*1240/810 - repmat(fliplr(IP(2:end))', [1 3]), [1 15]); 
+xdata = reshape(mean_data(:,2,:), [1 15]); xdata(11:15) = xdata(11:15)+1.5; %+0.2286; 
+phase_data = squeeze(reshape(SB_delay_data(2,:,:), [1 15])); 
+phase_error = squeeze(reshape(SB_delay_error(2, :,:), [1 15]));
+
+offset = -mean([H2TDSE_810_140.t(4) H2TDSE_810_145.t(4) H2TDSE_810_150.t(4)]) ...
+    - ((mean(unwrap(H2_0V_SB18_phase(2:5)))+mean(unwrap(H2_3V_SB18_phase(2:5)))+mean(unwrap(H2_5V_SB18_phase(2:5)))+2*pi)/3*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+
+plot_data = phase_data - reshape(repmat(XUV_delay(1:3), [1 5])', [1 15])+offset; plot_data = plot_data/(T_L*1000/4/pi); 
+plot_error = phase_error; plot_error = plot_error/(T_L*1000/4/pi); 
+
+diff = []; 
+
+figure; hold on; 
+% plotpos = [0, 0, 20, 6]/1.4; 
+plotpos = [0, 0, 6, 15]; 
+set(gcf, 'units', 'inch', 'position', plotpos);
+
+% SB12
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(1) H2TDSE_810_145.x_Ee(1) H2TDSE_810_150.x_Ee(1)]; 
+yt = -[H2TDSE_810_140.t(1)    H2TDSE_810_145.t(1)    H2TDSE_810_150.t(1)] / (T_L*1000/4/pi);
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = [diff plot_data(1:5)-yt_int(1:5)]; 
+
+ax1 = subplot(3, 1, 1); hold on; 
+plot(xdata(1:5), sin(abs(diff(1:5)/2)).^2, 'ko'); 
+xlim([1.4 3])
+ylim([0.005 0.02])
+window = 50; 
+
+text(1.4+1, 1.2, 'Sideband 12', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+box 'on'; 
+ax1.FontSize = ax_font_size; 
+ax1.FontWeight = 'bold'; 
+ax1.LineWidth = 1; 
+ax1.Color = 'none'; 
+ax1.XMinorTick = 'on'; 
+ax1.XAxisLocation = 'bottom'; 
+ax1.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax1.Position; 
+ax1v = axes('Position',POS);
+ax1v.XAxisLocation = 'top'; 
+ax1v.Color = 'none'; 
+ax1v.XTick = vx(1:5); 
+ax1v.XTickLabel = split(int2str(fliplr(1:5))); 
+xlabel('\nu'); 
+ax1v.XGrid = 'on'; 
+ax1v.GridAlpha = 0.7; 
+ax1v.YTick = []; 
+ax1v.FontSize = axv_font_size; 
+% ax1v.FontWeight = 'bold'; 
+
+linkaxes([ax1,ax1v],'x'); 
+xlim([1.4 3])
+% ylim([70 180]); 
+uistack(ax1, 'top'); 
+
+
+% SB14
+ax2 = subplot(3, 1, 2); hold on; 
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(2) H2TDSE_810_145.x_Ee(2) H2TDSE_810_150.x_Ee(2)]; 
+yt = -[H2TDSE_810_140.t(2)    H2TDSE_810_145.t(2)    H2TDSE_810_150.t(2)] / (T_L*1000/4/pi); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = [diff plot_data(6:10)-yt_int(6:10)]; 
+plot(xdata(6:10), sin(abs(diff(6:10)/2)).^2, 'ko'); 
+xlabel('photoelectron energy (eV)'); 
+ylabel('M\cdot\delta');
+% legend; 
+xlim([4.4 6.2]); 
+ylim([-0.001 0.002]) 
+
+text(4.4+1, 1.2, 'Sideband 14', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+% annotation('textbox',[0.45 0.15 0.5 0.5],'String','Sideband 14','FitBoxToText','on');
+
+box 'on'; 
+ax2.FontSize = ax_font_size; 
+ax2.FontWeight = 'bold'; 
+ax2.LineWidth = 1; 
+ax2.Color = 'none'; 
+ax2.XMinorTick = 'on'; 
+ax2.XAxisLocation = 'bottom'; 
+ax2.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax2.Position; 
+ax2v = axes('Position',POS);
+ax2v.XAxisLocation = 'top'; 
+ax2v.Color = 'none'; 
+ax2v.XTick = vx(6:10); 
+ax2v.XTickLabel = split(int2str(fliplr(1:5))); 
+% xlabel('\nu'); 
+ax2v.XGrid = 'on'; 
+ax2v.GridAlpha = 0.7; 
+ax2v.YTick = []; 
+ax2v.FontSize = axv_font_size; 
+% ax2.FontWeight = 'bold'; 
+
+linkaxes([ax2,ax2v],'x'); 
+xlim([4.4 6.2]); 
+% ylim([120-window 120+window]); 
+uistack(ax2, 'top'); 
+
+% SB16
+ax3 = subplot(3, 1, 3); hold on; 
+% fit a line to theory points
+xt = [H2TDSE_810_140.x_Ee(3) H2TDSE_810_145.x_Ee(3) H2TDSE_810_150.x_Ee(3)]; 
+yt = -[H2TDSE_810_140.t(3)    H2TDSE_810_145.t(3)    H2TDSE_810_150.t(3)] / (T_L*1000/4/pi); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = [diff plot_data(11:15)-yt_int(11:15)]; 
+plot(xdata(11:15), sin(abs(diff(11:15)/2)).^2, 'ko'); 
+xlabel('photoelectron energy (eV)'); 
+% ylabel('delay (as)'); 
+% legend; 
+xlim([7.5 9.2]); 
+ylim([-0.001 0.004])
+
+text(7.5+1, 1.2, 'Sideband 16', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+box 'on'; 
+ax3.FontSize = ax_font_size; 
+ax3.FontWeight = 'bold'; 
+ax3.LineWidth = 1; 
+ax3.Color = 'none'; 
+ax3.XMinorTick = 'on'; 
+ax3.XAxisLocation = 'bottom'; 
+ax3.YMinorTick = 'on'; 
+
+% add v state axis
+POS = ax3.Position; 
+ax3v = axes('Position',POS);
+ax3v.XAxisLocation = 'top'; 
+ax3v.Color = 'none'; 
+ax3v.XTick = vx(11:15); 
+ax3v.XTickLabel = split(int2str(fliplr(1:5))); 
+% xlabel('\nu'); 
+ax3v.XGrid = 'on'; 
+ax3v.GridAlpha = 0.7; 
+ax3v.YTick = []; 
+ax3v.FontSize = axv_font_size; 
+% ax3.FontWeight = 'bold'; 
+
+linkaxes([ax3,ax3v],'x'); 
+xlim([7.5 9.2]); 
+% ylim([55-window 55+window]); 
+uistack(ax3, 'top'); 
+
+% make large markers and lines
+set(findall(gcf, 'Type', 'Line'), 'MarkerSize', 10, 'LineWidth', 2); 
+set(findall(gcf, 'Type', 'ErrorBar'), 'MarkerSize', 10, 'LineWidth', 2); 
+set(gcf,'color','w');
+set(gcf,'PaperUnits','inches');
+set(gcf,'PaperSize', [6 8]);
+set(gcf,'PaperPosition',[0.5 0.5 7 7]);
+set(gcf,'PaperPositionMode','Manual');
+
+% save
+set(gcf, 'units', 'inch', 'position', plotpos);
+set(gcf,'PaperUnits','inches','PaperPosition',plotpos)
+saveas(gcf,'/Users/annawang/Box/writing/H2/paper/figures/Mdotdelta.png')
+
+%%
+
+xt = [H2TDSE_810_140.x_Ee(1) H2TDSE_810_145.x_Ee(1) H2TDSE_810_150.x_Ee(1)]; 
+yt = -[H2TDSE_810_140.t(1)    H2TDSE_810_145.t(1)    H2TDSE_810_150.t(1)] ./ (T_L*1000/2/(2*pi)); 
+yt_int = interp1(xt, yt, xdata, 'spline'); 
+diff = exp(1j*plot_data(1:5)) - exp(1j*yt_int(1:5)); 
+
+ii=5; 
+figure; hold on; 
+plot([0 cos(plot_data(ii))], [0 sin(plot_data(ii))], 'k-'); 
+plot([0 cos(yt_int(ii))], [0 sin(yt_int(ii))], 'r-'); 
+
+
+
     
     

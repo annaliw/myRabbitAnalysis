@@ -5,9 +5,10 @@ axv_font_size = 10;
 legend_font_size = 12; 
 label_font_size = 10; 
 %%
-xdata = reshape(repmat(12:2:16, [5 1])*1240/810 - repmat(fliplr(IP(2:end))', [1 3]), [1 15]); 
+vx = reshape(repmat(12:2:16, [5 1])*1240/810 - repmat(fliplr(IP(2:end))', [1 3]), [1 15]); 
+xdata = reshape(SB_delay_data(1,:,:), [1 15]); xdata(11:15) = xdata(11:15)+1.5+0.2286; 
 phase_data = squeeze(reshape(SB_delay_data(2,:,:), [1 15])); 
-phase_error = squeeze(reshape(SB_delay_error(2, :,:), [1 15]));
+phase_error = squeeze(reshape(SB_delay_error(2,:,:), [1 15]));
 
 % % use the mean of the measured H2 values
 % xdata = squeeze(reshape(mean(SB_delay_data(1,2:end,:),2), [1 3])); 
@@ -16,15 +17,33 @@ phase_error = squeeze(reshape(SB_delay_error(2, :,:), [1 15]));
 
 % subtract out XUV contribution by referencing to Ar data and adding in
 % provided Ar TDSE values
-plot_data = phase_data - reshape(repmat(XUV_delay(1:3)-XUV_delay(1), [1 5])', [1 15]) + 140; 
+% offset12 = -mean([H2TDSE_810_140.t(4) H2TDSE_810_145.t(4) H2TDSE_810_150.t(4)]) ...
+%     - ((mean(unwrap(H2_0V_SB18_phase(2:6,1)))+2*pi)*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+% offset14 = -mean([H2TDSE_810_140.t(4) H2TDSE_810_145.t(4) H2TDSE_810_150.t(4)]) ...
+%     - (mean(unwrap(H2_3V_SB18_phase(:,1)))*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+% offset16 = -mean([H2TDSE_810_140.t(4) H2TDSE_810_145.t(4) H2TDSE_810_150.t(4)]) ...
+%     - (mean(unwrap(H2_5V_SB18_phase(:,1)))*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+offset = -mean([H2TDSE_810_140.t(4) H2TDSE_810_145.t(4) H2TDSE_810_150.t(4)]) ...
+    - ((mean(unwrap(H2_0V_SB18_phase(2:5)))+mean(unwrap(H2_3V_SB18_phase(2:5)))+mean(unwrap(H2_5V_SB18_phase(2:5)))+2*pi)/3*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+% offset = - (2*pi*(T_L*1000/2/(2*pi)) - XUV_delay(4)); 
+
+plot_data = phase_data - reshape(repmat(XUV_delay(1:3), [1 5])', [1 15])+offset; 
 % plot_data = phase_data - reshape(repmat(XUV_delay(1:3)-XUV_delay(1), [1 5])', [1 15])./2 - interp1(E_CC, CCPAp, xdata)*(T_L*1000/2/(2*pi)); 
 plot_error = phase_error; 
 
+SB_shift_err = std([unwrap(H2_0V_SB18_phase(2:5,1)), unwrap(H2_3V_SB18_phase(2:5,1)), unwrap(H2_5V_SB18_phase(2:5,1))],0,1) * (T_L*1000/4/pi); 
+SB_shade_err = [interp1(xdata(1:5), plot_data(1:5), E_CC, 'spline'); 
+                interp1(xdata(6:10), plot_data(6:10), E_CC, 'spline'); 
+                interp1(xdata(11:15), plot_data(11:15), E_CC, 'spline')]; 
 
 figure; hold on; 
-% set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0, 1, 0.96]);
+plotpos = [0, 0, 20, 12]/1.4; 
+set(gcf, 'units', 'inch', 'position', plotpos);
 
 ax1 = subplot(2, 3, 1); hold on; 
+patch('XData', [E_CC(332:454) fliplr(E_CC(332:454))], ...
+    'YData', [SB_shade_err(1,332:454)+SB_shift_err(1)/2 fliplr(SB_shade_err(1,332:454))-SB_shift_err(1)/2], ...
+    'FaceColor', [1 1 1]*0.7, 'EdgeColor', 'none');
 errorbar(xdata(1:5), plot_data(1:5), plot_error(1:5), 'ko', 'DisplayName', 'H2 measurement'); 
 errorbar(H2TDSE_810_140.x_Ee(1), -H2TDSE_810_140.t(1), H2TDSE_810_140.err(1), ...
     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
@@ -32,12 +51,16 @@ errorbar(H2TDSE_810_145.x_Ee(1), -H2TDSE_810_145.t(1), H2TDSE_810_145.err(1), ..
     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
 errorbar(H2TDSE_810_150.x_Ee(1), -H2TDSE_810_150.t(1), H2TDSE_810_150.err(1), ...
     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+% plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_140, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_145, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_150, 'r--', 'HandleVisibility', 'off'); 
 ylabel('delay (as)'); 
 xlim([1.4 3])
-ylim([100 180]); 
+% ylim([70 180]); 
+window = 55; 
 
-text(1.4+1, 100+10, 'Sideband 12', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+text(1.4+1, 125+45, 'Sideband 12', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
     'HorizontalAlignment', 'center'); 
 
 box 'on'; 
@@ -54,7 +77,7 @@ POS = ax1.Position;
 ax1v = axes('Position',POS);
 ax1v.XAxisLocation = 'top'; 
 ax1v.Color = 'none'; 
-ax1v.XTick = xdata(1:5); 
+ax1v.XTick = vx(1:5); 
 ax1v.XTickLabel = split(int2str(fliplr(1:5))); 
 % xlabel('\nu'); 
 ax1v.XGrid = 'on'; 
@@ -65,11 +88,14 @@ ax1v.FontSize = axv_font_size;
 
 linkaxes([ax1,ax1v],'x'); 
 xlim([1.4 3])
-ylim([-180 -110]); 
+ylim([70 180]); 
 uistack(ax1, 'top'); 
 
 
-ax2 = subplot(2, 3, 2); hold on; 
+ax2_0V = subplot(2, 3, 2); hold on; 
+patch('XData', [E_CC(582:656) fliplr(E_CC(582:656))], ...
+    'YData', [SB_shade_err(2,582:656)+SB_shift_err(2)/2 fliplr(SB_shade_err(2,582:656))-SB_shift_err(2)/2], ...
+    'FaceColor', [1 1 1]*0.7, 'EdgeColor', 'none');
 errorbar(xdata(6:10), plot_data(6:10), plot_error(6:10), 'ko', 'DisplayName', 'H2 measurement'); 
 errorbar(H2TDSE_810_140.x_Ee(2), -H2TDSE_810_140.t(2), H2TDSE_810_140.err(2), ...
     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
@@ -77,32 +103,35 @@ errorbar(H2TDSE_810_145.x_Ee(2), -H2TDSE_810_145.t(2), H2TDSE_810_145.err(2), ..
     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
 errorbar(H2TDSE_810_150.x_Ee(2), -H2TDSE_810_150.t(2), H2TDSE_810_150.err(2), ...
     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+% plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_140, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_145, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_150, 'r--', 'HandleVisibility', 'off'); 
 % xlabel('electron kinetic energy (eV)'); 
 % ylabel('delay (as)'); 
 % legend; 
 xlim([4.4 6.2]); 
-% ylim([-80-35 -80+35]); 
+ylim([90-window 90+window]); 
 
-text(4.4+1, -80-35+10, 'Sideband 14', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+text(4.4+1, 90+45, 'Sideband 14', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
     'HorizontalAlignment', 'center'); 
 % annotation('textbox',[0.45 0.15 0.5 0.5],'String','Sideband 14','FitBoxToText','on');
 
 box 'on'; 
-ax2.FontSize = ax_font_size; 
-ax2.FontWeight = 'bold'; 
-ax2.LineWidth = 1; 
-ax2.Color = 'none'; 
-ax2.XMinorTick = 'on'; 
-ax2.XAxisLocation = 'bottom'; 
-ax2.YMinorTick = 'on'; 
+ax2_0V.FontSize = ax_font_size; 
+ax2_0V.FontWeight = 'bold'; 
+ax2_0V.LineWidth = 1; 
+ax2_0V.Color = 'none'; 
+ax2_0V.XMinorTick = 'on'; 
+ax2_0V.XAxisLocation = 'bottom'; 
+ax2_0V.YMinorTick = 'on'; 
 
 % add v state axis
-POS = ax2.Position; 
+POS = ax2_0V.Position; 
 ax2v = axes('Position',POS);
 ax2v.XAxisLocation = 'top'; 
 ax2v.Color = 'none'; 
-ax2v.XTick = xdata(6:10); 
+ax2v.XTick = vx(6:10); 
 ax2v.XTickLabel = split(int2str(fliplr(1:5))); 
 % xlabel('\nu'); 
 ax2v.XGrid = 'on'; 
@@ -111,13 +140,16 @@ ax2v.YTick = [];
 ax2v.FontSize = axv_font_size; 
 % ax2.FontWeight = 'bold'; 
 
-linkaxes([ax2,ax2v],'x'); 
+linkaxes([ax2_0V,ax2v],'x'); 
 xlim([4.4 6.2]); 
-ylim([-80-35 -80+35]); 
-uistack(ax2, 'top'); 
+ylim([120-window 120+window]); 
+uistack(ax2_0V, 'top'); 
 
 
 ax3 = subplot(2, 3, 3); hold on; 
+patch('XData', [E_CC(750:809) fliplr(E_CC(750:809))], ...
+    'YData', [SB_shade_err(3,750:809)+SB_shift_err(3)/2 fliplr(SB_shade_err(3,332:454))-SB_shift_err(1)/2], ...
+    'FaceColor', [1 1 1]*0.7, 'EdgeColor', 'none');
 errorbar(xdata(11:15), plot_data(11:15), plot_error(11:15), 'ko', 'DisplayName', 'H2 measurement'); 
 errorbar(H2TDSE_810_140.x_Ee(3), -H2TDSE_810_140.t(3), H2TDSE_810_140.err(3), ...
     'rv', 'DisplayName', 'H2 TDSE 810nm, r=1.40'); 
@@ -125,14 +157,17 @@ errorbar(H2TDSE_810_145.x_Ee(3), -H2TDSE_810_145.t(3), H2TDSE_810_145.err(3), ..
     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
 errorbar(H2TDSE_810_150.x_Ee(3), -H2TDSE_810_150.t(3), H2TDSE_810_150.err(3), ...
     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+% plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_140, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_145, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_150, 'r--', 'HandleVisibility', 'off'); 
 % xlabel('electron kinetic energy (eV)'); 
 % ylabel('delay (as)'); 
 % legend; 
 xlim([7.5 9.2]); 
-% ylim([-58-35 -58+35]); 
+ylim([55-window 55+window]); 
 
-text(7.5+1, -58-35+10, 'Sideband 16', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+text(7.5+1, 55+45, 'Sideband 16', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
     'HorizontalAlignment', 'center'); 
 
 box 'on'; 
@@ -149,7 +184,7 @@ POS = ax3.Position;
 ax3v = axes('Position',POS);
 ax3v.XAxisLocation = 'top'; 
 ax3v.Color = 'none'; 
-ax3v.XTick = xdata(11:15); 
+ax3v.XTick = vx(11:15); 
 ax3v.XTickLabel = split(int2str(fliplr(1:5))); 
 xlabel('\nu'); 
 ax3v.XGrid = 'on'; 
@@ -160,7 +195,7 @@ ax3v.FontSize = axv_font_size;
 
 linkaxes([ax3,ax3v],'x'); 
 xlim([7.5 9.2]); 
-ylim([-58-35 -58+35]); 
+ylim([55-window 55+window]); 
 uistack(ax3, 'top'); 
 
 
@@ -172,12 +207,15 @@ errorbar(H2TDSE_810_145.x_Ee, -H2TDSE_810_145.t, H2TDSE_810_145.err, ...
     'r*', 'DisplayName', 'H2 TDSE 810nm, r=1.45'); 
 errorbar(H2TDSE_810_150.x_Ee, -H2TDSE_810_150.t, H2TDSE_810_150.err, ...
     'rs', 'DisplayName', 'H2 TDSE 810nm, r=1.50'); 
-plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+% plot(E_CC, -t_interp ./ T_AU, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_140, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_145, 'r--', 'HandleVisibility', 'off'); 
+plot(E_CC, -interp_150, 'r--', 'HandleVisibility', 'off'); 
 xlabel('electron kinetic energy (eV)'); 
 ylabel('delay (as)'); 
-l = legend('Location', 'southeast'); 
+l = legend('Location', 'northeast'); 
 xlim([1 10]); 
-% ylim([-250 0]); 
+ylim([0 250]); 
 
 % text(3.5, -200, 'Full View', 'FontSize', 14, 'FontWeight', 'bold', ...
 %     'HorizontalAlignment', 'center'); 
@@ -193,8 +231,8 @@ ax4.XTickLabel = split(int2str(2:1:10));
 ax4.XMinorTick = 'on'; 
 ax4.XAxisLocation = 'top'; 
 
-ax4.YTick = -250:50:-50; 
-ax4.YTickLabel = split(int2str(-250:50:-50)); 
+ax4.YTick = 0:50:250; 
+ax4.YTickLabel = split(int2str(0:50:250)); 
 ax4.YMinorTick = 'on'; 
 
 % add v state axis
@@ -202,7 +240,7 @@ POS = ax4.Position;
 ax4v = axes('Position',POS);
 ax4v.XAxisLocation = 'bottom'; 
 ax4v.Color = 'none'; 
-ax4v.XTick = xdata; 
+ax4v.XTick = vx; 
 ax4v.XTickLabel = split(int2str([fliplr(1:5) fliplr(1:5) fliplr(1:5)])); 
 xlabel('\nu'); 
 ax4v.XGrid = 'on'; 
@@ -213,7 +251,7 @@ ax4v.FontSize = axv_font_size;
 
 linkaxes([ax4,ax4v],'x'); 
 xlim([1 10]); 
-ylim([-250 0]); 
+ylim([-0 250]); 
 uistack(ax4, 'top'); set(l, 'color', 'white', 'FontSize', legend_font_size); 
 
 % make large markers and lines
@@ -224,4 +262,256 @@ set(gcf,'PaperUnits','inches');
 set(gcf,'PaperSize', [6 8]);
 set(gcf,'PaperPosition',[0.5 0.5 7 7]);
 set(gcf,'PaperPositionMode','Manual');
+
+% save
+set(gcf, 'units', 'inch', 'position', plotpos);
+set(gcf,'PaperUnits','inches','PaperPosition',plotpos)
+saveas(gcf,'/Users/annawang/Box/writing/H2/paper/figures/H2_comparewtheory.png')
+
+
+%% spectrum plot with fitting
+subplot_width = 1.5; 
+subplot_height = 0.2; 
+hoffset = 0.3; 
+
+xr = [1 9.5]; 
+
+tolerance = abs(Ebins(2)-Ebins(1)); 
+
+region_12 = [1.55 2.8]; % sideband 12
+start_12 = find(abs(Ebins-region_12(1))<tolerance, 1, 'last'); 
+stop_12 = find(abs(Ebins-region_12(2))<tolerance, 1, 'first'); 
+region_14 = [4.65 5.85]; % sideband 14
+start_14 = find(abs(Ebins-region_14(1))<tolerance, 1, 'last'); 
+stop_14 = find(abs(Ebins-region_14(2))<tolerance, 1, 'first'); 
+region_16 = [5.9 7]+0.25; % SB16 5V; 
+start_16 = find(abs(Ebins-region_16(1))<tolerance, 1, 'last'); 
+stop_16 = find(abs(Ebins-region_16(2))<tolerance, 1, 'first'); 
+
+% figure('Units', 'inches', 'Position', [1 1 1.2*subplot_width 6*subplot_height]); 
+f = figure; hold on; 
+plotpos = [0, 0, 10, 7]; 
+set(gcf, 'units', 'inch', 'position', plotpos);
+
+pos1 = [0.1 0.2+hoffset 0.8 0.2];
+ax1 = subplot('Position',pos1); hold on; 
+plot(Ebins(start_12:stop_12), sum(sum(ESpectra_0V(start_12:stop_12,:,:),2),3)./sum(sum(sum(ESpectra_0V(start_12:stop_12,:,:),1),2),3), ...
+    'k-', 'DisplayName', 'time averaged yield'); 
+plot(Ebins(start_14:stop_14), sum(sum(ESpectra_3V(start_14:stop_14,:,:),2),3)./sum(sum(sum(ESpectra_3V(start_14:stop_14,:,:),1),2),3), ...
+    'k-', 'HandleVisibility', 'off'); 
+plot(Ebins(start_16:stop_16)+1.5, sum(sum(ESpectra_5V(start_16:stop_16,:,:),2),3)./sum(sum(sum(ESpectra_5V(start_16:stop_16,:,:),1),2),3), ...
+    'k-', 'HandleVisibility', 'off'); 
+set(gca,'YTickLabel',[]);
+plot(Ebins(start_12:stop_12), abs(twoOmega_0V(start_12:stop_12))./sum(abs(twoOmega_0V(start_12:stop_12))), ...
+    'b-', 'DisplayName', '2\omega amplitude'); 
+plot(Ebins(start_14:stop_14), abs(twoOmega_3V(start_14:stop_14))./sum(abs(twoOmega_3V(start_14:stop_14))), ...
+    'b-', 'HandleVisibility', 'off'); 
+plot(Ebins(start_16:stop_16)+1.5+0.2286, abs(twoOmega_5V(start_16:stop_16))./sum(abs(twoOmega_5V(start_16:stop_16))), ...
+    'b-', 'HandleVisibility', 'off'); 
+% goodplot(20); 
+xlim([xr(1) xr(2)]); 
+ylim([0.005 0.03])
+box 'on'; 
+ax1.FontSize = ax_font_size; 
+ax1.FontWeight = 'bold'; 
+ax1.LineWidth = 1; 
+ax1.Color = 'none'; 
+ax1.XTick = 2:1:10;
+ax1.XTickLabel = []; 
+ax1.XMinorTick = 'on'; 
+ax1.XAxisLocation = 'bottom'; 
+l1 = legend('Color', [1 1 1], 'EdgeColor', 'k', 'Location', 'best'); 
+% ax1.YTick = 0:50:250; 
+% ax1.YTickLabel = split(int2str(0:50:250)); 
+% ax1.YMinorTick = 'on'; 
+% add v state axis
+POS = ax1.Position; 
+ax1v = axes('Position',POS);
+ax1v.XAxisLocation = 'top'; 
+ax1v.Color = 'none'; 
+ax1v.XTick = [fliplr(12*1240/810-IP) fliplr(14*1240/810-IP) fliplr(16*1240/810-IP)]; 
+ax1v.XTickLabel = split(int2str(fliplr(0:5))); 
+xlabel('\nu'); 
+ax1v.XGrid = 'on'; 
+ax1v.GridAlpha = 0.7; 
+ax1v.YTick = []; 
+% finalize plot
+linkaxes([ax1,ax1v],'x');  
+uistack(ax1, 'top'); % set(l, 'color', 'white', 'FontSize', legend_font_size); 
+xlim([xr(1) xr(2)]); 
+
+% %%%%%% second panel %%%%%%
+% make color map
+numc = 50; 
+cm = ones([numc 3]); 
+cm(1:(numc/2),1:2) = repmat((1:1:(numc/2))' ./ (numc/2), 1, 2); 
+cm((numc/2+1):end,2:3) = flipud(cm(1:(numc/2),1:2)); 
+
+boxwidth = 0.8/3; 
+
+pos2_0V = [0.1 0+hoffset boxwidth 0.2];
+ax2_0V = subplot('Position',pos2_0V); hold on; 
+ESpectra_norm = ESpectra_0V ./ repmat(sum(ESpectra_0V,1), size(ESpectra_0V,1), 1, 1);
+XUV_norm = XUV_only_0V ./ sum(XUV_only_0V);
+tmp = sum(abs(ESpectra_norm - repmat(XUV_norm, 1, 223, 37)),3);
+imagesc(E, stageTimes*1e15, (sum(abs(tmp'),3)-mean(sum(abs(tmp'),3),1)));
+colormap(cm); 
+% cb = colorbar; 
+% cb.Label.String = 'XUV/IR - XUV only'; 
+% cb.Ticks = []; 
+% cb.Position = 'eastoutside'; 
+caxis([-0.01 0.01]);  
+xlim([xr(1) xr(1)+(xr(2)-xr(1))/3]); 
+ylim([-4 4]); 
+box 'on'; 
+ax2_0V.FontSize = ax_font_size; 
+ax2_0V.FontWeight = 'bold'; 
+ax2_0V.LineWidth = 1; 
+ax2_0V.Color = 'none'; 
+ax2_0V.XTick = 2:1:10;
+ax2_0V.XTickLabel = split(int2str(2:1:10)); 
+ax2_0V.XMinorTick = 'on'; 
+ax2_0V.XAxisLocation = 'bottom'; 
+% ax2.YTick = 0:50:250; 
+% ax2.YTickLabel = split(int2str(0:50:250)); 
+ax2_0V.YMinorTick = 'on'; 
+% xlabel('electron kinetic energy (eV)'); 
+ylabel('XUV/IR delay (fs)'); 
+text(2.1, 5, '0V', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+pos2_3V = [0.1+boxwidth 0+hoffset boxwidth 0.2];
+ax2_3V = subplot('Position',pos2_3V); hold on; 
+ESpectra_norm = ESpectra_3V ./ repmat(sum(ESpectra_3V,1), size(ESpectra_3V,1), 1, 1);
+XUV_norm = XUV_only_3V ./ sum(XUV_only_3V);
+tmp = sum(abs(ESpectra_norm - repmat(XUV_norm, 1, 223, 61)),3);
+imagesc(E, stageTimes*1e15, (sum(abs(tmp'),3)-mean(sum(abs(tmp'),3),1)));
+colormap(cm); 
+% cb = colorbar; 
+% cb.Label.String = 'XUV/IR - XUV only'; 
+% cb.Ticks = []; 
+% cb.Position = 'eastoutside'; 
+caxis([-0.01 0.01]*2.5);  
+xlim([xr(1) xr(1)+(xr(2)-xr(1))/3]+(xr(2)-xr(1))/3); 
+ylim([-4 4]); 
+box 'on'; 
+ax2_3V.FontSize = ax_font_size; 
+ax2_3V.FontWeight = 'bold'; 
+ax2_3V.LineWidth = 1; 
+ax2_3V.Color = 'none'; 
+ax2_3V.XTick = 2:1:10;
+ax2_3V.YTick = []; 
+ax2_3V.XTickLabel = split(int2str(2:1:10)); 
+ax2_3V.XMinorTick = 'on'; 
+ax2_3V.XAxisLocation = 'bottom'; 
+% ax2.YTick = 0:50:250; 
+% ax2.YTickLabel = split(int2str(0:50:250)); 
+% ax2_3V.YMinorTick = 'on'; 
+xlabel('electron kinetic energy (eV)'); 
+% ylabel('XUV/IR delay (fs)'); 
+text(5.2, 5, '3V', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+pos2_5V = [0.1+2*boxwidth 0+hoffset boxwidth 0.2];
+ax2_5V = subplot('Position',pos2_5V); hold on; 
+ESpectra_norm = ESpectra_5V ./ repmat(sum(ESpectra_5V,1), size(ESpectra_5V,1), 1, 1);
+XUV_norm = XUV_only_5V ./ sum(XUV_only_5V);
+tmp = sum(abs(ESpectra_norm - repmat(XUV_norm, 1, 223, 37)),3);
+imagesc(E, stageTimes*1e15, (sum(abs(tmp'),3)-mean(sum(abs(tmp'),3),1)));
+colormap(cm); 
+% cb = colorbar; 
+% cb.Label.String = 'XUV/IR - XUV only'; 
+% cb.Ticks = []; 
+% cb.Position = 'eastoutside'; 
+caxis([-0.01 0.01]);  
+xlim([xr(1) xr(1)+(xr(2)-xr(1))/3]+2*(xr(2)-xr(1))/3); 
+ylim([-4 4]); 
+box 'on'; 
+ax2_5V.FontSize = ax_font_size; 
+ax2_5V.FontWeight = 'bold'; 
+ax2_5V.LineWidth = 1; 
+ax2_5V.Color = 'none'; 
+ax2_5V.XTick = 2:1:10;
+ax2_5V.YTick = []; 
+ax2_5V.XTickLabel = split(int2str(2:1:10)); 
+ax2_5V.XMinorTick = 'on'; 
+ax2_5V.XAxisLocation = 'bottom'; 
+% ax2.YTick = 0:50:250; 
+% ax2.YTickLabel = split(int2str(0:50:250)); 
+% ax2_3V.YMinorTick = 'on'; 
+% xlabel('electron kinetic energy (eV)'); 
+% ylabel('XUV/IR delay (fs)'); 
+text(8.2, 5, '5.5V', 'FontSize', label_font_size, 'FontWeight', 'bold', ...
+    'HorizontalAlignment', 'center'); 
+
+
+
+goodplot(14); 
+ax1v.FontSize = axv_font_size;  
+
+% save
+set(gcf, 'units', 'inch', 'position', plotpos);
+set(gcf,'PaperUnits','inches','PaperPosition',plotpos)
+saveas(gcf,'/Users/annawang/Box/writing/H2/paper/figures/H2_raw_summary.eps', 'epsc')
+
+%% plot a 2w example
+% text and color settings
+text_size = 20; 
+line_weight = 1.5; 
+abs_color = [0 0 0.8]; 
+phi_color = [0 0.7 1]; 
+lgnd_pad = 1.4; 
+lgnd_pos = 'best'; 
+    
+region = [1.55 2.8]; % sideband 12
+tolerance = abs(Ebins(2)-Ebins(1)); 
+start = find(abs(E-region(1))<tolerance, 1, 'last'); 
+stop = find(abs(E-region(2))<tolerance, 1, 'first'); 
+
+figure; hold on; 
+ax1 = gca; 
+ax1_pos = ax1.Position; 
+ax1.XColor = 'k'; 
+ax1.XLabel.String = 'Photoelectron Energy (eV)'; 
+ax1.YTickLabel = []; 
+ax1.YLabel.String = 'Amplitude';
+ax1.FontSize = text_size; 
+ax1.YColor = abs_color; 
+ax1.LineWidth = line_weight*0.5; 
+hold(ax1, 'on'); 
+s1 = plot(ax1, Ebins(start:stop), abs(twoOmega_0V(start:stop)), '-'); 
+s1.MarkerEdgeColor = abs_color; 
+s1.Color = abs_color; 
+s1.LineWidth = line_weight; 
+s1.DisplayName = 'amplitude data'; 
+
+ax2_0V = axes('Position', ax1_pos, ...
+        'XAxisLocation', 'top', 'YAxisLocation', 'right', ...
+        'Color', 'none', 'LineWidth', line_weight*0.5); 
+ax2_0V.XColor = 'none'; 
+ax2_0V.YColor = phi_color; 
+ax2_0V.YLabel.String = 'phase (radians)'; 
+ax2_0V.FontSize = text_size; 
+hold(ax2_0V, 'on'); 
+s2 = plot(Ebins(start:stop), unwrap(angle(twoOmega_0V(start:stop)))+pi, '-'); 
+s2.MarkerEdgeColor = phi_color; 
+s2.Color = phi_color; 
+s2.LineWidth = line_weight; 
+s2.DisplayName = 'phase data'; 
+ax2_0V.YLabel.String = 'Phase (radians)';
+ax2_0V.YLim = [0 2*pi]; 
+ax2_0V.YTick = (0:(pi/4):2*pi); 
+ax2_0V.YTickLabel = ["-\pi", "-3\pi/4", "-\pi/2", "-\pi/4", ...
+                    "0", "\pi/4", "\pi/2", "3\pi/4", "\pi"];  
+
+linkaxes([ax1,ax2_0V],'x'); 
+ax2_0V.YLim = [0 2*pi]; 
+% ax1.XLim = [xout(1), xout(end)]; 
+%     ax1.YLim = [0, max(yout_abs)*lgnd_pad]; 
+%     lgnd = legend([s1, l1, s2, l2]) %, 'Location', lgnd_pos); 
+%     
+% legend; 
+
+% goodplot(22); 
+
 

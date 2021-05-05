@@ -1,7 +1,7 @@
 E_AU = 27.2114; %eV to a.u.
 T_AU = 0.024189; %fs to a.u. 
 
-w = 1239.8 / 810 / E_AU; %Photon Energy
+w = 1239.8 / 2400 / E_AU; %Photon Energy
 T_L = 2*pi/w * T_AU; % laser period in fs
 
 Z = 1; %Atomic Charge

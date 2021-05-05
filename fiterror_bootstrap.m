@@ -3,8 +3,8 @@
 
 % folderName = '/Users/annawang/Documents/data/2018_07_31-16Scan/';
 % folderName = '/Users/annawang/Documents/data/2018_04_18-18Scan/'; 
-folderName = '/Users/annawang/Documents/data/2018_07_27-17Scan/'; % NO
-% folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; % probably CO2, use Kr for calibration (start 1)
+% folderName = '/Users/annawang/Documents/data/2018_07_27-17Scan/'; % NO
+folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; % probably CO2, use Kr for calibration (start 1)
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annawang/Documents/data/2019_12_13-23Scan/'; % Argon
 % folderName = '/Users/annawang/Documents/data/2019_12_14-16Scan/'; % H2 long long long scan
@@ -27,14 +27,14 @@ folderName = '/Users/annawang/Documents/data/2018_07_27-17Scan/'; % NO
 % folderName = '/Users/annawang/Documents/data/2020_09_01-14Scan/'; % Argon 8.5V
 
 
-alternate = [1 1]; 
+alternate = [1 2]; 
 wavelength=810; 
 % global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
 % global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
 % global IP; IP = [13.776   17.7   18.0770   19.3760]; % CO2
 % global IP_label; IP_label = ["X", "A", "B", "C"]; 
-% global IP; IP = fliplr([14 14.665]); % Krypton
-% global IP_label; IP_label = fliplr(["14", "14.665"]); 
+global IP; IP = fliplr([14 14.665]); % Krypton
+global IP_label; IP_label = fliplr(["14", "14.665"]); 
 % global IP; IP = [15.7596];
 % global IP_label; IP_label = ["Ar 2P 3/2"]; % start with 2
 % global IP; IP = [15.763, 15.763+0.17749];
@@ -42,8 +42,8 @@ wavelength=810;
 % IP = [9.553, 16.56, 18.318, 21.722]; % NO
 % global IP; IP = [9.55, 15.66305, 16.55995, 16.87514, 17.59988, 17.81864, 18.07566, 18.32547, 21.72947, 22.73139]; 
 % global IP_label; IP_label = ["X", "a", "b", "w", "bp", "Ap", "W", "A", "Bc", "BpB"]; 
-global IP; IP = [9.55, 16.55995, 16.87514, 17.59988, 18.32547, 21.72947]; 
-global IP_label; IP_label = ["X", "b", "w", "bp", "A", "Bc"]; 
+% global IP; IP = [9.55, 16.55995, 16.87514, 17.59988, 18.32547, 21.72947]; 
+% global IP_label; IP_label = ["X", "b", "w", "bp", "A", "Bc"]; 
 
 [HistTot_array, XUV_only, stageTimes, freqAxis] = getrawdata(folderName, 1, wavelength);  
 HistTot_array = HistTot_array(:,:,alternate(1):alternate(2):end); % might need to alternate files
@@ -137,8 +137,8 @@ norm = sum(E_SpectraArray,1);
 tmp = fftshift(fft(ifftshift(E_SpectraArray - repmat(mean(E_SpectraArray,2),[1 numel(stageTimes)]),2),[],2),2); 
 
 % tmp = fftshift(fft(HistTot_array,[],2),2); 
-% twoOmega_ind = 130; % MAKE THIS AUTOMATICALLY DETECTED
-twoOmega_ind = 156; 
+twoOmega_ind = 130; % MAKE THIS AUTOMATICALLY DETECTED
+% twoOmega_ind = 157; 
 twoOmega_signal = squeeze(sum(tmp(:,twoOmega_ind,:),2)); % + conj(squeeze(sum(tmp(:,92:94,:),2)));
 
 twoOmega_nosum = twoOmega_signal; 
@@ -297,7 +297,8 @@ signal = twoOmega_signal;
 % region = [3.4 5]; % SB12
 % region = [6.2 7.9]; % SB14
 % region = [9.3 10.8]; % SB16
-% region = [12.5 14.2]; %18
+region = [12.5 14]; %18
+% region = [15.65 17.2]; % 20
 
 % region = []
 
@@ -306,9 +307,10 @@ signal = twoOmega_signal;
 % region = [5.7 6.6]; IP = [10*1240/wavelength-6 15*1240/wavelength-6.4]; IP_label = ["X SB10", "other"]; 
 % region = [8.2 9.5]; IP = [12*1240/wavelength-8.75 17*1240/wavelength-8.5 17*1240/wavelength-9.4]; IP_label = ["X SB12", "other", "other"]; % SB12
 % region = [10.6 12]; IP = [14*1240/wavelength-11.7 19*1240/wavelength-10.85]; IP_label = ["X SB14", "other"];% SB14
-% region = [14.2 15.3]; IP = [16*1240/wavelength-14.9]; IP_label = ["X SB16"];% SB16
-% region = [17.4 19]; IP = [18*1240/wavelength-18.1 23*1240/wavelength-19.5]; IP_label = ["X SB18", "other"];% SB18
+% region = [14 15.5]; IP = [16*1240/wavelength-14.9]; IP_label = ["X SB16"];% SB16
+% region = [17.4 18.6]; IP = [18*1240/wavelength-18.1];  IP_label = ["X SB18"]; % SB18
 % region = [10.75 12.2]; 
+% region = [20.5 22]; IP = [20*1240/wavelength-21]; IP_label=["X SB20"]; 
 
 tolerance = abs(E(2)-E(1)); 
 % fit section set-up
