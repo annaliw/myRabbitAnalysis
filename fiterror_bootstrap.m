@@ -4,7 +4,7 @@
 % folderName = '/Users/annawang/Documents/data/2018_07_31-16Scan/';
 % folderName = '/Users/annawang/Documents/data/2018_04_18-18Scan/'; 
 % folderName = '/Users/annawang/Documents/data/2018_07_27-17Scan/'; % NO
-folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; % probably CO2, use Kr for calibration (start 1)
+% folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; % probably CO2, use Kr for calibration (start 1)
 %     folderName = '/Users/annaliw/code/KrCO2_scan/'; 
 % folderName = '/Users/annawang/Documents/data/2019_12_13-23Scan/'; % Argon
 % folderName = '/Users/annawang/Documents/data/2019_12_14-16Scan/'; % H2 long long long scan
@@ -16,7 +16,7 @@ folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; % probably CO2
 % % folderName = '/Users/annawang/Documents/data/2020_03_15-13Scan_H2/'; % H2 
 % % folderName = '/Users/annawang/Documents/data/2020_03_14-21Scan_H2/'; % H2 
 
-% folderName = '/Users/annawang/Documents/data/2020_08_25-16Scan/'; % Argon long
+folderName = '/Users/annawang/Documents/data/2020_08_25-16Scan/'; % Argon long
 % folderName = '/Users/annawang/Documents/data/2020_08_27-13Scan/'; % H2 short
 % folderName = '/Users/annawang/Documents/data/2020_08_27-15Scan/'; % H2 0V
 % folderName = '/Users/annawang/Documents/data/2020_08_28-15Scan/'; % H2 3V
@@ -27,16 +27,16 @@ folderName = '/Users/annawang/Documents/data/2018_07_23-19Scan/'; % probably CO2
 % folderName = '/Users/annawang/Documents/data/2020_09_01-14Scan/'; % Argon 8.5V
 
 
-alternate = [1 2]; 
+alternate = [1 1]; 
 wavelength=810; 
 % global IP; IP = [15.38174 15.65097 15.90469 16.16865 16.39351 16.62206];
 % global IP_label; IP_label = ["0", "1", "2", "3", "4", "5"]; % start 1
 % global IP; IP = [13.776   17.7   18.0770   19.3760]; % CO2
 % global IP_label; IP_label = ["X", "A", "B", "C"]; 
-global IP; IP = fliplr([14 14.665]); % Krypton
-global IP_label; IP_label = fliplr(["14", "14.665"]); 
-% global IP; IP = [15.7596];
-% global IP_label; IP_label = ["Ar 2P 3/2"]; % start with 2
+% global IP; IP = fliplr([14 14.665]); % Krypton
+% global IP_label; IP_label = fliplr(["14", "14.665"]); 
+global IP; IP = [15.7596];
+global IP_label; IP_label = ["Ar 2P 3/2"]; % start with 2
 % global IP; IP = [15.763, 15.763+0.17749];
 % global IP_label; IP_label = ["Ar 2P 3/2", "Ar 2P 1/2"]; % start with 2
 % IP = [9.553, 16.56, 18.318, 21.722]; % NO
