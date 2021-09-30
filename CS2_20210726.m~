@@ -1,0 +1,16 @@
+IP = [9.538 9.538+0.626 12.13 15]; % X3/2, X1/2, A
+HH = 3:2:21; 
+
+XUV = ones([1 numel(Ebins)]); 
+SB  = ones([1 numel(Ebins)]); 
+for ii=1:numel(HH)
+    XUV = XUV + 2*exp(-(Ebins-(HH(ii)*1240/810-IP(jj))).^2/(2*0.06.^2));
+    SB  = SB  + 0.5*exp(-(Ebins-((HH(ii)+1)*1240/810-IP(jj))).^2/(2*0.06.^2));
+end
+
+figure; hold on; 
+subplot(2,1,1); hold on; 
+plot(Ebins, XUV, 'k-'); 
+plot(Ebins, SB, 'r-'); 
+subplot(2,1,2); hold on; 
+plot(Ebins, XUV+SB, 'b')
