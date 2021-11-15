@@ -1,4 +1,4 @@
-function A = ECalibrate(t0, n, wavelength, calibType, config)
+function A = ECalibrate(t0, n, wavelength, config)
 
     if (isfield(config,'tofPeaks')) % Peak positions:
         tof_peak = config.tofPeaks; 

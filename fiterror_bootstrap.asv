@@ -73,13 +73,6 @@ Ebins = E; % save for later in case E gets overwritten by some of my other code 
 norm = sum(E_SpectraArray,1); 
 % E_SpectraArray = E_SpectraArray./repmat(norm, size(E_SpectraArray, 1), 1, 1); 
 
-%% At any point after this, if you want to look at your raw time averaged spectrum you can run
-% plotfun_rabbitspectrum(n, wavelength, E, data, mode)
-% n=peaks you want to see, so probably something like 11:1:21 or 12:2:20
-% wavelength = 810
-% E=Ebins
-% data = sum(sum(abs(tmp),2),3)
-% mode = 'average'
 %% fft and filter
 
 % This step is kind of annoying and I never automated it. 
@@ -123,13 +116,7 @@ end
 % sum phase matched values
 twoOmega_signal = squeeze(sum(twoOmega_signal, 2)); % Add together phase corrected runs
 
-%% At any point after this, if you want to look at your 2w spectrum you can run 
-% plotfun_rabbitspectrum(n, wavelength, E, data, mode)
-% n=peaks you want to see, so probably something like 11:1:21 or 12:2:20
-% wavelength = 810
-% E=Ebins
-% data = twoOmega_signal
-% mode = 'twoOmega'
+%% At any point after this, if you want to look at your 2w spectrum
 %% convert XUV only data
 % run this if you need XUV only data for something, like making plots
 
@@ -311,7 +298,6 @@ Kr_SB18_slope = [bootstrap_slope, bootstrap_slope_std];
 
 
 %% JACKKNIFE
-% very similar to boostrapping but no replacement in sampling
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 numfiles = size(E_SpectraArray, 3); 
